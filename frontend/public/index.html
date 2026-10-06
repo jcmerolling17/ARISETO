@@ -1,0 +1,272 @@
+<!-- frontend/public/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2d8a3e">
+  <meta name="description" content="ARISETO — AI-powered tools that help Filipino farmers optimize their farming and maximize crop yields.">
+  <meta name="ariseto-api-base" content="/api/v1">
+  <title>Welcome · ARISETO</title>
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <link rel="apple-touch-icon" href="img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <!-- Shared icon sprite -->
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-google" viewBox="0 0 48 48">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"/>
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65Z"/>
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19Z"/>
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z"/>
+    </symbol>
+    <symbol id="icon-facebook" viewBox="0 0 24 24">
+      <path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.69.24 2.69.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07Z"/>
+    </symbol>
+    <symbol id="icon-mail" viewBox="0 0 24 24">
+      <path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 2v.4l8 5.1 8-5.1V7H4Zm16 2.77-7.46 4.75a1 1 0 0 1-1.08 0L4 9.77V17h16V9.77Z" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-back" viewBox="0 0 24 24">
+      <path d="M15 5 8 12l7 7" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24">
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+    </symbol>
+    <symbol id="icon-eye-off" viewBox="0 0 24 24">
+      <path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.9 3.8M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.6-.6 5-1.5M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </svg>
+
+  <div class="app-shell">
+    <div class="scene" aria-hidden="true">
+      <div class="scene__photo"></div>
+      <div class="scene__sun"></div>
+      <div class="scene__hills"></div>
+      <div class="scene__field"></div>
+      <div class="scene__shade"></div>
+    </div>
+
+    <main id="app" class="viewport">
+      <!-- Welcome -->
+      <section class="view view--welcome" data-view="welcome" aria-labelledby="welcome-title">
+        <header class="view__header">
+          <p class="view__label">Welcome</p>
+        </header>
+
+        <div class="brand">
+          <img class="brand__logo" src="img/logo.png" alt="ARISETO" width="236" height="256" decoding="async">
+        </div>
+
+        <div class="glass-card">
+          <h1 id="welcome-title" class="card__title" tabindex="-1" data-route-focus>
+            Empowering Your Agriculture Journey with Innovative AI Solutions
+          </h1>
+          <p class="card__text">
+            Harness the Power of Technology to Optimize Your Farming Experience and Maximize Crop Yields
+          </p>
+          <div class="stack">
+            <a href="#/register" class="btn btn--gradient btn--block">Get started</a>
+            <a href="#/login" class="btn btn--outline btn--block">I have an account</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Login -->
+      <section class="view" data-view="login" aria-labelledby="login-title" hidden>
+        <header class="view__header">
+          <a href="#/welcome" class="icon-btn" aria-label="Back to welcome">
+            <svg aria-hidden="true"><use href="#icon-back"/></svg>
+          </a>
+          <p class="view__label">Login</p>
+        </header>
+
+        <div class="brand brand--compact">
+          <img class="brand__logo" src="img/logo.png" alt="ARISETO" width="236" height="256" decoding="async">
+        </div>
+
+        <div class="glass-card">
+          <h1 id="login-title" class="card__title" tabindex="-1" data-route-focus>Welcome Back!</h1>
+          <p class="card__subtitle">Login to your Account</p>
+
+          <form id="login-form" class="form" novalidate>
+            <div class="field">
+              <label for="login-identifier" class="field__label">Mobile Number / Email</label>
+              <input id="login-identifier" name="identifier" class="input" type="text"
+                     inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false"
+                     placeholder="+639XXXXXXXXX or name@email.com"
+                     aria-describedby="login-identifier-error" required>
+              <p id="login-identifier-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="login-password" class="field__label">Password</label>
+              <div class="input-group">
+                <input id="login-password" name="password" class="input" type="password"
+                       autocomplete="current-password" placeholder="Enter your password"
+                       aria-describedby="login-password-error" required>
+                <button type="button" class="input-group__toggle" data-toggle-password
+                        aria-controls="login-password" aria-label="Show password" aria-pressed="false">
+                  <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
+                  <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
+                </button>
+              </div>
+              <p id="login-password-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+            <button type="submit" class="btn btn--solid btn--block">
+              <span class="btn__label">Login</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+          </form>
+
+          <div class="divider" role="separator"><span>or</span></div>
+
+          <div class="social-row">
+            <button type="button" class="social-icon" data-oauth="google" aria-label="Login with Google">
+              <svg aria-hidden="true"><use href="#icon-google"/></svg>
+            </button>
+            <button type="button" class="social-icon" data-oauth="facebook" aria-label="Login with Facebook">
+              <svg aria-hidden="true"><use href="#icon-facebook"/></svg>
+            </button>
+          </div>
+
+          <p class="card__footer">Don't have an account? <a href="#/register" class="link">Sign up</a></p>
+        </div>
+      </section>
+
+      <!-- Create an Account -->
+      <section class="view" data-view="register" aria-labelledby="register-title" hidden>
+        <header class="view__header">
+          <a href="#/welcome" class="icon-btn" aria-label="Back to welcome">
+            <svg aria-hidden="true"><use href="#icon-back"/></svg>
+          </a>
+          <p class="view__label">Create an Account</p>
+        </header>
+
+        <div class="brand brand--compact">
+          <img class="brand__logo" src="img/logo.png" alt="ARISETO" width="236" height="256" decoding="async">
+        </div>
+
+        <div class="glass-card">
+          <h1 id="register-title" class="card__title" tabindex="-1" data-route-focus>Create an account</h1>
+          <div class="stack">
+            <button type="button" class="btn btn--social btn--block" data-oauth="google">
+              <svg class="btn__icon" aria-hidden="true"><use href="#icon-google"/></svg>
+              <span>Continue with Google</span>
+            </button>
+            <a href="#/signup" class="btn btn--social btn--block">
+              <svg class="btn__icon btn__icon--green" aria-hidden="true"><use href="#icon-mail"/></svg>
+              <span>Continue with Email / Mobile</span>
+            </a>
+          </div>
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+          <p class="card__footer">Already have an account? <a href="#/login" class="link">Log in</a></p>
+        </div>
+      </section>
+
+      <!-- Sign up (Email / Mobile) -->
+      <section class="view view--plain" data-view="signup" aria-labelledby="signup-title" hidden>
+        <header class="plain-header">
+          <a href="#/register" class="icon-btn icon-btn--square" aria-label="Back to sign-up options">
+            <svg aria-hidden="true"><use href="#icon-back"/></svg>
+          </a>
+          <p class="plain-header__aside">Already have an account? <a href="#/login" class="link">Log in</a></p>
+        </header>
+
+        <div class="plain-intro">
+          <h1 id="signup-title" class="plain-intro__title" tabindex="-1" data-route-focus>Welcome to ARISETO</h1>
+          <p class="plain-intro__text">Create an account to access ARISETO, and start to set up your farm.</p>
+        </div>
+
+        <form id="signup-form" class="form form--plain" novalidate>
+          <div class="field">
+            <label for="signup-first-name" class="sr-only">First Name</label>
+            <input id="signup-first-name" name="first_name" class="input" type="text"
+                   autocomplete="given-name" autocapitalize="words" placeholder="First Name"
+                   aria-describedby="signup-first-name-error" required>
+            <p id="signup-first-name-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-last-name" class="sr-only">Last Name</label>
+            <input id="signup-last-name" name="last_name" class="input" type="text"
+                   autocomplete="family-name" autocapitalize="words" placeholder="Last Name"
+                   aria-describedby="signup-last-name-error" required>
+            <p id="signup-last-name-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-mobile" class="sr-only">Mobile Number</label>
+            <input id="signup-mobile" name="mobile_no" class="input" type="tel"
+                   inputmode="tel" autocomplete="tel" placeholder="Mobile Number (+639XXXXXXXXX)"
+                   aria-describedby="signup-mobile-error" required>
+            <p id="signup-mobile-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-email" class="sr-only">Email Address (optional)</label>
+            <input id="signup-email" name="email" class="input" type="email"
+                   inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"
+                   placeholder="Email Address (optional)" aria-describedby="signup-email-error">
+            <p id="signup-email-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-password" class="sr-only">Password</label>
+            <div class="input-group">
+              <input id="signup-password" name="password" class="input" type="password"
+                     autocomplete="new-password" placeholder="Password (8+ Characters)"
+                     aria-describedby="signup-password-error" required>
+              <button type="button" class="input-group__toggle" data-toggle-password
+                      aria-controls="signup-password" aria-label="Show password" aria-pressed="false">
+                <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
+                <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
+              </button>
+            </div>
+            <p id="signup-password-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="form__end">
+            <p class="form__legal">
+              By continuing, you agree to ARISETO’s
+              <a href="terms.html" class="link" target="_blank" rel="noopener">Terms &amp; Conditions</a>
+              and <a href="privacy.html" class="link" target="_blank" rel="noopener">Privacy Policy</a>
+            </p>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+            <button type="submit" class="btn btn--gradient btn--block btn--rounded">
+              <span class="btn__label">Continue</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+
+        <div class="divider divider--plain" role="separator"><span>or</span></div>
+
+        <div class="social-row">
+          <button type="button" class="social-icon social-icon--square" data-oauth="google" aria-label="Sign up with Google">
+            <svg aria-hidden="true"><use href="#icon-google"/></svg>
+          </button>
+          <button type="button" class="social-icon social-icon--square" data-oauth="facebook" aria-label="Sign up with Facebook">
+            <svg aria-hidden="true"><use href="#icon-facebook"/></svg>
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <noscript>
+    <p class="noscript">ARISETO needs JavaScript enabled to sign you in.</p>
+  </noscript>
+</body>
+</html>
