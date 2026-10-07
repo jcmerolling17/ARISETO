@@ -1,6 +1,16 @@
 // frontend/public/js/pages/login.js
 
 import { auth, ApiError } from '../api/client.js';
+import { MUNICIPALITIES } from '../data/farm-options.js';
+import { mountBarangayPicker } from '../utils/barangay-picker.js';
+import {
+  setFieldError,
+  clearFieldErrors,
+  setStatus,
+  setBusy,
+  focusFirstInvalid,
+  bindLiveErrorClearing,
+} from '../utils/form.js';
 
 const MOBILE_RE = /^\+639\d{9}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -15,10 +25,17 @@ const MESSAGES = {
   passwordShort: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
   firstNameRequired: 'Enter your first name.',
   lastNameRequired: 'Enter your last name.',
+  memberNoRequired: 'Enter your MPMPC member number.',
+  municipalityRequired: 'Choose your municipality.',
   loginFailed: 'Incorrect mobile number/email or password.',
   loginSuccess: "Welcome back! You're now signed in.",
-  accountExists: 'An account with this mobile number or email already exists.',
-  signupSuccess: 'Account created. Log in with your mobile number.',
+  accountPending: 'Your account is waiting for approval from the MPMPC administrator. Please try again later.',
+  accountDeactivated: 'Your account has been deactivated. Please contact the MPMPC office.',
+  accountExists: 'An account with this mobile number, email, or member number already exists.',
+  mobileTaken: 'This mobile number is already registered.',
+  emailTaken: 'This email is already registered.',
+  memberNoTaken: 'This member number is already registered.',
+  signupSuccess: 'Account created. An MPMPC administrator will review it, and you can log in once it is approved.',
   oauthRedirect: 'Redirecting to sign in…',
   oauthUnavailable: 'This sign-in option is not available right now. Please use your mobile number instead.',
 };
@@ -61,47 +78,6 @@ function cleanName(raw) {
 }
 
 /* ---------- Form helpers ---------- */
-
-function setFieldError(input, message) {
-  const errorEl = document.getElementById(`${input.id}-error`);
-  if (message) {
-    input.setAttribute('aria-invalid', 'true');
-  } else {
-    input.removeAttribute('aria-invalid');
-  }
-  if (errorEl) errorEl.textContent = message || '';
-}
-
-function clearFieldErrors(form) {
-  form.querySelectorAll('.input').forEach((input) => setFieldError(input, ''));
-}
-
-function setStatus(container, message, tone = 'error') {
-  const statusEl = container.querySelector('[data-form-status]');
-  if (!statusEl) return;
-  statusEl.textContent = message || '';
-  if (message) statusEl.dataset.tone = tone;
-  else delete statusEl.dataset.tone;
-}
-
-function setBusy(form, busy) {
-  const submit = form.querySelector('[type="submit"]');
-  form.setAttribute('aria-busy', String(busy));
-  if (submit) {
-    submit.disabled = busy;
-    submit.classList.toggle('is-loading', busy);
-  }
-}
-
-function focusFirstInvalid(form) {
-  form.querySelector('[aria-invalid="true"]')?.focus();
-}
-
-function bindLiveErrorClearing(form) {
-  form.addEventListener('input', (event) => {
-    if (event.target.matches('.input[aria-invalid="true"]')) setFieldError(event.target, '');
-  });
-}
 
 function bindPasswordToggles(root) {
   root.querySelectorAll('[data-toggle-password]').forEach((toggle) => {
@@ -170,6 +146,14 @@ function bindOAuthButtons(root) {
 
 /* ---------- Login ---------- */
 
+function loginErrorMessage(err) {
+  if (!(err instanceof ApiError)) return err.message;
+  if (err.status === 403 && err.code === 'account_pending') return MESSAGES.accountPending;
+  if (err.status === 403 && err.code === 'account_deactivated') return MESSAGES.accountDeactivated;
+  if (err.status === 401 || err.status === 400) return MESSAGES.loginFailed;
+  return err.message;
+}
+
 function mountLogin(router) {
   const view = document.querySelector('[data-view="login"]');
   const form = document.getElementById('login-form');
@@ -211,11 +195,9 @@ function mountLogin(router) {
       resetPasswordVisibility(form);
       setStatus(view, MESSAGES.loginSuccess, 'success');
       window.dispatchEvent(new CustomEvent('ariseto:authenticated', { detail: session }));
+      router.navigate('setup', { state: { user: session?.user ?? session } });
     } catch (err) {
-      const message = err instanceof ApiError && (err.status === 401 || err.status === 400)
-        ? MESSAGES.loginFailed
-        : err.message;
-      setStatus(view, message, 'error');
+      setStatus(view, loginErrorMessage(err), 'error');
       password.select();
     } finally {
       setBusy(form, false);
@@ -241,9 +223,31 @@ function mountLogin(router) {
 function mountSignup(router) {
   const view = document.querySelector('[data-view="signup"]');
   const form = document.getElementById('signup-form');
-  const { first_name: firstName, last_name: lastName, mobile_no: mobile, email, password } = form.elements;
+  const {
+    first_name: firstName,
+    last_name: lastName,
+    member_no: memberNo,
+    mobile_no: mobile,
+    email,
+    municipality,
+    barangay_id: barangay,
+    preferred_language: language,
+    password,
+  } = form.elements;
 
+  for (const name of MUNICIPALITIES) municipality.add(new Option(name, name));
+  const barangayPicker = mountBarangayPicker(municipality, barangay, {
+    placeholder: 'Barangay (optional)',
+    emptyPlaceholder: 'Barangay (choose municipality first)',
+  });
   bindLiveErrorClearing(form);
+
+  // 409 codes from POST /auth/register, shown under the field they refer to.
+  const conflictFields = {
+    mobile_taken: [mobile, MESSAGES.mobileTaken],
+    email_taken: [email, MESSAGES.emailTaken],
+    member_no_taken: [memberNo, MESSAGES.memberNoTaken],
+  };
 
   mobile.addEventListener('blur', () => {
     const normalized = normalizeMobile(mobile.value);
@@ -253,14 +257,17 @@ function mountSignup(router) {
   function validate() {
     const first = cleanName(firstName.value);
     const last = cleanName(lastName.value);
+    const member = memberNo.value.trim().toUpperCase();
     const mobileNo = normalizeMobile(mobile.value);
     const emailValue = email.value.trim().toLowerCase();
 
     if (!first) setFieldError(firstName, MESSAGES.firstNameRequired);
     if (!last) setFieldError(lastName, MESSAGES.lastNameRequired);
+    if (!member) setFieldError(memberNo, MESSAGES.memberNoRequired);
     if (!mobile.value.trim()) setFieldError(mobile, MESSAGES.mobileRequired);
     else if (!isValidMobile(mobileNo)) setFieldError(mobile, MESSAGES.mobileInvalid);
     if (emailValue && !isValidEmail(emailValue)) setFieldError(email, MESSAGES.emailInvalid);
+    if (!municipality.value) setFieldError(municipality, MESSAGES.municipalityRequired);
     if (!password.value) setFieldError(password, MESSAGES.passwordRequired);
     else if (password.value.length < MIN_PASSWORD_LENGTH) setFieldError(password, MESSAGES.passwordShort);
 
@@ -268,8 +275,12 @@ function mountSignup(router) {
     return {
       first_name: first,
       last_name: last,
+      member_no: member,
       mobile_no: mobileNo,
       email: emailValue || null,
+      municipality: municipality.value,
+      barangay_id: barangay.value ? Number(barangay.value) : null,
+      preferred_language: language.value,
       password: password.value,
     };
   }
@@ -293,13 +304,19 @@ function mountSignup(router) {
     try {
       await auth.register(payload);
       form.reset();
+      barangayPicker.reset();
       resetPasswordVisibility(form);
       router.navigate('login', {
         state: { identifier: payload.mobile_no, message: MESSAGES.signupSuccess, tone: 'success' },
       });
     } catch (err) {
-      const message = err instanceof ApiError && err.status === 409 ? MESSAGES.accountExists : err.message;
-      setStatus(view, message, 'error');
+      const conflict = err instanceof ApiError && err.status === 409 ? conflictFields[err.code] : null;
+      if (conflict) {
+        setFieldError(...conflict);
+        focusFirstInvalid(form);
+      } else {
+        setStatus(view, err instanceof ApiError && err.status === 409 ? MESSAGES.accountExists : err.message, 'error');
+      }
     } finally {
       setBusy(form, false);
     }
