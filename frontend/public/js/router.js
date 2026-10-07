@@ -6,7 +6,8 @@ const HASH_PREFIX = '#/';
  * Minimal hash router that toggles pre-rendered <section data-view="name"> elements.
  *
  * Routes:   { name: { title } }
- * Hooks:    router.route(name, { onEnter({ state, from, initial }), onLeave({ to }) })
+ * Hooks:    router.route(name, { guard({ from, state }), onEnter({ state, from, initial }), onLeave({ to }) })
+ *           guard returns another route name to redirect to, or nothing to allow entry.
  * Navigate: <a href="#/login"> or router.navigate('login', { state, replace })
  */
 export class Router {
@@ -23,7 +24,7 @@ export class Router {
     for (const [name, config] of Object.entries(routes)) {
       const el = root.querySelector(`[data-view="${name}"]`);
       if (!el) throw new Error(`Router: no element found for view "${name}"`);
-      this.#routes.set(name, { title: config.title ?? name, el, onEnter: null, onLeave: null });
+      this.#routes.set(name, { title: config.title ?? name, el, guard: null, onEnter: null, onLeave: null });
       this.#order.push(name);
     }
     if (!this.#routes.has(defaultRoute)) {
@@ -37,9 +38,10 @@ export class Router {
     return this.#current;
   }
 
-  route(name, { onEnter, onLeave } = {}) {
+  route(name, { guard, onEnter, onLeave } = {}) {
     const route = this.#routes.get(name);
     if (!route) throw new Error(`Router: cannot attach hooks to unknown route "${name}"`);
+    if (guard) route.guard = guard;
     if (onEnter) route.onEnter = onEnter;
     if (onLeave) route.onLeave = onLeave;
     return this;
@@ -98,6 +100,13 @@ export class Router {
 
     const state = this.#pendingState;
     this.#pendingState = undefined;
+
+    for (let hops = 0; hops < this.#order.length; hops += 1) {
+      const redirect = this.#routes.get(name).guard?.({ from: this.#current, state });
+      if (!redirect || redirect === name || !this.#routes.has(redirect)) break;
+      name = redirect;
+      history.replaceState(history.state, '', HASH_PREFIX + name);
+    }
 
     if (name === this.#current && !force) return;
 
