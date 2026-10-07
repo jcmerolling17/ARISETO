@@ -48,6 +48,7 @@
   --fs-lg: 1.25rem;
   --fs-xl: 1.5rem;
 
+  --home-bg: #f2f4f2;
   --shell-max-width: 414px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --duration: 320ms;
@@ -107,8 +108,10 @@ svg {
   display: none !important;
 }
 
-[tabindex="-1"]:focus {
+[tabindex="-1"]:focus,
+[tabindex="-1"]:focus-visible {
   outline: none;
+  box-shadow: none;
 }
 
 :focus-visible {
@@ -132,6 +135,7 @@ svg {
   min-height: 100dvh;
   margin: 0 auto;
   overflow: hidden;
+  overflow: clip; /* clips like hidden but keeps position: sticky working (bottom nav) */
   isolation: isolate;
 }
 
@@ -168,7 +172,7 @@ svg {
   background: linear-gradient(180deg, #8fd0ee 0%, #cdeaf3 34%, #f3f0d6 52%, #a9d18a 53%);
 }
 
-/* Set --scene-photo: url("/img/farm.jpg") on :root to use a real photograph */
+/* Set --scene-photo: url("assets/farm.jpg") on :root to use a real photograph */
 .scene__photo {
   position: absolute;
   inset: 0;
@@ -286,7 +290,7 @@ svg {
   margin-top: auto;
 }
 
-/* Plain views (Sign up): solid page over the scene, content flows top to bottom */
+/* Plain views (Sign up, farm setup): solid page over the scene, content flows top to bottom */
 .view--plain {
   gap: var(--space-6);
   background: var(--surface);
