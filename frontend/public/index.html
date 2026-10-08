@@ -8,8 +8,8 @@
   <meta name="description" content="ARISETO — AI-powered tools that help Filipino farmers optimize their farming and maximize crop yields.">
   <meta name="ariseto-api-base" content="/api/v1">
   <title>Welcome · ARISETO</title>
-  <link rel="icon" type="image/png" href="assets/icons/logo.png">
-  <link rel="apple-touch-icon" href="assets/icons/logo.png">
+  <link rel="icon" type="image/png" href="assets/icons/logo-badge.png">
+  <link rel="apple-touch-icon" href="assets/icons/logo-badge.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
@@ -110,7 +110,7 @@
   </svg>
 
   <div class="app-shell">
-    <div class="scene" aria-hidden="true">
+    <div class="scene scene--welcome" aria-hidden="true">
       <div class="scene__photo"></div>
       <div class="scene__sun"></div>
       <div class="scene__hills"></div>
@@ -365,7 +365,7 @@
       <!-- Farm setup: start -->
       <section class="view view--plain view--setup-start" data-view="setup" aria-labelledby="setup-title" hidden>
         <div class="setup-hero" aria-hidden="true">
-          <div class="scene">
+          <div class="scene scene--setup">
             <div class="scene__photo"></div>
             <div class="scene__sun"></div>
             <div class="scene__hills"></div>
@@ -577,7 +577,7 @@
         <div class="success-card">
           <div class="success-card__top">
             <span class="success-card__logo">
-              <img src="assets/icons/logo.png" alt="" width="236" height="256" decoding="async">
+              <img src="assets/icons/logo-badge.png" alt="" width="512" height="512" decoding="async">
             </span>
             <h1 id="setup-done-title" class="success-card__title" tabindex="-1" data-route-focus>Farm set up successful</h1>
             <p class="success-card__text">
@@ -603,7 +603,7 @@
       <!-- Home -->
       <section class="view view--home" data-view="home" aria-labelledby="home-title" hidden>
         <div class="home-hero">
-          <div class="scene" aria-hidden="true">
+          <div class="scene scene--home" aria-hidden="true">
             <div class="scene__photo"></div>
             <div class="scene__hills"></div>
             <div class="scene__field"></div>
@@ -611,8 +611,7 @@
 
           <header class="home-header">
             <span class="home-brand">
-              <img src="assets/icons/logo-mark.png" alt="" width="236" height="218" decoding="async">
-              <span>ARISETO</span>
+              <img src="assets/icons/logo-horizontal.png" alt="ARISETO" width="720" height="185" decoding="async">
             </span>
             <div class="home-header__actions">
               <button type="button" class="home-icon-btn" aria-label="Notifications" data-soon="Notifications">
