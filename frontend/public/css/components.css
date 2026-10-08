@@ -609,6 +609,15 @@
   background: linear-gradient(180deg, rgba(255, 255, 255, 0) 45%, var(--surface) 92%);
 }
 
+/* Faint photo so the farm card stays readable */
+.setup-hero .scene {
+  background: var(--surface);
+}
+
+.setup-hero .scene__photo {
+  opacity: 0.3;
+}
+
 .farm-preview {
   width: 100%;
   padding: var(--space-3);
@@ -730,14 +739,10 @@
   width: 88px;
   height: 88px;
   margin: 0 auto var(--space-3);
-  border: 3px solid #17562a;
-  border-radius: 50%;
-  background: var(--surface);
-  overflow: hidden;
 }
 
 .success-card__logo img {
-  width: 64px;
+  width: 100%;
   height: auto;
 }
 
@@ -805,6 +810,17 @@
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.55) 55%, var(--home-bg) 100%);
 }
 
+/* Faint photo so the header and weather text stay readable */
+.home-hero .scene {
+  background: var(--home-bg);
+}
+
+.home-hero .scene__photo {
+  opacity: 0.3;
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+}
+
 .home-header {
   display: flex;
   align-items: center;
@@ -813,21 +829,11 @@
 
 .home-brand {
   display: inline-flex;
-  align-items: flex-end;
-  gap: 2px;
 }
 
 .home-brand img {
-  width: 34px;
+  width: 140px;
   height: auto;
-}
-
-.home-brand span {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.1;
-  color: #17562a;
 }
 
 .home-header__actions {
