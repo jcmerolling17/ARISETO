@@ -138,10 +138,6 @@ export const auth = {
     return request('/auth/register', { method: 'POST', body: payload, auth: false });
   },
 
-  oauthUrl(provider) {
-    return `${API_BASE}/auth/oauth/${encodeURIComponent(provider)}`;
-  },
-
   logout() {
     tokenStore.clear();
   },
@@ -162,14 +158,15 @@ export const farms = {
   },
 
   /**
-   * Opens a crop cycle on a farm (owner only).
-   * payload: { variety_id, season: 'wet'|'dry', planting_date: 'YYYY-MM-DD', area_planted_ha,
-   *            target_yield_t_ha (optional) }
-   * 201 { cycle_id, expected_harvest_date }: the backend also generates the crop calendar.
-   * 403 not_farm_owner; 422 area_exceeds_farm
+   * Adds one field (plot) to a farm (owner only). Planned endpoint; not yet in the backend.
+   * payload: { field_name, crop: 'rice'|'corn'|'onion', variety, area_ha,
+   *            planting_date: 'YYYY-MM-DD', planting_method: 'transplanting'|'direct_seeding',
+   *            season: 'wet'|'dry' }
+   * 201 { field_id }
+   * 403 not_farm_owner; 409 field_name_taken
    */
-  createCycle(farmId, payload) {
-    return request(`/farms/${encodeURIComponent(farmId)}/cycles`, { method: 'POST', body: payload });
+  addField(farmId, payload) {
+    return request(`/farms/${encodeURIComponent(farmId)}/fields`, { method: 'POST', body: payload });
   },
 
   /**
@@ -192,15 +189,5 @@ export const barangays = {
    */
   list(municipality) {
     return request(`/barangays?municipality=${encodeURIComponent(municipality)}`, { auth: false });
-  },
-};
-
-export const crops = {
-  /**
-   * Crops in scope with their varieties:
-   * [{ crop_id, crop_name, varieties: [{ variety_id, variety_name, maturity_class, maturity_days }] }]
-   */
-  list() {
-    return request('/crops');
   },
 };
