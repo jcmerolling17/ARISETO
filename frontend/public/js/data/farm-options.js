@@ -21,14 +21,15 @@ export const SEASONS = [
   { value: 'dry', label: 'Dry season' },
 ];
 
-/** Units the farmer may type an area in; values are stored in hectares. */
-export const AREA_UNITS = [
-  { value: 'ha', label: 'ha' },
-  { value: 'sqm', label: 'm²' },
+/** Crops a field can be planted with during farm setup; icon is the sprite symbol id. */
+export const CROPS = [
+  { value: 'rice', label: 'Rice', icon: 'icon-crop-rice' },
+  { value: 'corn', label: 'Corn', icon: 'icon-crop-corn' },
+  { value: 'onion', label: 'Onion', icon: 'icon-crop-onion' },
 ];
 
-/**
- * Rough bounding box of Occidental Mindoro (including Lubang Island),
- * used to catch GPS readings taken away from the farm.
- */
-export const PROVINCE_BOUNDS = { minLat: 12.0, maxLat: 14.0, minLon: 119.8, maxLon: 121.4 };
+/** How a field was planted. */
+export const PLANTING_METHODS = [
+  { value: 'transplanting', label: 'Transplanting' },
+  { value: 'direct_seeding', label: 'Direct seeding' },
+];
