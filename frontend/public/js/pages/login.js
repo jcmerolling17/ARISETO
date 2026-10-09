@@ -36,8 +36,6 @@ const MESSAGES = {
   emailTaken: 'This email is already registered.',
   memberNoTaken: 'This member number is already registered.',
   signupSuccess: 'Account created. An MPMPC administrator will review it, and you can log in once it is approved.',
-  oauthRedirect: 'Redirecting to sign in…',
-  oauthUnavailable: 'This sign-in option is not available right now. Please use your mobile number instead.',
 };
 
 /* ---------- Validation ---------- */
@@ -99,48 +97,6 @@ function resetPasswordVisibility(form) {
     if (input) input.type = 'password';
     toggle.setAttribute('aria-pressed', 'false');
     toggle.setAttribute('aria-label', 'Show password');
-  });
-}
-
-/**
- * Checks the OAuth start endpoint before leaving the app, so a missing or failing
- * backend shows an inline message instead of a bare browser error page.
- * A working endpoint answers with a redirect to the provider (opaqueredirect).
- */
-async function isOAuthAvailable(url) {
-  try {
-    const response = await fetch(url, { redirect: 'manual', credentials: 'same-origin' });
-    return response.type === 'opaqueredirect' || response.ok;
-  } catch {
-    return false;
-  }
-}
-
-function bindOAuthButtons(root) {
-  const buttons = root.querySelectorAll('[data-oauth]');
-
-  buttons.forEach((button) => {
-    button.addEventListener('click', async () => {
-      const view = button.closest('[data-view]');
-      const url = auth.oauthUrl(button.dataset.oauth);
-      buttons.forEach((b) => { b.disabled = true; });
-      if (view) setStatus(view, MESSAGES.oauthRedirect, 'success');
-
-      if (await isOAuthAvailable(url)) {
-        window.location.assign(url);
-        return;
-      }
-
-      buttons.forEach((b) => { b.disabled = false; });
-      if (view) setStatus(view, MESSAGES.oauthUnavailable, 'error');
-    });
-  });
-
-  // Re-enable buttons if the user returns via the back/forward cache.
-  window.addEventListener('pageshow', (event) => {
-    if (!event.persisted) return;
-    root.querySelectorAll('[data-oauth]').forEach((b) => { b.disabled = false; });
-    root.querySelectorAll('[data-form-status]').forEach((s) => { s.textContent = ''; delete s.dataset.tone; });
   });
 }
 
@@ -218,7 +174,7 @@ function mountLogin(router) {
   });
 }
 
-/* ---------- Sign up (Email / Mobile) ---------- */
+/* ---------- Sign up ---------- */
 
 function mountSignup(router) {
   const view = document.querySelector('[data-view="signup"]');
@@ -336,7 +292,6 @@ function mountSignup(router) {
 
 export function mountAuthPages(router, root = document) {
   bindPasswordToggles(root);
-  bindOAuthButtons(root);
   mountLogin(router);
   mountSignup(router);
 }
