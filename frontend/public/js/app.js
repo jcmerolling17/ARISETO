@@ -5,6 +5,7 @@ import { mountAuthPages } from './pages/login.js';
 import { mountSetupPages } from './pages/setup.js';
 import { mountDashboardPage } from './pages/dashboard.js';
 import { mountCalendarPages } from './pages/calendar.js';
+import { mountExpensePages } from './pages/expenses.js';
 import { mountBottomNavs } from './utils/bottom-nav.js';
 import { mountToast } from './utils/toast.js';
 
@@ -26,6 +27,8 @@ function bootstrap() {
       calendar: { title: 'Crop Calendar' },
       tasks: { title: 'Manage All Tasks' },
       'task-new': { title: 'New Farm Task' },
+      expenses: { title: 'Farm Expenses' },
+      'expense-new': { title: 'Add Expense' },
     },
   });
 
@@ -35,6 +38,7 @@ function bootstrap() {
   mountSetupPages(router);
   mountDashboardPage(router);
   mountCalendarPages(router);
+  mountExpensePages(router);
   router.start();
 }
 

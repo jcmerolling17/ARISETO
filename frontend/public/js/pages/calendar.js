@@ -4,6 +4,7 @@ import { sampleFarm, emptyFarm } from '../data/sample-farm.js';
 import { sampleCalendar, emptyCalendar } from '../data/sample-calendar.js';
 import { CROPS, GROWTH_STAGES, REMINDER_OPTIONS, SEASONS } from '../data/farm-options.js';
 import { pickDemo } from '../utils/demo.js';
+import { currentCycle, fieldLabel } from '../utils/farm.js';
 import { showToast } from '../utils/toast.js';
 import {
   setFieldError,
@@ -56,12 +57,7 @@ function data() {
 }
 
 function cycleForField(farm, fieldId) {
-  return farm.cycles.find((cycle) => cycle.field_id === fieldId) ?? null;
-}
-
-function fieldLabel(farm, field) {
-  const crop = cycleForField(farm, field.field_id)?.crop_name;
-  return crop ? `${field.field_name} · ${crop}` : field.field_name;
+  return currentCycle(farm, fieldId);
 }
 
 function labelOf(options, value) {

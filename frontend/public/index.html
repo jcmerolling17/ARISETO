@@ -132,6 +132,39 @@
       <path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1a1 1 0 0 1 .7.3l7.2 7.2a1 1 0 0 1 0 1.4l-8.1 8.1a1 1 0 0 1-1.4 0l-7.2-7.2a1 1 0 0 1-.3-.7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
       <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
     </symbol>
+    <symbol id="icon-seeds" viewBox="0 0 24 24">
+      <path d="M12 21v-8M12 13c0-3.5-2.5-6-6.5-6 0 3.5 2.5 6 6.5 6ZM12 11c0-3.3 2.3-5.8 6-6 0 3.4-2.3 5.8-6 6ZM7 21h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-fertilizer" viewBox="0 0 24 24">
+      <path d="M12 3 20 12 12 21 4 12 12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <path d="M12 8.5v7M8.5 12h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-chemicals" viewBox="0 0 24 24">
+      <path d="M9.5 3.5h5M10.5 3.5v5.2L5.6 17.4A2 2 0 0 0 7.4 20.5h9.2a2 2 0 0 0 1.8-3.1l-4.9-8.7V3.5M7.6 14h8.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-labor" viewBox="0 0 24 24">
+      <circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 5.2a3.2 3.2 0 0 1 0 5.6M17.5 14.5a5.5 5.5 0 0 1 3 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-equipment" viewBox="0 0 24 24">
+      <rect x="3" y="8" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M8.5 8V5.5a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V8M3 13h18M10 13v2h4v-2" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-fuel" viewBox="0 0 24 24">
+      <path d="M4.5 20.5V5a1.5 1.5 0 0 1 1.5-1.5h7A1.5 1.5 0 0 1 14.5 5v15.5M3 20.5h13M7 7.5h5M14.5 10h2a1.5 1.5 0 0 1 1.5 1.5v4.5a1.5 1.5 0 0 0 3 0V8.5L18.5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-others" viewBox="0 0 24 24">
+      <path d="M4 7h9M17 7h3M4 17h3M11 17h9M4 12h5M13 12h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      <circle cx="15" cy="7" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <circle cx="9" cy="17" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <circle cx="11" cy="12" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+    </symbol>
+    <symbol id="icon-trend-up" viewBox="0 0 24 24">
+      <path d="m3 17 6-6 4 4 8-8M15 7h6v6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-trend-down" viewBox="0 0 24 24">
+      <path d="m3 7 6 6 4-4 8 8M15 17h6v-6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
     <symbol id="icon-note" viewBox="0 0 24 24">
       <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20V3.5ZM14.5 3.5v4h4.5M9 12h7M9 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </symbol>
@@ -778,9 +811,9 @@
             <li><button type="button" class="quick-action" data-soon="Weather Tracker">
               <svg aria-hidden="true"><use href="#icon-weather"/></svg><span>Weather Tracker</span>
             </button></li>
-            <li><button type="button" class="quick-action" data-soon="Farm Expenses">
+            <li><a href="#/expenses" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Farm Expenses</span>
-            </button></li>
+            </a></li>
             <li><a href="#/calendar" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span>Crop Calendar</span>
             </a></li>
@@ -1092,6 +1125,211 @@
 
         <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
       </section>
+      <!-- Farm Expenses (sample data: js/data/sample-expenses.js) -->
+      <section class="view view--app" data-view="expenses" aria-labelledby="expenses-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="expenses-title" class="app-header__title" tabindex="-1" data-route-focus>Farm Expense Tracker</h1>
+              <p class="app-header__subtitle">Monitor your farm’s budget and spending.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+          <div class="picker-row">
+            <label class="field-picker">
+              <span class="field-picker__label">Season</span>
+              <select class="field-picker__select" data-season-picker></select>
+            </label>
+            <label class="field-picker">
+              <span class="field-picker__label">Field</span>
+              <select class="field-picker__select" data-field-filter></select>
+            </label>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-wallet"/></svg>
+            <p data-empty-text></p>
+            <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
+          </div>
+
+          <div class="app-stack" data-content>
+            <div class="money-grid">
+              <div class="money-card">
+                <p class="money-card__label"><svg class="money-card__icon money-card__icon--down" aria-hidden="true"><use href="#icon-trend-down"/></svg>Total expense</p>
+                <p class="money-card__value" data-total="expense"></p>
+              </div>
+              <div class="money-card">
+                <p class="money-card__label"><svg class="money-card__icon" aria-hidden="true"><use href="#icon-trend-up"/></svg>Total income</p>
+                <p class="money-card__value" data-total="income"></p>
+              </div>
+              <div class="money-card money-card--wide">
+                <p class="money-card__label"><svg class="money-card__icon" aria-hidden="true"><use href="#icon-wallet"/></svg>Net profit</p>
+                <p class="money-card__value money-card__value--lg" data-total="net"></p>
+                <p class="money-card__note" data-net-note></p>
+              </div>
+            </div>
+
+            <a href="#/expense-new" class="btn btn--gradient btn--block btn--rounded">Add Expense</a>
+
+            <section aria-labelledby="breakdown-title">
+              <h2 id="breakdown-title" class="section-title">Category Breakdown</h2>
+              <ul class="category-list" data-category-list></ul>
+            </section>
+
+            <section class="card" aria-labelledby="spend-title">
+              <div class="section-head">
+                <h2 id="spend-title" class="section-title">Spend Distribution</h2>
+                <span class="pill-label">All expenses</span>
+              </div>
+              <div class="donut">
+                <svg class="donut__chart" viewBox="0 0 42 42" aria-hidden="true" data-donut></svg>
+                <div class="donut__center">
+                  <p class="donut__value" data-donut-value></p>
+                  <p class="donut__label">Net profit</p>
+                </div>
+              </div>
+              <ul class="legend" data-legend></ul>
+            </section>
+
+            <section aria-labelledby="history-title">
+              <div class="section-head">
+                <h2 id="history-title" class="section-title">Transaction History</h2>
+                <button type="button" class="section-link section-link--button" data-view-all>View all</button>
+              </div>
+              <div class="card tx-card">
+                <label class="search-box">
+                  <svg aria-hidden="true"><use href="#icon-search"/></svg>
+                  <span class="sr-only">Search transactions</span>
+                  <input type="search" class="search-box__input" placeholder="Search" data-tx-search>
+                </label>
+                <ul class="tx-list" data-tx-list aria-live="polite"></ul>
+                <p class="muted-note" data-tx-empty hidden>No transactions.</p>
+                <button type="button" class="link-plain tx-more" data-tx-more hidden>View more</button>
+              </div>
+            </section>
+
+            <button type="button" class="chat-link" data-soon="AI Chatbot">
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg>
+              <span>Ask the chatbot about this</span>
+            </button>
+          </div>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses"></nav>
+
+        <template data-category-tpl>
+          <li class="category-row">
+            <span class="category-row__icon"><svg aria-hidden="true"><use data-icon href=""/></svg></span>
+            <span class="category-row__name" data-name></span>
+            <span class="category-row__amount" data-amount></span>
+          </li>
+        </template>
+        <template data-legend-tpl>
+          <li class="legend__item"><span class="legend__swatch" data-swatch></span><span data-name></span></li>
+        </template>
+        <template data-tx-tpl>
+          <li class="tx-row">
+            <span class="tx-row__icon"><svg aria-hidden="true"><use href="#icon-trend-down"/></svg></span>
+            <div class="tx-row__body">
+              <p class="tx-row__title" data-title></p>
+              <p class="tx-row__meta">
+                <span data-date></span>
+                <span class="tx-row__tag"><svg aria-hidden="true"><use href="#icon-tag"/></svg><span data-category></span></span>
+                <span data-plot></span>
+              </p>
+            </div>
+            <span class="tx-row__amount" data-amount></span>
+          </li>
+        </template>
+      </section>
+
+      <!-- Add expense -->
+      <section class="view view--app" data-view="expense-new" aria-labelledby="expense-new-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/expenses" class="app-header__back" aria-label="Back to farm expenses">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="expense-new-title" class="app-header__title" tabindex="-1" data-route-focus>Add Expenses</h1>
+              <p class="app-header__subtitle">Log a new farm expense.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <form id="expense-form" class="form app-form" novalidate>
+            <fieldset class="field crop-picker" aria-describedby="expense-category-error">
+              <legend class="section-title">Expense Category</legend>
+              <div class="cat-picker" data-category-options></div>
+              <p id="expense-category-error" class="field__error" aria-live="polite" data-category-error></p>
+            </fieldset>
+
+            <div class="field">
+              <label for="expense-amount" class="section-title">Transaction Amount</label>
+              <div class="amount-input">
+                <span class="amount-input__peso" aria-hidden="true">₱</span>
+                <input id="expense-amount" name="amount_php" class="input amount-input__field" type="text"
+                       inputmode="decimal" autocomplete="off" placeholder="0.00" aria-describedby="expense-amount-error" required>
+              </div>
+              <p id="expense-amount-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <h2 class="section-title section-title--flush">Expense Details</h2>
+
+            <div class="field">
+              <label for="expense-description" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-note"/></svg>Description
+              </label>
+              <input id="expense-description" name="description" class="input" type="text" maxlength="255"
+                     autocomplete="off" placeholder="e.g. 50kg bags of urea" aria-describedby="expense-description-error">
+              <p id="expense-description-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="expense-date" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Date
+                </label>
+                <input id="expense-date" name="expense_date" class="input" type="date" aria-describedby="expense-date-error" required>
+                <p id="expense-date-error" class="field__error" aria-live="polite"></p>
+              </div>
+              <div class="field">
+                <label for="expense-quantity" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-chart"/></svg>Quantity
+                </label>
+                <div class="qty-input">
+                  <input id="expense-quantity" name="quantity" class="input" type="number" inputmode="decimal"
+                         min="0" step="any" placeholder="e.g. 2" aria-describedby="expense-quantity-error">
+                  <select name="unit" class="input select qty-input__unit" aria-label="Unit"></select>
+                </div>
+                <p id="expense-quantity-error" class="field__error" aria-live="polite"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="expense-plot" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-pin"/></svg>Linked Plot
+              </label>
+              <select id="expense-plot" name="plot" class="input select" aria-describedby="expense-plot-error" required></select>
+              <p id="expense-plot-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="form__end app-form__end">
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded">Save Expense</button>
+              <button type="button" class="link-plain" data-cancel>Cancel and go back</button>
+            </div>
+          </form>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses"></nav>
+      </section>
     </main>
 
     <p class="toast" role="status" aria-live="polite" data-app-toast hidden></p>
@@ -1110,9 +1348,9 @@
       <a href="#/calendar" class="bottom-nav__item" data-nav-item="calendar">
         <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span>Calendar</span>
       </a>
-      <button type="button" class="bottom-nav__item" data-nav-item="expenses" data-soon="Farm Expenses">
+      <a href="#/expenses" class="bottom-nav__item" data-nav-item="expenses">
         <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Expenses</span>
-      </button>
+      </a>
     </template>
   </div>
 
