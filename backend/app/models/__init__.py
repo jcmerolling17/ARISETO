@@ -4,6 +4,7 @@ from app.models.barangay import Barangay
 from app.models.crop import Crop, CropCycle, CropVariety
 from app.models.crop_calendar import CalendarTemplateTask, CropActivity
 from app.models.farm import Farm, FarmAssignment
+from app.models.field import FarmField
 from app.models.user import User
 from app.models.weather import WeatherLog
 
@@ -16,6 +17,7 @@ __all__ = [
     "CropVariety",
     "Farm",
     "FarmAssignment",
+    "FarmField",
     "User",
     "WeatherLog",
 ]
