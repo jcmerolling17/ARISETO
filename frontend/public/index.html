@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/screens.css">
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
@@ -117,6 +118,22 @@
     <symbol id="icon-pin" viewBox="0 0 24 24">
       <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
       <circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-more" viewBox="0 0 24 24">
+      <circle cx="12" cy="5.5" r="1.7" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.7" fill="currentColor"/>
+      <circle cx="12" cy="18.5" r="1.7" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-tag" viewBox="0 0 24 24">
+      <path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1a1 1 0 0 1 .7.3l7.2 7.2a1 1 0 0 1 0 1.4l-8.1 8.1a1 1 0 0 1-1.4 0l-7.2-7.2a1 1 0 0 1-.3-.7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-note" viewBox="0 0 24 24">
+      <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20V3.5ZM14.5 3.5v4h4.5M9 12h7M9 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </symbol>
   </svg>
 
@@ -764,9 +781,9 @@
             <li><button type="button" class="quick-action" data-soon="Farm Expenses">
               <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Farm Expenses</span>
             </button></li>
-            <li><button type="button" class="quick-action" data-soon="Crop Calendar">
+            <li><a href="#/calendar" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span>Crop Calendar</span>
-            </button></li>
+            </a></li>
           </ul>
 
           <h2 class="home-section__title">Today’s Reminders</h2>
@@ -776,26 +793,327 @@
           </div>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main">
-          <p class="toast" role="status" aria-live="polite" data-toast hidden></p>
-          <a href="#/home" class="bottom-nav__item is-active" aria-current="page">
-            <svg aria-hidden="true"><use href="#icon-home"/></svg><span>Home</span>
-          </a>
-          <button type="button" class="bottom-nav__item" data-soon="Yield Estimation">
-            <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield</span>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="home"></nav>
+      </section>
+
+      <!-- Crop Calendar (sample data: js/data/sample-calendar.js) -->
+      <section class="view view--app" data-view="calendar" aria-labelledby="calendar-title" hidden>
+        <header class="app-header app-header--photo">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="calendar-title" class="app-header__title" tabindex="-1" data-route-focus>Crop Calendar</h1>
+              <p class="app-header__subtitle">Manage your farm tasks and timelines.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+          <label class="field-picker">
+            <span class="field-picker__label">Field</span>
+            <select class="field-picker__select" data-field-picker></select>
+          </label>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <p data-empty-text></p>
+            <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
+          </div>
+
+          <div class="app-stack" data-content>
+            <section class="summary-card" aria-labelledby="schedule-title">
+              <div class="summary-card__head">
+                <span class="summary-card__icon"><svg aria-hidden="true"><use data-crop-icon href=""/></svg></span>
+                <div>
+                  <h2 id="schedule-title" class="summary-card__title" data-schedule-title></h2>
+                  <p class="summary-card__sub" data-schedule-season></p>
+                </div>
+              </div>
+              <dl class="stat-grid">
+                <div class="stat"><dt>Season completion</dt><dd data-stat="completion"></dd></div>
+                <div class="stat"><dt>Expected value</dt><dd data-stat="value"></dd></div>
+                <div class="stat"><dt>Planting date</dt><dd data-stat="planted"></dd></div>
+                <div class="stat"><dt>Harvest time</dt><dd data-stat="harvest"></dd></div>
+              </dl>
+            </section>
+
+            <section aria-labelledby="daily-title">
+              <h2 id="daily-title" class="section-title">Daily Schedule</h2>
+              <div class="card daily">
+                <div class="daily__toolbar">
+                  <label class="sr-only" for="calendar-month">Month</label>
+                  <select id="calendar-month" class="daily__month" data-month></select>
+                  <a href="#/tasks" class="icon-plain" aria-label="Search all tasks" data-search-tasks>
+                    <svg aria-hidden="true"><use href="#icon-search"/></svg>
+                  </a>
+                </div>
+                <div class="day-strip" data-day-strip aria-label="Days of the week"></div>
+                <ol class="day-list" data-day-list aria-live="polite"></ol>
+                <p class="muted-note" data-day-empty hidden>No tasks on this day.</p>
+              </div>
+            </section>
+
+            <a href="#/tasks" class="btn btn--gradient btn--block btn--rounded">Manage All Tasks</a>
+
+            <section aria-labelledby="timeline-title">
+              <div class="section-head">
+                <h2 id="timeline-title" class="section-title">Weekly Timeline</h2>
+                <a href="#/tasks" class="section-link">View all</a>
+              </div>
+              <ol class="week-list" data-week-list></ol>
+              <button type="button" class="link-plain week-more" aria-expanded="false" data-week-more hidden>Show all weeks</button>
+              <p class="muted-note" data-week-empty hidden>No tasks for this field yet. Add one from Manage All Tasks.</p>
+            </section>
+
+            <button type="button" class="chat-link" data-soon="AI Chatbot">
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg>
+              <span>Ask the chatbot about this</span>
+            </button>
+          </div>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
+
+        <template data-day-tpl>
+          <button type="button" class="day-chip" aria-pressed="false">
+            <span class="day-chip__dow" data-dow></span>
+            <span class="day-chip__date" data-date></span>
+            <span class="day-chip__dot" data-dot hidden></span>
           </button>
-          <button type="button" class="bottom-nav__fab" aria-label="Scan a crop for disease" data-soon="Disease Detection">
-            <svg aria-hidden="true"><use href="#icon-scan"/></svg>
-          </button>
-          <button type="button" class="bottom-nav__item" data-soon="AI Chatbot">
-            <svg aria-hidden="true"><use href="#icon-chat"/></svg><span>Chatbot</span>
-          </button>
-          <button type="button" class="bottom-nav__item" data-soon="Farm Expenses">
-            <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Expenses</span>
-          </button>
-        </nav>
+        </template>
+        <template data-day-task-tpl>
+          <li class="day-task">
+            <span class="day-task__time" data-time></span>
+            <label class="day-task__card">
+              <input type="checkbox" class="check" data-check>
+              <span class="day-task__title" data-title></span>
+            </label>
+          </li>
+        </template>
+        <template data-week-tpl>
+          <li class="week-card">
+            <div class="week-card__head">
+              <div>
+                <p class="week-card__no" data-no></p>
+                <h3 class="week-card__stage" data-stage></h3>
+                <p class="week-card__range" data-range></p>
+              </div>
+              <svg class="week-card__done" aria-hidden="true" data-done-icon hidden><use href="#icon-check-circle"/></svg>
+            </div>
+            <div class="progress-label"><span>Completion</span><span data-pct></span></div>
+            <div class="progress" aria-hidden="true"><span class="progress__bar" data-bar></span></div>
+            <button type="button" class="week-card__toggle" aria-expanded="false" data-toggle>
+              <span class="sr-only" data-toggle-label>Show tasks</span>
+              <svg aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+            <ul class="week-card__tasks" data-tasks hidden></ul>
+          </li>
+        </template>
+        <template data-check-tpl>
+          <li>
+            <label class="check-row">
+              <input type="checkbox" class="check" data-check>
+              <span class="check-row__text" data-title></span>
+              <span class="status-tag" data-tag hidden></span>
+            </label>
+          </li>
+        </template>
+      </section>
+
+      <!-- Manage All Tasks -->
+      <section class="view view--app" data-view="tasks" aria-labelledby="tasks-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/calendar" class="app-header__back" aria-label="Back to crop calendar">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="tasks-title" class="app-header__title" tabindex="-1" data-route-focus>Manage All Tasks</h1>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <label class="search-box">
+            <svg aria-hidden="true"><use href="#icon-search"/></svg>
+            <span class="sr-only">Search tasks</span>
+            <input type="search" class="search-box__input" placeholder="Search" data-task-search>
+          </label>
+
+          <div class="chip-row" data-chips>
+            <button type="button" class="chip" aria-pressed="true" data-chip-all>All Plots</button>
+            <label class="chip chip--select">
+              <span class="sr-only">Field</span>
+              <select data-chip-field></select>
+            </label>
+            <button type="button" class="chip" aria-pressed="false" data-chip-completed>Completed</button>
+          </div>
+
+          <div class="task-groups" data-task-groups aria-live="polite"></div>
+
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <p data-empty-text></p>
+            <a href="#/setup" class="link" data-empty-setup hidden>Set up your farm</a>
+          </div>
+
+          <a href="#/task-new" class="btn btn--gradient btn--block btn--rounded" data-add-task>Add a New Task</a>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
+
+        <input type="date" class="visually-hidden-input" tabindex="-1" aria-hidden="true" data-reschedule>
+
+        <template data-group-tpl>
+          <section class="task-group">
+            <h2 class="section-title" data-group-title></h2>
+            <p class="task-group__week" data-group-week></p>
+            <ul class="task-list" data-group-list></ul>
+          </section>
+        </template>
+        <template data-task-tpl>
+          <li class="task-card">
+            <label class="task-card__check">
+              <input type="checkbox" class="check" data-check>
+              <span class="sr-only" data-check-label></span>
+            </label>
+            <div class="task-card__body">
+              <div class="task-card__head">
+                <h3 class="task-card__title" data-title></h3>
+                <span class="task-card__date" data-date></span>
+              </div>
+              <p class="task-card__desc" data-desc></p>
+              <p class="task-card__meta">
+                <span data-meta></span>
+                <span class="status-tag" data-tag hidden></span>
+              </p>
+            </div>
+            <div class="task-menu">
+              <button type="button" class="task-menu__btn" aria-haspopup="menu" aria-expanded="false" data-menu-btn>
+                <svg aria-hidden="true"><use href="#icon-more"/></svg>
+              </button>
+              <ul class="task-menu__list" role="menu" data-menu hidden>
+                <li role="none"><button type="button" role="menuitem" data-action="skip">Skip</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="reschedule">Reschedule</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="edit">Edit</button></li>
+                <li role="none"><button type="button" role="menuitem" class="is-danger" data-action="delete">Delete</button></li>
+              </ul>
+            </div>
+          </li>
+        </template>
+      </section>
+
+      <!-- New / edit farm task -->
+      <section class="view view--app" data-view="task-new" aria-labelledby="task-new-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/tasks" class="app-header__back" aria-label="Back to all tasks">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="task-new-title" class="app-header__title" tabindex="-1" data-route-focus data-form-title>New Farm Task</h1>
+              <p class="app-header__subtitle">Schedule a new activity for your crop calendar.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <form id="task-form" class="form app-form" novalidate>
+            <div class="field">
+              <label for="task-title" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-note"/></svg>Task Name
+              </label>
+              <input id="task-title" name="title" class="input" type="text" maxlength="100"
+                     autocomplete="off" placeholder="e.g. Apply Fertilizer" aria-describedby="task-title-error" required>
+              <p id="task-title-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="task-field" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-pin"/></svg>Field
+              </label>
+              <select id="task-field" name="field_id" class="input select" aria-describedby="task-field-error" required></select>
+              <p id="task-field-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="task-stage" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-tag"/></svg>Crop Stage
+              </label>
+              <select id="task-stage" name="growth_stage" class="input select" aria-describedby="task-stage-error" required>
+                <option value="">Select growth stage</option>
+              </select>
+              <p id="task-stage-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="task-date" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Date
+                </label>
+                <input id="task-date" name="scheduled_date" class="input" type="date" aria-describedby="task-date-error" required>
+                <p id="task-date-error" class="field__error" aria-live="polite"></p>
+              </div>
+              <div class="field">
+                <label for="task-time" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-clock"/></svg>Start Time
+                </label>
+                <input id="task-time" name="start_time" class="input" type="time" aria-describedby="task-time-error">
+                <p id="task-time-error" class="field__error" aria-live="polite"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="task-reminder" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-bell"/></svg>Reminder
+              </label>
+              <select id="task-reminder" name="reminder" class="input select" aria-describedby="task-reminder-error"></select>
+              <p id="task-reminder-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="task-notes" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-note"/></svg>Additional Notes
+              </label>
+              <textarea id="task-notes" name="description" class="input input--textarea" rows="4" maxlength="500"
+                        placeholder="Add any specific observations or details here…"></textarea>
+            </div>
+
+            <div class="form__end app-form__end">
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded" data-save-label>Save Task</button>
+              <button type="button" class="link-plain" data-cancel>Cancel and go back</button>
+            </div>
+          </form>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
       </section>
     </main>
+
+    <p class="toast" role="status" aria-live="polite" data-app-toast hidden></p>
+
+    <!-- Bottom navigation shared by Home and the feature screens (js/utils/bottom-nav.js) -->
+    <template id="bottom-nav-template">
+      <a href="#/home" class="bottom-nav__item" data-nav-item="home">
+        <svg aria-hidden="true"><use href="#icon-home"/></svg><span>Home</span>
+      </a>
+      <button type="button" class="bottom-nav__item" data-nav-item="yield" data-soon="Yield Estimation">
+        <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield</span>
+      </button>
+      <button type="button" class="bottom-nav__fab" data-nav-item="scan" aria-label="Scan a crop for disease" data-soon="Disease Detection">
+        <svg aria-hidden="true"><use href="#icon-scan"/></svg>
+      </button>
+      <a href="#/calendar" class="bottom-nav__item" data-nav-item="calendar">
+        <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span>Calendar</span>
+      </a>
+      <button type="button" class="bottom-nav__item" data-nav-item="expenses" data-soon="Farm Expenses">
+        <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Expenses</span>
+      </button>
+    </template>
   </div>
 
   <noscript>

@@ -33,3 +33,21 @@ export const PLANTING_METHODS = [
   { value: 'transplanting', label: 'Transplanting' },
   { value: 'direct_seeding', label: 'Direct seeding' },
 ];
+
+/** Growth stage of a crop calendar task, in season order (headings of the weekly timeline). */
+export const GROWTH_STAGES = [
+  { value: 'land_preparation', label: 'Land Preparation' },
+  { value: 'seed_sowing', label: 'Seed Sowing' },
+  { value: 'vegetative', label: 'Vegetative Phase' },
+  { value: 'reproductive', label: 'Reproductive Phase' },
+  { value: 'harvest', label: 'Harvest' },
+];
+
+/** When a crop calendar task reminds the farmer. */
+export const REMINDER_OPTIONS = [
+  { value: 'none', label: 'None' },
+  { value: 'at_start', label: 'At start time' },
+  { value: '30_min', label: '30 minutes before' },
+  { value: '1_hour', label: '1 hour before' },
+  { value: '1_day', label: '1 day before' },
+];

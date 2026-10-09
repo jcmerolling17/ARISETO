@@ -4,8 +4,6 @@ import { getFarmWeather } from '../api/weather.js';
 import { ApiError } from '../api/client.js';
 import { loadJSON } from '../utils/store.js';
 
-const TOAST_MS = 2600;
-
 const WEATHER_MESSAGES = {
   noFarm: 'Set up your farm to see the weather there.',
   noReading: 'No weather reading for your farm yet. Check back soon.',
@@ -75,27 +73,6 @@ function mountWeather(view) {
   return { refresh };
 }
 
-function mountComingSoon(view) {
-  const toast = view.querySelector('[data-toast]');
-  let timer = 0;
-
-  view.addEventListener('click', (event) => {
-    const trigger = event.target.closest('[data-soon]');
-    if (!trigger) return;
-    clearTimeout(timer);
-    toast.textContent = `${trigger.dataset.soon} is coming soon.`;
-    toast.hidden = false;
-    timer = setTimeout(() => { toast.hidden = true; }, TOAST_MS);
-  });
-
-  return {
-    hide() {
-      clearTimeout(timer);
-      toast.hidden = true;
-    },
-  };
-}
-
 function renderAvatar(view) {
   const initialEl = view.querySelector('[data-avatar-initial]');
   const iconEl = view.querySelector('.avatar__icon');
@@ -109,15 +86,11 @@ function renderAvatar(view) {
 export function mountDashboardPage(router) {
   const view = document.querySelector('[data-view="home"]');
   const weather = mountWeather(view);
-  const soon = mountComingSoon(view);
 
   router.route('home', {
     onEnter() {
       renderAvatar(view);
       weather.refresh();
-    },
-    onLeave() {
-      soon.hide();
     },
   });
 }

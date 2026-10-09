@@ -1488,11 +1488,14 @@
   height: 26px;
 }
 
+/* One toast for the whole app (js/utils/toast.js), shown above the bottom navigation */
 .toast {
-  position: absolute;
-  left: var(--space-4);
-  right: var(--space-4);
-  bottom: calc(100% + var(--space-3));
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  z-index: 50;
+  width: min(calc(100% - 32px), calc(var(--shell-max-width) - 32px));
+  transform: translateX(-50%);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
   background: rgba(19, 38, 26, 0.92);
@@ -1500,6 +1503,13 @@
   font-size: var(--fs-sm);
   text-align: center;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Desktop: keep the toast above the bottom of the centered device frame */
+@media (min-width: 480px) {
+  .toast {
+    bottom: calc((100dvh - min(860px, 100dvh - 48px)) / 2 + 96px);
+  }
 }
 
 /* ---------- Form extras ---------- */
