@@ -7,6 +7,7 @@ import { mountDashboardPage } from './pages/dashboard.js';
 import { mountCalendarPages } from './pages/calendar.js';
 import { mountExpensePages } from './pages/expenses.js';
 import { mountNotificationsPage } from './pages/notifications.js';
+import { mountProfilePage } from './pages/profile.js';
 import { mountBottomNavs } from './utils/bottom-nav.js';
 import { mountToast } from './utils/toast.js';
 
@@ -31,6 +32,7 @@ function bootstrap() {
       expenses: { title: 'Farm Expenses' },
       'expense-new': { title: 'Add Expense' },
       notifications: { title: 'Notifications' },
+      profile: { title: 'Profile' },
     },
   });
 
@@ -42,6 +44,7 @@ function bootstrap() {
   mountCalendarPages(router);
   mountExpensePages(router);
   mountNotificationsPage(router);
+  mountProfilePage(router);
   router.start();
 }
 
