@@ -3,6 +3,7 @@
 import { getFarmWeather } from '../api/weather.js';
 import { ApiError } from '../api/client.js';
 import { loadJSON } from '../utils/store.js';
+import { unreadCount } from './notifications.js';
 
 const WEATHER_MESSAGES = {
   noFarm: 'Set up your farm to see the weather there.',
@@ -90,6 +91,9 @@ export function mountDashboardPage(router) {
   router.route('home', {
     onEnter() {
       renderAvatar(view);
+      const unread = unreadCount();
+      view.querySelector('[data-bell-dot]').hidden = unread === 0;
+      view.querySelector('[data-bell]').setAttribute('aria-label', unread ? `Notifications, ${unread} unread` : 'Notifications');
       weather.refresh();
     },
   });

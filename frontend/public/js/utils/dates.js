@@ -57,6 +57,19 @@ export function formatRange(start, end) {
   return `${formatShortDate(start)} – ${endText}`;
 }
 
+/** 'Just now', '20m ago', '5h ago', '3d ago', '2w ago', or 'Mar 4' for older times. */
+export function formatTimeAgo(date, now = new Date()) {
+  const minutes = Math.max(0, Math.floor((now - date) / 60000));
+  if (minutes < 2) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  if (days < 35) return `${Math.floor(days / 7)}w ago`;
+  return formatShortDate(date);
+}
+
 /** '7:30 AM' from 'HH:MM'. */
 export function formatClock(value) {
   const match = /^(\d{2}):(\d{2})$/.exec(value ?? '');

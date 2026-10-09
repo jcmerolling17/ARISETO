@@ -741,9 +741,10 @@
               <img src="assets/icons/logo-horizontal.png" alt="ARISETO" width="720" height="185" decoding="async">
             </span>
             <div class="home-header__actions">
-              <button type="button" class="home-icon-btn" aria-label="Notifications" data-soon="Notifications">
+              <a href="#/notifications" class="home-icon-btn" aria-label="Notifications" data-bell>
                 <svg aria-hidden="true"><use href="#icon-bell"/></svg>
-              </button>
+                <span class="home-icon-btn__dot" data-bell-dot hidden></span>
+              </a>
               <button type="button" class="avatar" aria-label="Profile" data-soon="Profile">
                 <span class="avatar__initial" data-avatar-initial hidden></span>
                 <svg class="avatar__icon" aria-hidden="true"><use href="#icon-user"/></svg>
@@ -1329,6 +1330,51 @@
         </div>
 
         <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses"></nav>
+      </section>
+      <!-- Notifications (sample data: js/data/sample-notifications.js) -->
+      <section class="view view--app" data-view="notifications" aria-labelledby="notifications-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="notifications-title" class="app-header__title" tabindex="-1" data-route-focus>Notifications</h1>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="chip-row" role="group" aria-label="Show">
+            <button type="button" class="chip" aria-pressed="true" data-tab="all">All</button>
+            <button type="button" class="chip" aria-pressed="false" data-tab="unread">Unread <span class="chip__count" data-unread-count></span></button>
+            <button type="button" class="chip" aria-pressed="false" data-tab="alerts">Farm Alerts</button>
+          </div>
+
+          <ul class="notice-list" data-notice-list aria-live="polite"></ul>
+
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-bell"/></svg>
+            <p data-empty-text></p>
+          </div>
+        </div>
+
+        <template data-notice-tpl>
+          <li>
+            <button type="button" class="notice" data-notice>
+              <span class="notice__icon" data-icon-box><svg aria-hidden="true"><use data-icon href=""/></svg></span>
+              <span class="notice__body">
+                <span class="notice__head">
+                  <span class="notice__title" data-title></span>
+                  <span class="notice__time" data-time></span>
+                </span>
+                <span class="notice__message" data-message></span>
+              </span>
+              <span class="notice__dot" data-dot aria-hidden="true"></span>
+            </button>
+          </li>
+        </template>
       </section>
     </main>
 
