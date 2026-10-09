@@ -18,6 +18,12 @@ MUNICIPALITIES: tuple[str, ...] = (
 # Crops in scope (crop.crop_name).
 CROPS_IN_SCOPE: tuple[str, ...] = ("rice", "corn", "onion")
 
+# Rough bounding box of Occidental Mindoro, including Lubang Island (farm.latitude/longitude).
+PROVINCE_BOUNDS = {"min_lat": 12.0, "max_lat": 14.0, "min_lon": 119.8, "max_lon": 121.4}
+
+# A field's planting date must be within this many days of today, before or after.
+PLANTING_WINDOW_DAYS = 730
+
 MOBILE_PATTERN = r"^\+639[0-9]{9}$"
 MIN_PASSWORD_LENGTH = 8
 
