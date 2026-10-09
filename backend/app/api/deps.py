@@ -26,6 +26,20 @@ def get_current_user(
     return user
 
 
+_INACTIVE_CODES = {
+    AccountStatus.PENDING: "account_pending",
+    AccountStatus.DEACTIVATED: "account_deactivated",
+}
+
+
+def require_active_user(user: User = Depends(get_current_user)) -> User:
+    """A user whose account is active; 403 account_pending or account_deactivated otherwise
+    (a token outlives a later deactivation)."""
+    if user.account_status in _INACTIVE_CODES:
+        raise AppError(403, _INACTIVE_CODES[user.account_status])
+    return user
+
+
 def require_admin(user: User = Depends(get_current_user)) -> User:
     """An active coop_admin; 403 not_admin for anyone else."""
     if user.role != UserRole.COOP_ADMIN or user.account_status != AccountStatus.ACTIVE:
