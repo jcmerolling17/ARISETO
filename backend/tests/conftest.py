@@ -42,10 +42,16 @@ def migrated_database() -> Iterator[None]:
     engine.dispose()
 
 
+# Reference rows seeded by the migrations; kept between tests.
+SEEDED_TABLES = {"crop"}
+
+
 @pytest.fixture(autouse=True)
 def clean_tables() -> Iterator[None]:
     yield
-    tables = ", ".join(table.name for table in Base.metadata.sorted_tables)
+    tables = ", ".join(
+        table.name for table in Base.metadata.sorted_tables if table.name not in SEEDED_TABLES
+    )
     with engine.begin() as connection:
         connection.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
 
@@ -103,6 +109,31 @@ def admin_token(client: TestClient, db) -> str:
         "/api/v1/auth/login", json={"mobile_no": "+639990000001", "password": ADMIN_PASSWORD}
     )
     return response.json()["access_token"]
+
+
+def login_token(client: TestClient, mobile_no: str, password: str) -> str:
+    body = {"mobile_no": mobile_no, "password": password}
+    response = client.post("/api/v1/auth/login", json=body)
+    return response.json()["access_token"]
+
+
+def create_active_member(db, **overrides: object):
+    """An approved member account, created through the service layer like a real sign-up."""
+    from app.models.enums import AccountStatus
+    from app.schemas.auth import RegisterRequest
+    from app.services import auth_service
+
+    user = auth_service.register_member(db, RegisterRequest(**member_payload(**overrides)))
+    user.account_status = AccountStatus.ACTIVE
+    db.commit()
+    return user
+
+
+@pytest.fixture
+def member_token(client: TestClient, db) -> str:
+    """Bearer token for an active member."""
+    create_active_member(db)
+    return login_token(client, "+639171234567", MEMBER_PASSWORD)
 
 
 def auth_header(token: str) -> dict[str, str]:
