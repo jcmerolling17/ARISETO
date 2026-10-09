@@ -46,6 +46,11 @@ class CycleStatus(enum.StrEnum):
     FAILED = "failed"
 
 
+class PlantingMethod(enum.StrEnum):
+    TRANSPLANTING = "transplanting"
+    DIRECT_SEEDING = "direct_seeding"
+
+
 class TaskType(enum.StrEnum):
     LAND_PREP = "land_prep"
     PLANTING = "planting"
@@ -81,5 +86,6 @@ farm_role = pg_enum(FarmRole, "farm_role")
 maturity_class = pg_enum(MaturityClass, "maturity_class")
 crop_season = pg_enum(CropSeason, "crop_season")
 cycle_status = pg_enum(CycleStatus, "cycle_status")
+planting_method = pg_enum(PlantingMethod, "planting_method")
 task_type = pg_enum(TaskType, "task_type")
 activity_status = pg_enum(ActivityStatus, "activity_status")
