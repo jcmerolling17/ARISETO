@@ -88,6 +88,7 @@ function mountCapture(router) {
       view.querySelector('[data-content]').hidden = fields.length === 0;
       picker.replaceChildren(...fields.map((f) => new Option(fieldLabel(farm, f), String(f.field_id))));
       picker.disabled = fields.length === 0;
+      picker.closest('.field-picker').hidden = fields.length === 0;
       if (fields.some((f) => f.field_id === lastScan.fieldId)) picker.value = String(lastScan.fieldId);
       preview.hidden = true;
       preview.removeAttribute('src');

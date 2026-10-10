@@ -696,14 +696,22 @@
 
 .field-card__place {
   display: inline-flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: var(--space-1);
   min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
   font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.field-card__place [data-place] {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .field-card__place svg {

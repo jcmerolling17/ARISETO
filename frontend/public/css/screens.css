@@ -1004,7 +1004,9 @@
 }
 
 .pill-label {
+  flex-shrink: 0;
   margin-bottom: var(--space-3);
+  white-space: nowrap;
   padding: 2px var(--space-2);
   border: 1px solid var(--primary-green);
   border-radius: var(--radius-pill);
@@ -1801,13 +1803,17 @@ a.weather {
   list-style: none;
 }
 
+/* Day name with its condition underneath, then the icon and the temperature range */
 .wx-day {
   display: grid;
-  grid-template-columns: 84px 32px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) 32px auto;
+  grid-template-areas:
+    "name icon range"
+    "label icon range";
   align-items: center;
-  gap: var(--space-2);
-  min-height: 48px;
-  padding: 0 var(--space-3);
+  column-gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--surface);
   font-size: var(--fs-sm);
@@ -1815,20 +1821,24 @@ a.weather {
 }
 
 .wx-day__name {
+  grid-area: name;
   font-weight: 600;
 }
 
 .wx-day__icon {
+  grid-area: icon;
   width: 30px;
   height: 30px;
 }
 
 .wx-day__label {
+  grid-area: label;
   font-size: var(--fs-xs);
   color: var(--text-muted);
 }
 
 .wx-day__range {
+  grid-area: range;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -2431,4 +2441,24 @@ a.weather {
   border-color: var(--primary-green);
   outline: none;
   box-shadow: var(--focus-ring);
+}
+
+/* ---------- Shared fixes ---------- */
+a.setting-row {
+  text-decoration: none;
+}
+
+/* Narrow phones (under 360px): stack paired pickers and form fields so dates and labels fit */
+@media (max-width: 359px) {
+  .picker-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-form .field-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stat dd {
+    font-size: var(--fs-md);
+  }
 }

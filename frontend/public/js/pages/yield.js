@@ -130,6 +130,7 @@ export function mountYieldPage(router) {
     const fields = farm.fields.filter((f) => currentCycle(farm, f.field_id));
     picker.replaceChildren(...fields.map((f) => new Option(fieldLabel(farm, f), String(f.field_id))));
     picker.disabled = fields.length === 0;
+    picker.closest('.field-picker').hidden = fields.length === 0;
     if (!fields.some((f) => f.field_id === fieldId)) fieldId = fields[0]?.field_id ?? null;
     if (!fields.length) return showEmpty(MESSAGES.noFarm, true);
     picker.value = String(fieldId);

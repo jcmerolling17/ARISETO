@@ -270,6 +270,7 @@ function mountCalendar() {
     picker.replaceChildren(...farm.fields.map((field) => new Option(fieldLabel(farm, field), String(field.field_id))));
     picker.value = String(shared.fieldId);
     picker.disabled = farm.fields.length === 0;
+    picker.closest('.field-picker').hidden = farm.fields.length === 0;
 
     if (!farm.fields.length) {
       content.hidden = true;
@@ -637,6 +638,10 @@ function mountTaskForm(router) {
   router.route('task-new', {
     onEnter({ state } = {}) {
       const { farm, calendar } = data();
+      // Without a planted field a task has nowhere to go, so show the set-up message instead.
+      const hasFields = farm.fields.some((f) => cycleForField(farm, f.field_id));
+      view.querySelector('[data-empty]').hidden = hasFields;
+      form.hidden = !hasFields;
       editing = calendar.activities.find((a) => a.activity_id === state?.activityId) ?? null;
       form.reset();
       clearFieldErrors(form);

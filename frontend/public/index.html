@@ -1113,6 +1113,12 @@
         </header>
 
         <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <p>No fields yet. Set up your farm before adding tasks.</p>
+            <a href="#/setup" class="link">Set up your farm</a>
+          </div>
+
           <form id="task-form" class="form app-form" novalidate>
             <div class="field">
               <label for="task-title" class="field__label field__label--icon">
@@ -1322,6 +1328,12 @@
         </header>
 
         <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-wallet"/></svg>
+            <p>No fields yet. Set up your farm before recording expenses.</p>
+            <a href="#/setup" class="link">Set up your farm</a>
+          </div>
+
           <form id="expense-form" class="form app-form" novalidate>
             <fieldset class="field crop-picker" aria-describedby="expense-category-error">
               <legend class="section-title">Expense Category</legend>

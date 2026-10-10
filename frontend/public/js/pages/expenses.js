@@ -207,10 +207,9 @@ function mountExpenses() {
   function render() {
     const { farm, money } = data();
     view.querySelector('[data-empty]').hidden = true;
+    view.querySelector('.picker-row').hidden = !farm.fields.length;
     if (!farm.fields.length) {
       content.hidden = true;
-      seasonPicker.replaceChildren();
-      plotPicker.replaceChildren();
       showEmpty(view, MESSAGES.noFarm);
       return;
     }
@@ -364,6 +363,9 @@ function mountExpenseForm(router) {
   router.route('expense-new', {
     onEnter() {
       const { farm } = data();
+      // Without a field an expense has nowhere to go, so show the set-up message instead.
+      view.querySelector('[data-empty]').hidden = farm.fields.length > 0;
+      form.hidden = farm.fields.length === 0;
       form.reset();
       clearFieldErrors(form);
       setCategoryError('');
