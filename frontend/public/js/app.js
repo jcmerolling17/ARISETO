@@ -11,6 +11,7 @@ import { mountProfilePage } from './pages/profile.js';
 import { mountWeatherPage } from './pages/weather.js';
 import { mountDiseasePages } from './pages/disease.js';
 import { mountYieldPage } from './pages/yield.js';
+import { mountChatbotPage } from './pages/chatbot.js';
 import { mountBottomNavs } from './utils/bottom-nav.js';
 import { mountToast } from './utils/toast.js';
 
@@ -40,6 +41,7 @@ function bootstrap() {
       scan: { title: 'Disease Detection' },
       'scan-result': { title: 'Detection Results' },
       yield: { title: 'Yield Estimation' },
+      chatbot: { title: 'Chatbot' },
     },
   });
 
@@ -55,6 +57,7 @@ function bootstrap() {
   mountWeatherPage(router);
   mountDiseasePages(router);
   mountYieldPage(router);
+  mountChatbotPage(router);
   router.start();
 }
 

@@ -194,6 +194,9 @@
     <symbol id="icon-soil" viewBox="0 0 24 24">
       <path d="M3 9.5h18M3 14.5h18M3 19.5h18M7 4.5l1.5 2M12 4l0 2.5M17 4.5l-1.5 2M6 12h.01M11 12h.01M16 12h.01M8.5 17h.01M14 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
     </symbol>
+    <symbol id="icon-send" viewBox="0 0 24 24">
+      <path d="M4 12 20 4l-6 16-2.5-6.5L4 12Zm7.5 1.5L20 4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+    </symbol>
     <symbol id="icon-note" viewBox="0 0 24 24">
       <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20V3.5ZM14.5 3.5v4h4.5M9 12h7M9 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </symbol>
@@ -860,9 +863,9 @@
             <li><a href="#/yield" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield Estimation</span>
             </a></li>
-            <li><button type="button" class="quick-action" data-soon="AI Chatbot">
+            <li><a href="#/chatbot" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg><span>AI Chatbot</span>
-            </button></li>
+            </a></li>
             <li><a href="#/weather" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-weather"/></svg><span>Weather Tracker</span>
             </a></li>
@@ -955,10 +958,10 @@
               <p class="muted-note" data-week-empty hidden>No tasks for this field yet. Add one from Manage All Tasks.</p>
             </section>
 
-            <button type="button" class="chat-link" data-soon="AI Chatbot">
+            <a href="#/chatbot" class="chat-link">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
               <span>Ask the chatbot about this</span>
-            </button>
+            </a>
           </div>
         </div>
 
@@ -1268,10 +1271,10 @@
               </div>
             </section>
 
-            <button type="button" class="chat-link" data-soon="AI Chatbot">
+            <a href="#/chatbot" class="chat-link">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
               <span>Ask the chatbot about this</span>
-            </button>
+            </a>
           </div>
         </div>
 
@@ -1509,11 +1512,11 @@
                 <span class="setting-row__text"><span class="setting-row__title">Frequently Asked Questions</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </button>
-              <button type="button" class="setting-row" data-soon="AI Chatbot">
+              <a href="#/chatbot" class="setting-row">
                 <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-chat"/></svg>
                 <span class="setting-row__text"><span class="setting-row__title">Ask the Chatbot</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
-              </button>
+              </a>
             </div>
           </section>
 
@@ -1734,10 +1737,10 @@
               <p data-why></p>
             </section>
 
-            <button type="button" class="chat-link" data-soon="AI Chatbot">
+            <a href="#/chatbot" class="chat-link">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
               <span>Ask the chatbot about this</span>
-            </button>
+            </a>
 
             <div class="stack">
               <a href="#/scan" class="btn btn--outline btn--block btn--rounded result-retake" data-retake hidden>Retake photo</a>
@@ -1796,10 +1799,10 @@
               <svg class="history-chart" viewBox="0 0 320 180" role="img" data-history-chart></svg>
             </section>
 
-            <button type="button" class="chat-link" data-soon="AI Chatbot">
+            <a href="#/chatbot" class="chat-link">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
               <span>Ask the chatbot about this</span>
-            </button>
+            </a>
 
             <button type="button" class="btn btn--gradient btn--block btn--rounded" data-soon="Recalculating the estimate">Recalculate Estimation</button>
           </div>
@@ -1815,6 +1818,54 @@
             </p>
             <p class="factor__value" data-value></p>
             <p class="factor__note" data-note></p>
+          </li>
+        </template>
+      </section>
+      <!-- Chatbot (sample data: js/data/sample-chatbot.js) -->
+      <section class="view view--app view--chat" data-view="chatbot" aria-labelledby="chat-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="chat-title" class="app-header__title" tabindex="-1" data-route-focus>Chatbot</h1>
+              <p class="app-header__subtitle">Get instant answers to your farming questions.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="chat-body">
+          <ol class="chat-log" data-chat-log aria-live="polite" aria-label="Conversation"></ol>
+          <p class="chat-empty" data-chat-empty hidden>Ask a question about your farm, or tap a topic below.</p>
+        </div>
+
+        <div class="chat-compose">
+          <div class="chat-chips" role="group" aria-label="Quick questions" data-chips></div>
+          <form class="chat-form" data-chat-form>
+            <a href="#/scan" class="chat-form__camera" aria-label="Scan a leaf with the camera">
+              <svg aria-hidden="true"><use href="#icon-scan"/></svg>
+            </a>
+            <label class="sr-only" for="chat-input">Message</label>
+            <input id="chat-input" class="chat-form__input" type="text" maxlength="500" autocomplete="off"
+                   placeholder="Type a message" data-chat-input>
+            <button type="submit" class="chat-form__send" aria-label="Send">
+              <svg aria-hidden="true"><use href="#icon-send"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="chatbot"></nav>
+
+        <template data-message-tpl>
+          <li class="chat-msg">
+            <img class="chat-msg__avatar" src="assets/icons/logo-badge.png" alt="" width="36" height="36" data-avatar>
+            <div class="chat-msg__content">
+              <p class="chat-msg__bubble" data-text></p>
+              <div class="chat-msg__chips" data-msg-chips hidden></div>
+              <p class="chat-msg__time" data-time></p>
+            </div>
           </li>
         </template>
       </section>
