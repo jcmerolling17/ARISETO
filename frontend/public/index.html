@@ -183,6 +183,30 @@
     <symbol id="icon-note" viewBox="0 0 24 24">
       <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20V3.5ZM14.5 3.5v4h4.5M9 12h7M9 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </symbol>
+    <!-- Weather conditions (colored) -->
+    <symbol id="wx-clear" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="10" fill="#ffb300"/>
+      <path d="M24 5v5M24 38v5M5 24h5M38 24h5M10.6 10.6l3.5 3.5M33.9 33.9l3.5 3.5M10.6 37.4l3.5-3.5M33.9 14.1l3.5-3.5" stroke="#ffb300" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="wx-partly" viewBox="0 0 48 48">
+      <circle cx="19" cy="18" r="10" fill="#ffb300"/>
+      <path d="M17 40h20a8 8 0 0 0 .7-16 11 11 0 0 0-20.9 3.6A6.3 6.3 0 0 0 17 40Z" fill="#eef4fa" stroke="#9fb9d3" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="wx-cloudy" viewBox="0 0 48 48">
+      <path d="M14 38h22a9 9 0 0 0 .8-18A12 12 0 0 0 13.9 24 7 7 0 0 0 14 38Z" fill="#dfe8f1" stroke="#8fa9c4" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="wx-rain" viewBox="0 0 48 48">
+      <path d="M14 32h22a9 9 0 0 0 .8-18A12 12 0 0 0 13.9 18 7 7 0 0 0 14 32Z" fill="#dfe8f1" stroke="#8fa9c4" stroke-width="1.5"/>
+      <path d="M17 36l-2 6M25 36l-2 6M33 36l-2 6" stroke="#2a8fd6" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="wx-storm" viewBox="0 0 48 48">
+      <path d="M14 30h22a9 9 0 0 0 .8-18A12 12 0 0 0 13.9 16 7 7 0 0 0 14 30Z" fill="#c9d4df" stroke="#7d93ab" stroke-width="1.5"/>
+      <path d="M26 30l-6 9h5l-3 7 8-10h-5l3-6Z" fill="#ffc107"/>
+    </symbol>
+    <symbol id="wx-fog" viewBox="0 0 48 48">
+      <path d="M14 28h22a9 9 0 0 0 .8-18A12 12 0 0 0 13.9 14 7 7 0 0 0 14 28Z" fill="#dfe8f1" stroke="#8fa9c4" stroke-width="1.5"/>
+      <path d="M9 34h30M14 40h22" stroke="#9aa9b4" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
   </svg>
 
   <div class="app-shell">
@@ -769,7 +793,8 @@
 
           <h1 id="home-title" class="sr-only" tabindex="-1" data-route-focus>Home</h1>
 
-          <div class="weather" data-weather data-state="loading" aria-live="polite">
+          <a href="#/weather" class="weather" data-weather data-state="loading" aria-live="polite" aria-describedby="home-weather-hint">
+            <span id="home-weather-hint" class="sr-only">Opens the Weather Tracker.</span>
             <svg class="weather__art" data-kind="partly" viewBox="0 0 120 108" aria-hidden="true">
               <defs>
                 <radialGradient id="wa-sun-fill" cx="40%" cy="35%" r="70%">
@@ -809,7 +834,7 @@
                 <dd data-w="wind">-- km/h</dd>
               </div>
             </dl>
-          </div>
+          </a>
         </div>
 
         <div class="home-body">
@@ -824,9 +849,9 @@
             <li><button type="button" class="quick-action" data-soon="AI Chatbot">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg><span>AI Chatbot</span>
             </button></li>
-            <li><button type="button" class="quick-action" data-soon="Weather Tracker">
+            <li><a href="#/weather" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-weather"/></svg><span>Weather Tracker</span>
-            </button></li>
+            </a></li>
             <li><a href="#/expenses" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Farm Expenses</span>
             </a></li>
@@ -1508,6 +1533,80 @@
                 </button>
               </div>
             </div>
+          </li>
+        </template>
+      </section>
+      <!-- Weather Tracker (sample data: js/data/sample-weather.js) -->
+      <section class="view view--app view--weather" data-view="weather" aria-labelledby="weather-title" hidden>
+        <header class="weather-top">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <h1 id="weather-title" class="weather-top__title" tabindex="-1" data-route-focus>Weather Tracker</h1>
+            <span class="demo-badge demo-badge--dark">Demo data</span>
+          </div>
+          <p class="weather-top__place" data-place></p>
+          <p class="weather-top__sub" data-place-sub></p>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-weather"/></svg>
+            <p>No weather reading for your farm yet. Check back soon.</p>
+          </div>
+
+          <div class="app-stack" data-content>
+            <section class="wx-panel wx-now" aria-label="Current weather">
+              <svg class="wx-now__icon" aria-hidden="true"><use data-now-icon href=""/></svg>
+              <p class="wx-now__temp"><span data-now-temp></span>°</p>
+              <p class="wx-now__summary" data-now-summary></p>
+              <dl class="weather-stats wx-now__stats">
+                <div class="weather-stat">
+                  <dt><svg class="weather-stat__icon weather-stat__icon--heat" aria-hidden="true"><use href="#icon-thermometer"/></svg><span>Feels Like</span></dt>
+                  <dd data-now-feels></dd>
+                </div>
+                <div class="weather-stat">
+                  <dt><svg class="weather-stat__icon weather-stat__icon--rain" aria-hidden="true"><use href="#icon-rain"/></svg><span>Rain</span></dt>
+                  <dd data-now-rain></dd>
+                </div>
+                <div class="weather-stat">
+                  <dt><svg class="weather-stat__icon" aria-hidden="true"><use href="#icon-wind"/></svg><span>Wind</span></dt>
+                  <dd data-now-wind></dd>
+                </div>
+              </dl>
+              <p class="wx-now__updated" data-updated></p>
+            </section>
+
+            <section class="wx-panel" aria-labelledby="wx-today-title">
+              <div class="section-head">
+                <h2 id="wx-today-title" class="section-title">Today</h2>
+                <p class="wx-panel__date" data-today-date></p>
+              </div>
+              <ol class="wx-hours" data-hours aria-label="Next 24 hours, every 3 hours"></ol>
+            </section>
+
+            <section class="wx-panel" aria-labelledby="wx-summary-title">
+              <h2 id="wx-summary-title" class="section-title">Weather Summary</h2>
+              <ul class="wx-days" data-days></ul>
+            </section>
+          </div>
+        </div>
+
+        <template data-hour-tpl>
+          <li class="wx-hour">
+            <span class="wx-hour__temp" data-temp></span>
+            <svg class="wx-hour__icon" aria-hidden="true"><use data-icon href=""/></svg>
+            <span class="wx-hour__rain" data-rain></span>
+            <span class="wx-hour__time" data-time></span>
+          </li>
+        </template>
+        <template data-day-tpl>
+          <li class="wx-day">
+            <span class="wx-day__name" data-name></span>
+            <svg class="wx-day__icon" aria-hidden="true"><use data-icon href=""/></svg>
+            <span class="wx-day__label" data-label></span>
+            <span class="wx-day__range" data-range></span>
           </li>
         </template>
       </section>

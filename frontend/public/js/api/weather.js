@@ -6,7 +6,7 @@ import { farms } from './client.js';
  * Maps an OpenWeatherMap condition ID (WEATHER_LOG.condition_code) to an illustration kind.
  * https://openweathermap.org/weather-conditions
  */
-function kindFor(code) {
+export function kindFor(code) {
   if (code >= 200 && code < 300) return 'storm';
   if ((code >= 300 && code < 400) || (code >= 500 && code < 600)) return 'rain';
   if (code >= 700 && code < 800) return 'fog';
@@ -15,7 +15,7 @@ function kindFor(code) {
   return 'cloudy';
 }
 
-const SUMMARIES = {
+export const SUMMARIES = {
   clear: { day: 'Today is a sunny day!', night: 'Clear skies tonight.' },
   partly: { day: 'Today is a partly sunny day!', night: 'Partly cloudy tonight.' },
   cloudy: { day: 'Today is a cloudy day.', night: 'Cloudy tonight.' },

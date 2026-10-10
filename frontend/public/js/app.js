@@ -8,6 +8,7 @@ import { mountCalendarPages } from './pages/calendar.js';
 import { mountExpensePages } from './pages/expenses.js';
 import { mountNotificationsPage } from './pages/notifications.js';
 import { mountProfilePage } from './pages/profile.js';
+import { mountWeatherPage } from './pages/weather.js';
 import { mountBottomNavs } from './utils/bottom-nav.js';
 import { mountToast } from './utils/toast.js';
 
@@ -33,6 +34,7 @@ function bootstrap() {
       'expense-new': { title: 'Add Expense' },
       notifications: { title: 'Notifications' },
       profile: { title: 'Profile' },
+      weather: { title: 'Weather Tracker' },
     },
   });
 
@@ -45,6 +47,7 @@ function bootstrap() {
   mountExpensePages(router);
   mountNotificationsPage(router);
   mountProfilePage(router);
+  mountWeatherPage(router);
   router.start();
 }
 
