@@ -180,6 +180,17 @@
       <path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .9-1 1.6v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
       <circle cx="12" cy="16.8" r="1.1" fill="currentColor"/>
     </symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24">
+      <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4.5 14.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-alert" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M12 7.5v5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="16.5" r="1.2" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-leaf" viewBox="0 0 24 24">
+      <path d="M5 19c0-8.5 5.5-14 15-14 0 9.5-5.5 15-14 15m0-1 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
     <symbol id="icon-note" viewBox="0 0 24 24">
       <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20V3.5ZM14.5 3.5v4h4.5M9 12h7M9 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </symbol>
@@ -840,9 +851,9 @@
         <div class="home-body">
           <h2 class="home-section__title">Quick Actions</h2>
           <ul class="quick-actions">
-            <li><button type="button" class="quick-action" data-soon="Disease Detection">
+            <li><a href="#/scan" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-scan"/></svg><span>Disease Detection</span>
-            </button></li>
+            </a></li>
             <li><button type="button" class="quick-action" data-soon="Yield Estimation">
               <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield Estimation</span>
             </button></li>
@@ -1610,6 +1621,128 @@
           </li>
         </template>
       </section>
+      <!-- Disease Detection: capture (sample results: js/data/sample-disease.js) -->
+      <section class="view view--app view--scan" data-view="scan" aria-labelledby="scan-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="scan-title" class="app-header__title" tabindex="-1" data-route-focus>Disease Detection</h1>
+              <p class="app-header__subtitle">Capture or upload an image of the affected plant.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+          <label class="field-picker">
+            <span class="field-picker__label">Field</span>
+            <select class="field-picker__select" data-scan-field></select>
+          </label>
+        </header>
+
+        <div class="scan-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-scan"/></svg>
+            <p>No fields yet. Set up your farm to check your crops for disease.</p>
+            <a href="#/setup" class="link">Set up your farm</a>
+          </div>
+
+          <div class="scan-content" data-content>
+            <p class="scan-crop" data-scan-crop></p>
+            <div class="scan-frame">
+              <img class="scan-frame__photo" alt="" data-preview hidden>
+              <p class="scan-frame__hint" data-frame-hint>Point the camera at one affected leaf, then take the photo.</p>
+            </div>
+            <p class="scan-status" role="status" aria-live="polite" data-scan-status></p>
+
+            <label class="scan-upload">
+              <span>Upload From Gallery</span>
+              <svg aria-hidden="true"><use href="#icon-upload"/></svg>
+              <input type="file" class="sr-only" accept="image/*" data-upload>
+            </label>
+            <label class="scan-shutter">
+              <span class="sr-only">Take a photo</span>
+              <input type="file" class="sr-only" accept="image/*" capture="environment" data-camera>
+            </label>
+
+            <fieldset class="demo-switch">
+              <legend>Demo result</legend>
+              <label><input type="radio" name="demo-result" value="diseased" checked data-demo-diseased> <span>Leaf blight (corn)</span></label>
+              <label><input type="radio" name="demo-result" value="healthy"> <span>Healthy</span></label>
+              <label><input type="radio" name="demo-result" value="unrecognized"> <span>Unrecognized</span></label>
+            </fieldset>
+          </div>
+        </div>
+      </section>
+
+      <!-- Disease Detection: results -->
+      <section class="view view--app view--result" data-view="scan-result" aria-labelledby="result-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/scan" class="app-header__back" aria-label="Back to disease detection">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <p class="app-header__title">Detection Results</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="result-photo">
+          <img alt="Your leaf photo" data-result-img hidden>
+          <svg class="result-photo__placeholder" aria-hidden="true" data-result-placeholder><use href="#icon-leaf"/></svg>
+        </div>
+
+        <div class="result-sheet">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-scan"/></svg>
+            <p>No scan yet. Take a photo of a leaf to check it.</p>
+            <a href="#/scan" class="link">Scan a leaf</a>
+          </div>
+
+          <div class="result-content" data-content>
+            <h1 id="result-title" class="result-title" tabindex="-1" data-route-focus data-result-title></h1>
+            <p class="result-confidence" data-result-confidence></p>
+            <p class="result-for" data-result-for></p>
+
+            <section class="result-block" data-block="description">
+              <h2 class="result-block__title result-block__title--muted">Description</h2>
+              <p class="result-block__text" data-description></p>
+            </section>
+
+            <section class="result-block" data-block="signs">
+              <h2 class="result-block__title result-block__title--warn">
+                <svg aria-hidden="true"><use href="#icon-alert"/></svg><span data-signs-title>Warning Signs</span>
+              </h2>
+              <ul class="result-list" data-signs></ul>
+            </section>
+
+            <section class="result-block" data-block="actions">
+              <h2 class="result-block__title result-block__title--ok">
+                <svg aria-hidden="true"><use href="#icon-check-circle"/></svg><span data-actions-title>Recommended Actions</span>
+              </h2>
+              <ol class="result-list result-list--numbered" data-actions></ol>
+              <p class="result-source" data-source></p>
+            </section>
+
+            <section class="result-why" data-block="why">
+              <h2 class="result-why__title"><svg aria-hidden="true"><use href="#icon-alert"/></svg>Why this matters</h2>
+              <p data-why></p>
+            </section>
+
+            <button type="button" class="chat-link" data-soon="AI Chatbot">
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg>
+              <span>Ask the chatbot about this</span>
+            </button>
+
+            <div class="stack">
+              <a href="#/scan" class="btn btn--outline btn--block btn--rounded result-retake" data-retake hidden>Retake photo</a>
+              <a href="#/home" class="btn btn--gradient btn--block btn--rounded">Done</a>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <p class="toast" role="status" aria-live="polite" data-app-toast hidden></p>
@@ -1622,9 +1755,9 @@
       <button type="button" class="bottom-nav__item" data-nav-item="yield" data-soon="Yield Estimation">
         <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield</span>
       </button>
-      <button type="button" class="bottom-nav__fab" data-nav-item="scan" aria-label="Scan a crop for disease" data-soon="Disease Detection">
+      <a href="#/scan" class="bottom-nav__fab" data-nav-item="scan" aria-label="Scan a crop for disease">
         <svg aria-hidden="true"><use href="#icon-scan"/></svg>
-      </button>
+      </a>
       <a href="#/calendar" class="bottom-nav__item" data-nav-item="calendar">
         <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span>Calendar</span>
       </a>

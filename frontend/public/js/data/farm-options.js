@@ -54,6 +54,9 @@ export const EXPENSE_CATEGORIES = [
   { category_id: 7, category_name: 'Others', icon: 'icon-others', color: '#f39233' },
 ];
 
+/** Disease detection: below this confidence the result is 'unrecognized' (tuned on the validation set). */
+export const DIAGNOSIS_CONFIDENCE_THRESHOLD = 0.7;
+
 /** Units an expense quantity can be entered in. */
 export const QUANTITY_UNITS = [
   { value: 'kg', label: 'kg' },

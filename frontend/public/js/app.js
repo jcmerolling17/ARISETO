@@ -9,6 +9,7 @@ import { mountExpensePages } from './pages/expenses.js';
 import { mountNotificationsPage } from './pages/notifications.js';
 import { mountProfilePage } from './pages/profile.js';
 import { mountWeatherPage } from './pages/weather.js';
+import { mountDiseasePages } from './pages/disease.js';
 import { mountBottomNavs } from './utils/bottom-nav.js';
 import { mountToast } from './utils/toast.js';
 
@@ -35,6 +36,8 @@ function bootstrap() {
       notifications: { title: 'Notifications' },
       profile: { title: 'Profile' },
       weather: { title: 'Weather Tracker' },
+      scan: { title: 'Disease Detection' },
+      'scan-result': { title: 'Detection Results' },
     },
   });
 
@@ -48,6 +51,7 @@ function bootstrap() {
   mountNotificationsPage(router);
   mountProfilePage(router);
   mountWeatherPage(router);
+  mountDiseasePages(router);
   router.start();
 }
 
