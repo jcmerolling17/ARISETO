@@ -10,6 +10,7 @@ import { mountNotificationsPage } from './pages/notifications.js';
 import { mountProfilePage } from './pages/profile.js';
 import { mountWeatherPage } from './pages/weather.js';
 import { mountDiseasePages } from './pages/disease.js';
+import { mountYieldPage } from './pages/yield.js';
 import { mountBottomNavs } from './utils/bottom-nav.js';
 import { mountToast } from './utils/toast.js';
 
@@ -38,6 +39,7 @@ function bootstrap() {
       weather: { title: 'Weather Tracker' },
       scan: { title: 'Disease Detection' },
       'scan-result': { title: 'Detection Results' },
+      yield: { title: 'Yield Estimation' },
     },
   });
 
@@ -52,6 +54,7 @@ function bootstrap() {
   mountProfilePage(router);
   mountWeatherPage(router);
   mountDiseasePages(router);
+  mountYieldPage(router);
   router.start();
 }
 

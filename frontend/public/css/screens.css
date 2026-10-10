@@ -2126,3 +2126,139 @@ a.weather {
   border-color: var(--primary-green);
   color: var(--primary-green-dark);
 }
+
+/* ---------- Yield Estimation ---------- */
+.yield-card__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.yield-card__label svg {
+  width: 22px;
+  height: 22px;
+  color: var(--primary-green);
+}
+
+.yield-card__total {
+  margin-top: var(--space-1);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text-strong);
+  text-align: center;
+}
+
+.yield-card__unit {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.yield-card__meta {
+  margin-top: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.factor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.factor {
+  padding: var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(12, 40, 20, 0.07);
+}
+
+.factor__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--primary-green-dark);
+}
+
+.factor__icon {
+  width: 20px;
+  height: 20px;
+}
+
+.factor__value {
+  margin-top: var(--space-2);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text-strong);
+  text-align: center;
+}
+
+.factor__note {
+  font-size: var(--fs-xs);
+  font-style: italic;
+  color: var(--primary-green-dark);
+  text-align: center;
+}
+
+.factor--warn {
+  border-color: rgba(224, 87, 61, 0.45);
+  background: #fff6f3;
+}
+
+.factor--warn .factor__head,
+.factor--warn .factor__note {
+  color: #c4472f;
+}
+
+.yield-history__note {
+  margin-top: calc(var(--space-2) * -1);
+  font-size: var(--fs-xs);
+}
+
+.history-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: var(--space-2);
+}
+
+.history-chart__grid {
+  stroke: #e3e8e4;
+  stroke-width: 1;
+}
+
+.history-chart__axis {
+  font-size: 10px;
+  fill: var(--text-muted);
+}
+
+.history-chart__line {
+  fill: none;
+  stroke: #2a8fd6;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.history-chart__dot {
+  fill: #2a8fd6;
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+
+.history-chart__value {
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--text-strong);
+}

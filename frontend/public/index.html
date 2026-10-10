@@ -191,6 +191,9 @@
     <symbol id="icon-leaf" viewBox="0 0 24 24">
       <path d="M5 19c0-8.5 5.5-14 15-14 0 9.5-5.5 15-14 15m0-1 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </symbol>
+    <symbol id="icon-soil" viewBox="0 0 24 24">
+      <path d="M3 9.5h18M3 14.5h18M3 19.5h18M7 4.5l1.5 2M12 4l0 2.5M17 4.5l-1.5 2M6 12h.01M11 12h.01M16 12h.01M8.5 17h.01M14 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
     <symbol id="icon-note" viewBox="0 0 24 24">
       <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20V3.5ZM14.5 3.5v4h4.5M9 12h7M9 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </symbol>
@@ -854,9 +857,9 @@
             <li><a href="#/scan" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-scan"/></svg><span>Disease Detection</span>
             </a></li>
-            <li><button type="button" class="quick-action" data-soon="Yield Estimation">
+            <li><a href="#/yield" class="quick-action">
               <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield Estimation</span>
-            </button></li>
+            </a></li>
             <li><button type="button" class="quick-action" data-soon="AI Chatbot">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg><span>AI Chatbot</span>
             </button></li>
@@ -1743,6 +1746,78 @@
           </div>
         </div>
       </section>
+      <!-- Yield Estimation (sample data: js/data/sample-yield.js) -->
+      <section class="view view--app" data-view="yield" aria-labelledby="yield-title" hidden>
+        <header class="app-header app-header--photo">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="yield-title" class="app-header__title" tabindex="-1" data-route-focus>Yield Estimation</h1>
+              <p class="app-header__subtitle">Track your expected harvest.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+          <label class="field-picker">
+            <span class="field-picker__label">Field</span>
+            <select class="field-picker__select" data-yield-field></select>
+          </label>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-chart"/></svg>
+            <p data-empty-text></p>
+            <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
+          </div>
+
+          <div class="app-stack" data-content>
+            <section class="summary-card yield-card" aria-labelledby="yield-total-label">
+              <p class="yield-card__label" id="yield-total-label">
+                <svg aria-hidden="true"><use href="#icon-seeds"/></svg>Estimated Yield
+              </p>
+              <p class="yield-card__total"><span data-total></span> <span class="yield-card__unit">tons</span></p>
+              <dl class="stat-grid">
+                <div class="stat"><dt>Yield per hectare</dt><dd data-per-ha></dd></div>
+                <div class="stat"><dt>Expected value</dt><dd data-value></dd></div>
+              </dl>
+              <p class="yield-card__meta" data-estimated-at></p>
+            </section>
+
+            <section aria-labelledby="factors-title">
+              <h2 id="factors-title" class="section-title">Impact Factors</h2>
+              <ul class="factor-grid" data-factors></ul>
+            </section>
+
+            <section class="card" aria-labelledby="history-chart-title">
+              <h2 id="history-chart-title" class="section-title">Estimate history</h2>
+              <p class="muted-note yield-history__note">Estimated total harvest each time the estimate was run.</p>
+              <svg class="history-chart" viewBox="0 0 320 180" role="img" data-history-chart></svg>
+            </section>
+
+            <button type="button" class="chat-link" data-soon="AI Chatbot">
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg>
+              <span>Ask the chatbot about this</span>
+            </button>
+
+            <button type="button" class="btn btn--gradient btn--block btn--rounded" data-soon="Recalculating the estimate">Recalculate Estimation</button>
+          </div>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="yield"></nav>
+
+        <template data-factor-tpl>
+          <li class="factor">
+            <p class="factor__head">
+              <svg class="factor__icon" aria-hidden="true"><use data-icon href=""/></svg>
+              <span class="factor__name" data-name></span>
+            </p>
+            <p class="factor__value" data-value></p>
+            <p class="factor__note" data-note></p>
+          </li>
+        </template>
+      </section>
     </main>
 
     <p class="toast" role="status" aria-live="polite" data-app-toast hidden></p>
@@ -1752,9 +1827,9 @@
       <a href="#/home" class="bottom-nav__item" data-nav-item="home">
         <svg aria-hidden="true"><use href="#icon-home"/></svg><span>Home</span>
       </a>
-      <button type="button" class="bottom-nav__item" data-nav-item="yield" data-soon="Yield Estimation">
+      <a href="#/yield" class="bottom-nav__item" data-nav-item="yield">
         <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield</span>
-      </button>
+      </a>
       <a href="#/scan" class="bottom-nav__fab" data-nav-item="scan" aria-label="Scan a crop for disease">
         <svg aria-hidden="true"><use href="#icon-scan"/></svg>
       </a>

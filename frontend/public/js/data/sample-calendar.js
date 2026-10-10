@@ -4,8 +4,8 @@ import { sampleFarm } from './sample-farm.js';
 import { addDays, parseISODate, toISODate } from '../utils/dates.js';
 
 /**
- * Sample crop calendar: CROP_ACTIVITY rows for each field's current cycle, plus the yield
- * figures behind "Expected value" (YIELD_ESTIMATE.predicted_total_t × a sample price per kg).
+ * Sample crop calendar: CROP_ACTIVITY rows for each field's current cycle. "Expected value"
+ * comes from the latest yield estimate in sample-yield.js.
  * growth_stage, start_time and reminder are not in the data dictionary yet.
  * Dates are counted from each cycle's planting date, so land preparation comes before it
  * and sowing falls on it.
@@ -39,10 +39,6 @@ const CORN = 101;
 const RICE = 102;
 
 export const sampleCalendar = {
-  estimates: [
-    { cycle_id: CORN, predicted_total_t: 6.25, price_php_per_kg: 18 },
-    { cycle_id: RICE, predicted_total_t: 6.75, price_php_per_kg: 20 },
-  ],
   activities: [
     task(CORN, 1, -7, 'land_preparation', '07:00', 'Plow and harrow the field', 'Plow to 15–20 cm deep, then harrow to break up clods.', { done: true }),
     task(CORN, 2, -4, 'land_preparation', '07:00', 'Clear weeds and level the field', 'Remove weeds and level low spots so water drains evenly.', { done: true }),
@@ -84,6 +80,5 @@ export const sampleCalendar = {
 };
 
 export const emptyCalendar = {
-  estimates: [],
   activities: [],
 };

@@ -2,9 +2,10 @@
 
 import { sampleFarm, emptyFarm } from '../data/sample-farm.js';
 import { sampleCalendar, emptyCalendar } from '../data/sample-calendar.js';
+import { sampleYield, emptyYield } from '../data/sample-yield.js';
 import { CROPS, GROWTH_STAGES, REMINDER_OPTIONS, SEASONS } from '../data/farm-options.js';
 import { pickDemo } from '../utils/demo.js';
-import { currentCycle, fieldLabel } from '../utils/farm.js';
+import { currentCycle, fieldLabel, formatPesoShort, latestEstimate } from '../utils/farm.js';
 import { showToast } from '../utils/toast.js';
 import {
   setFieldError,
@@ -107,11 +108,6 @@ function syncFieldSelection(farm) {
   }
 }
 
-function formatPesoShort(value) {
-  if (value >= 1000) return `₱${(value / 1000).toLocaleString('en-PH', { maximumFractionDigits: 1 })}k`;
-  return `₱${value.toLocaleString('en-PH')}`;
-}
-
 function showEmpty(view, message, { setup = false } = {}) {
   view.querySelector('[data-empty]').hidden = false;
   view.querySelector('[data-empty-text]').textContent = message;
@@ -137,13 +133,12 @@ function mountCalendar() {
   let selectedDay = startOfDay();
   let showAllWeeks = false;
 
-  function renderSummary(cycle, calendar) {
+  function renderSummary(cycle) {
     const planted = parseISODate(cycle.planting_date);
     const harvest = parseISODate(cycle.expected_harvest_date);
     const seasonDays = Math.max(1, daysBetween(planted, harvest));
     const completion = Math.min(100, Math.max(0, Math.round((daysBetween(planted, new Date()) / seasonDays) * 100)));
-    const estimate = calendar.estimates.find((e) => e.cycle_id === cycle.cycle_id);
-    const value = estimate ? estimate.predicted_total_t * 1000 * estimate.price_php_per_kg : null;
+    const value = latestEstimate(pickDemo(sampleYield, emptyYield), cycle)?.expected_value_php ?? null;
     const stat = (name) => view.querySelector(`[data-stat="${name}"]`);
 
     view.querySelector('[data-crop-icon]').setAttribute('href', cropIcon(cycle.crop_name));
@@ -290,7 +285,7 @@ function mountCalendar() {
 
     const tasks = tasksOf(calendar, cycle.cycle_id);
     content.hidden = false;
-    renderSummary(cycle, calendar);
+    renderSummary(cycle);
     renderMonths(tasks, cycle);
     renderDays(tasks);
     renderWeeks(tasks, cycle);
