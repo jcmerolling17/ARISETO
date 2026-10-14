@@ -10,10 +10,15 @@ The password is asked for twice and never echoed.
 Load the barangays and crop varieties in app/seeds/ (safe to run again):
 
     python -m app.cli seed
+
+Fetch OpenWeatherMap once for every farm, or for one farm (needs OPENWEATHERMAP_API_KEY):
+
+    python -m app.cli fetch-weather [--farm-id 3]
 """
 
 import argparse
 import getpass
+import logging
 import sys
 
 from pydantic import ValidationError
@@ -21,7 +26,9 @@ from pydantic import ValidationError
 from app.core.errors import AppError
 from app.db.session import SessionLocal
 from app.schemas.admin import AdminCreate
-from app.services import auth_service, seed_service
+from app.services import auth_service, seed_service, weather_fetch_service
+
+LOG_FORMAT = "%(asctime)s %(levelname)s %(message)s"
 
 
 def _create_admin(args: argparse.Namespace) -> int:
@@ -77,6 +84,23 @@ def _seed(_args: argparse.Namespace) -> int:
     return 0
 
 
+def _fetch_weather(args: argparse.Namespace) -> int:
+    # Failed farms are logged by reason only; the key is never printed or logged.
+    logging.basicConfig(level=logging.WARNING, format=LOG_FORMAT)
+    farm_ids = None if args.farm_id is None else [args.farm_id]
+    summary = weather_fetch_service.fetch_farms(farm_ids)
+
+    if args.farm_id is not None and not summary.succeeded and not summary.failed:
+        print(f"Farm {args.farm_id} not found.", file=sys.stderr)
+        return 1
+    if "missing_key" in summary.failed.values():
+        print("OPENWEATHERMAP_API_KEY is not set in .env; nothing was fetched.", file=sys.stderr)
+    print(
+        f"Weather fetched: {len(summary.succeeded)} farms succeeded, {len(summary.failed)} failed."
+    )
+    return 1 if summary.failed else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -91,6 +115,12 @@ def main(argv: list[str] | None = None) -> int:
 
     seed = commands.add_parser("seed", help="Load the barangays and crop varieties")
     seed.set_defaults(handler=_seed)
+
+    fetch_weather = commands.add_parser(
+        "fetch-weather", help="Fetch OpenWeatherMap once and save it in weather_log"
+    )
+    fetch_weather.add_argument("--farm-id", type=int, help="Only this farm (default: all)")
+    fetch_weather.set_defaults(handler=_fetch_weather)
 
     args = parser.parse_args(argv)
     return args.handler(args)

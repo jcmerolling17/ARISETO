@@ -63,6 +63,29 @@ def clean_tables() -> Iterator[None]:
         connection.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
 
 
+@pytest.fixture(autouse=True)
+def no_real_weather(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Tests never use the real OpenWeatherMap key or network: the key read from .env is
+    cleared, and a client the code builds itself refuses every request. Tests that fetch
+    set a fake key and pass or patch in an httpx2 MockTransport client."""
+    import httpx2
+
+    from app.services import openweathermap_service
+
+    def refuse(request: httpx2.Request) -> httpx2.Response:
+        raise AssertionError("tests must not call OpenWeatherMap")
+
+    monkeypatch.setattr(get_settings(), "openweathermap_api_key", None)
+    monkeypatch.setattr(
+        openweathermap_service,
+        "make_client",
+        lambda: httpx2.Client(
+            timeout=openweathermap_service.TIMEOUT_SECONDS,
+            transport=httpx2.MockTransport(refuse),
+        ),
+    )
+
+
 @pytest.fixture
 def client() -> Iterator[TestClient]:
     with TestClient(app) as test_client:

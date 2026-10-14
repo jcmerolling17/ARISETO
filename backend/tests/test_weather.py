@@ -7,9 +7,10 @@ from sqlalchemy import select
 
 from app.models import FarmAssignment, User, WeatherLog
 from app.models.enums import AccountStatus, FarmRole
+from app.services import weather_service
 from tests.conftest import MEMBER_PASSWORD, auth_header, create_active_member, login_token
 
-EMPTY = {"current": None, "forecast": [], "alerts": []}
+EMPTY = {"current": None, "forecast": [], "daily": [], "alerts": []}
 
 
 @pytest.fixture
@@ -72,9 +73,8 @@ def test_returns_latest_reading_and_upcoming_forecast(
         [
             _reading(farm_id, earlier, earlier, temp_c=Decimal("27")),
             _reading(farm_id, latest, latest),
-            # A slot that already passed, and one slot fetched twice.
+            # A slot that already passed is not part of the forecast.
             _reading(farm_id, now - timedelta(hours=1), earlier, is_forecast=True),
-            _reading(farm_id, in_3h, earlier, is_forecast=True, rain_mm=Decimal("1")),
             _reading(
                 farm_id, in_3h, latest, is_forecast=True, rain_mm=Decimal("4.2"), condition_code=500
             ),
@@ -199,3 +199,73 @@ def test_deactivated_account_is_refused(
 
     assert response.status_code == 403
     assert response.json() == {"detail": {"code": "account_deactivated"}}
+
+
+def _member(db) -> User:
+    return db.scalar(select(User).where(User.mobile_no == "+639171234567"))
+
+
+def _utc(month: int, day: int, hour: int, minute: int = 0) -> datetime:
+    return datetime(2026, month, day, hour, minute, tzinfo=UTC)
+
+
+def test_daily_ranges_follow_philippine_dates(db, member_token: str, farm_id: int) -> None:
+    # 10:00 on Oct 14 in the Philippines (UTC+8).
+    now = _utc(10, 14, 2)
+    fetched = now - timedelta(minutes=5)
+    current, slot = {"is_forecast": False}, {"is_forecast": True}
+    db.add_all(
+        [
+            # Oct 12 23:59 PHT: the day before yesterday, left out.
+            _reading(farm_id, _utc(10, 12, 15, 59), fetched, temp_c=Decimal("40"), **current),
+            # Yesterday (Oct 13 PHT) from current readings only; its forecast slot is ignored.
+            _reading(farm_id, _utc(10, 12, 16), fetched, temp_c=Decimal("24"), **current),
+            _reading(farm_id, _utc(10, 13, 6), fetched, temp_c=Decimal("31"), **current),
+            _reading(farm_id, _utc(10, 13, 9), fetched, temp_c=Decimal("10"), **slot),
+            # Today (Oct 14 PHT): 16:30 UTC on Oct 13 is already 00:30 on Oct 14 here.
+            _reading(farm_id, _utc(10, 13, 16, 30), fetched, temp_c=Decimal("25.5"), **current),
+            _reading(farm_id, _utc(10, 14, 6), fetched, temp_c=Decimal("32.25"), **slot),
+            _reading(farm_id, _utc(10, 14, 9), fetched, temp_c=None, **slot),
+            # Tomorrow (Oct 15 PHT), then Oct 16 00:00 PHT, which is left out.
+            _reading(farm_id, _utc(10, 14, 18), fetched, temp_c=Decimal("23"), **slot),
+            _reading(farm_id, _utc(10, 15, 15), fetched, temp_c=Decimal("29"), **slot),
+            _reading(farm_id, _utc(10, 15, 16), fetched, temp_c=Decimal("50"), **slot),
+        ]
+    )
+    db.commit()
+
+    weather = weather_service.farm_weather(db, _member(db), farm_id, now=now)
+
+    assert [d.model_dump() for d in weather.daily] == [
+        {"date": date(2026, 10, 13), "temp_min_c": 24.0, "temp_max_c": 31.0},
+        {"date": date(2026, 10, 14), "temp_min_c": 25.5, "temp_max_c": 32.25},
+        {"date": date(2026, 10, 15), "temp_min_c": 23.0, "temp_max_c": 29.0},
+    ]
+
+
+def test_a_day_without_readings_is_left_out(db, member_token: str, farm_id: int) -> None:
+    now = _utc(10, 14, 2)
+    db.add(_reading(farm_id, _utc(10, 15, 0), now, is_forecast=True, temp_c=Decimal("28")))
+    db.commit()
+
+    weather = weather_service.farm_weather(db, _member(db), farm_id, now=now)
+
+    assert [(d.date, d.temp_min_c, d.temp_max_c) for d in weather.daily] == [
+        (date(2026, 10, 15), 28.0, 28.0)
+    ]
+
+
+def test_daily_is_in_the_response(client: TestClient, db, member_token: str, farm_id: int) -> None:
+    now = datetime.now(UTC).replace(microsecond=0)
+    db.add_all(
+        [
+            _reading(farm_id, now - timedelta(minutes=1), now, temp_c=Decimal("27")),
+            _reading(farm_id, now - timedelta(minutes=2), now, temp_c=Decimal("29.5")),
+        ]
+    )
+    db.commit()
+
+    body = client.get(_url(farm_id), headers=auth_header(member_token)).json()
+
+    today = now.astimezone(weather_service.PHILIPPINE_TIME).date().isoformat()
+    assert {"date": today, "temp_min_c": 27.0, "temp_max_c": 29.5} in body["daily"]

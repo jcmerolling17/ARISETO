@@ -5,6 +5,7 @@ The key travels in the request URL, and httpx2 puts that URL in its exception me
 every httpx2 error is replaced by a WeatherFetchError raised `from None`: the key never
 reaches an error message, a traceback, or a log line."""
 
+import logging
 import math
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -18,6 +19,11 @@ from app.core.config import get_settings
 CURRENT_URL = "https://api.openweathermap.org/data/2.5/weather"
 FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
 TIMEOUT_SECONDS = 10.0
+
+# httpx2 logs every request URL (key included) at INFO, so its loggers are kept at WARNING
+# whatever level the app or the CLI logs at.
+for _name in ("httpx2", "httpcore2"):
+    logging.getLogger(_name).setLevel(logging.WARNING)
 
 
 class WeatherFetchError(Exception):
@@ -40,6 +46,11 @@ class FetchedWeather:
 
 def make_client() -> httpx2.Client:
     return httpx2.Client(timeout=TIMEOUT_SECONDS)
+
+
+def configured_api_key() -> str:
+    """OPENWEATHERMAP_API_KEY from the settings; WeatherFetchError missing_key if unset."""
+    return _api_key(None)
 
 
 def _api_key(api_key: str | None) -> str:

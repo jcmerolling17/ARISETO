@@ -1,6 +1,7 @@
 """OpenWeatherMap client: requests, the WEATHER_LOG mapping (Section 4), and failures.
 Every HTTP call goes to an httpx2 MockTransport; nothing reaches the network."""
 
+import logging
 from datetime import UTC, datetime
 from decimal import Decimal
 
@@ -281,3 +282,14 @@ def test_settings_start_without_a_key_and_hide_it() -> None:
     assert without.openweathermap_api_key is None
     assert with_key.openweathermap_api_key.get_secret_value() == KEY
     assert KEY not in repr(with_key) and KEY not in str(with_key.model_dump())
+
+
+def test_debug_logging_never_shows_the_key(caplog: pytest.LogCaptureFixture) -> None:
+    caplog.set_level(logging.DEBUG)
+
+    _fetch()
+    with pytest.raises(WeatherFetchError):
+        _fetch(client=_client(status=500))
+
+    assert KEY not in caplog.text
+    assert logging.getLogger("httpx2").getEffectiveLevel() == logging.WARNING

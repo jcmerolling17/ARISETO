@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict
 
@@ -23,9 +23,18 @@ class ForecastSlot(WeatherReading):
     forecast_for: datetime
 
 
+class DailyRange(BaseModel):
+    """Lowest and highest temperature on one Philippine date."""
+
+    date: date
+    temp_min_c: float
+    temp_max_c: float
+
+
 class FarmWeather(BaseModel):
-    """current is null and both lists are empty until the scheduler has fetched weather."""
+    """current is null and the lists are empty until the farm's weather has been fetched."""
 
     current: WeatherReading | None
     forecast: list[ForecastSlot]
+    daily: list[DailyRange]
     alerts: list[dict]
