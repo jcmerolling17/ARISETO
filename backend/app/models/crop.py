@@ -53,14 +53,14 @@ class CropVariety(Base):
 
 
 class CropCycle(Base):
-    """CROP_CYCLE: one planting season on one farm. area_planted_ha <= FARM.total_area_ha,
-    the planting-date window, and expected_harvest_date are enforced by the API."""
+    """CROP_CYCLE: one planting season on one field. area_planted_ha <= FIELD.area_ha, the
+    sowing-date window, and expected_harvest_date are enforced by the API."""
 
     __tablename__ = "crop_cycle"
     __table_args__ = (CheckConstraint("area_planted_ha > 0", name="area_planted_ha_positive"),)
 
     cycle_id: Mapped[int] = mapped_column(Integer, Identity(always=True), primary_key=True)
-    farm_id: Mapped[int] = mapped_column(ForeignKey("farm.farm_id"))
+    field_id: Mapped[int] = mapped_column(ForeignKey("field.field_id"))
     variety_id: Mapped[int] = mapped_column(ForeignKey("crop_variety.variety_id"))
     season: Mapped[CropSeason] = mapped_column(crop_season)
     area_planted_ha: Mapped[Decimal] = mapped_column(Numeric(10, 4))

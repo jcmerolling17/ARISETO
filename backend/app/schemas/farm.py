@@ -4,18 +4,11 @@ from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
 
-from app.core.constants import CROPS_IN_SCOPE
-from app.models.enums import CropSeason, PlantingMethod
+from app.models.enums import CropSeason
 
 
 def _collapse_spaces(value: str) -> str:
     return " ".join(value.split())
-
-
-def _crop_in_scope(value: str) -> str:
-    if value not in CROPS_IN_SCOPE:
-        raise ValueError(f"must be one of {', '.join(CROPS_IN_SCOPE)}")
-    return value
 
 
 # Trimmed text with inner spaces collapsed.
@@ -25,62 +18,63 @@ FarmName = Annotated[
 FieldName = Annotated[
     str, AfterValidator(_collapse_spaces), StringConstraints(min_length=1, max_length=50)
 ]
-VarietyName = Annotated[
-    str, AfterValidator(_collapse_spaces), StringConstraints(min_length=1, max_length=80)
-]
 
-# NUMERIC(10,4) hectares and NUMERIC(9,6) degrees.
+# NUMERIC(10,4) hectares and NUMERIC(6,2) tons per hectare.
 Hectares = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=4)]
-Degrees = Annotated[Decimal, Field(max_digits=9, decimal_places=6)]
+TonsPerHectare = Annotated[Decimal, Field(gt=0, max_digits=6, decimal_places=2)]
+
+
+class SetupField(BaseModel):
+    """One field in the POST /farms body; planting_date is the sowing date."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    field_name: FieldName
+    area_ha: Hectares
+    variety_id: int
+    planting_date: date
 
 
 class FarmCreate(BaseModel):
-    """POST /farms body. total_area_ha is the sum of the fields entered during setup;
-    latitude/longitude are the barangay's center point."""
+    """POST /farms body. The backend sets the location from the barangay center and
+    total_area_ha from the fields; an empty fields list is 422 no_fields."""
 
     model_config = ConfigDict(extra="forbid")
 
     farm_name: FarmName
     barangay_id: int
-    latitude: Degrees
-    longitude: Degrees
-    total_area_ha: Hectares
+    season: CropSeason
+    fields: list[SetupField]
 
 
-class FarmOut(BaseModel):
+class CreatedField(BaseModel):
+    field_id: int
+    cycle_id: int
+    expected_harvest_date: date
+
+
+class FarmCreated(BaseModel):
     """POST /farms response. Numbers are JSON numbers."""
 
-    model_config = ConfigDict(from_attributes=True)
-
     farm_id: int
-    farm_name: str
-    barangay_id: int
-    latitude: float
-    longitude: float
     total_area_ha: float
+    fields: list[CreatedField]
 
 
 class FieldCreate(BaseModel):
-    """POST /farms/{farm_id}/fields body, as the farm setup screen sends it."""
+    """POST /farms/{farm_id}/fields body; planting_date is the sowing date."""
 
     model_config = ConfigDict(extra="forbid")
 
     field_name: FieldName
-    crop: Annotated[str, AfterValidator(_crop_in_scope)]
-    variety: VarietyName
     area_ha: Hectares
-    planting_date: date
-    planting_method: PlantingMethod
+    variety_id: int
     season: CropSeason
+    planting_date: date
+    target_yield_t_ha: TonsPerHectare | None = None
 
 
-class FieldOut(BaseModel):
-    field_id: int
-    farm_id: int
-    field_name: str
-    crop: str
-    variety: str
-    area_ha: float
-    planting_date: date
-    planting_method: PlantingMethod
-    season: CropSeason
+class FieldCreated(CreatedField):
+    """POST /farms/{farm_id}/fields response, with the farm's new total area."""
+
+    total_area_ha: float

@@ -2,6 +2,7 @@
 
 import os
 from collections.abc import Iterator
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -29,13 +30,19 @@ from app.main import app  # noqa: E402
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
 
-@pytest.fixture(scope="session", autouse=True)
-def migrated_database() -> Iterator[None]:
-    """Run the real migration on the test database (down then up), once per test run."""
+def alembic_config() -> Config:
+    """Alembic pointed at the test database."""
     config = Config(str(BACKEND_DIR / "alembic.ini"))
     config.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
     config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))
     config.attributes["configure_logger"] = False
+    return config
+
+
+@pytest.fixture(scope="session", autouse=True)
+def migrated_database() -> Iterator[None]:
+    """Run the real migration on the test database (down then up), once per test run."""
+    config = alembic_config()
     command.downgrade(config, "base")
     command.upgrade(config, "head")
     yield
@@ -138,3 +145,50 @@ def member_token(client: TestClient, db) -> str:
 
 def auth_header(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+# Rows copied from the seed data (barangays.csv and varieties.csv), so tests use real values.
+TANGKALAN = {
+    "psgc_code": "1705106006",
+    "municipality": "Mamburao",
+    "barangay_name": "Tangkalan",
+    "center_latitude": Decimal("13.271995"),
+    "center_longitude": Decimal("120.624727"),
+}
+VARIETIES = {  # variety_name: (crop_name, maturity_class, maturity_days)
+    "NK6410": ("Corn", "early", 90),
+    "RC-402": ("Rice", "early", 110),
+    "C4-GREEN": ("Rice", "very_early", 100),
+}
+
+
+@pytest.fixture
+def barangay_id(db) -> int:
+    from app.models import Barangay
+
+    barangay = Barangay(**TANGKALAN)
+    db.add(barangay)
+    db.commit()
+    return barangay.barangay_id
+
+
+@pytest.fixture
+def variety_ids(db) -> dict[str, int]:
+    """variety_name -> variety_id for the VARIETIES rows."""
+    from sqlalchemy import select
+
+    from app.models import Crop, CropVariety
+
+    crop_ids = {crop.crop_name: crop.crop_id for crop in db.scalars(select(Crop))}
+    rows = [
+        CropVariety(
+            crop_id=crop_ids[crop],
+            variety_name=name,
+            maturity_class=maturity_class,
+            maturity_days=days,
+        )
+        for name, (crop, maturity_class, days) in VARIETIES.items()
+    ]
+    db.add_all(rows)
+    db.commit()
+    return {row.variety_name: row.variety_id for row in rows}
