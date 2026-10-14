@@ -1,7 +1,7 @@
 // frontend/public/js/pages/setup.js
 
-import { farms, crops, ApiError } from '../api/client.js';
-import { MUNICIPALITIES, SEASONS, AREA_UNITS, PROVINCE_BOUNDS } from '../data/farm-options.js';
+import { farms, ApiError } from '../api/client.js';
+import { MUNICIPALITIES, SEASONS, CROPS, PLANTING_METHODS } from '../data/farm-options.js';
 import {
   setFieldError,
   clearFieldErrors,
@@ -13,8 +13,8 @@ import {
 import { saveJSON } from '../utils/store.js';
 import { mountBarangayPicker } from '../utils/barangay-picker.js';
 
-const MAX_AREA_HA = 999999.9999; // NUMERIC(10,4)
-const MAX_TARGET_YIELD = 9999.99; // NUMERIC(6,2)
+const MAX_AREA_HA = 999999.9999; // FARM.total_area_ha NUMERIC(10,4)
+const MAX_FIELDS = 20;
 const PLANTING_WINDOW_DAYS = 730;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -22,41 +22,57 @@ const MESSAGES = {
   farmNameRequired: 'Enter your farm name.',
   municipalityRequired: 'Choose the municipality where your farm is.',
   barangayRequired: 'Choose the barangay where your farm is.',
-  notFarmOwner: 'Only the owner of this farm can add crops to it.',
-  coordinatesOutsideProvince: 'Your farm location is outside Occidental Mindoro. Go back to the previous step and capture it again while at the farm, or skip it to use your barangay’s center point.',
-  areaRequired: 'Enter your farm area.',
-  areaInvalid: 'Enter an area greater than 0.',
-  areaTooSmall: 'This area is too small. Enter at least 1 m².',
-  areaTooLarge: 'This area is too large. Check the number and the unit.',
-  cropRequired: 'Choose a crop.',
-  varietyRequired: 'Choose a variety.',
+  fieldCountRequired: 'Enter how many fields your farm has.',
+  fieldCountInvalid: `Enter a whole number from 1 to ${MAX_FIELDS}.`,
   seasonRequired: 'Choose the season.',
+  fieldNameRequired: 'Enter a name for this field.',
+  fieldNameTaken: 'You already have a field with this name.',
+  cropRequired: 'Choose what you are planting.',
+  varietyRequired: 'Enter the variety.',
+  sizeRequired: 'Enter the field size in hectares.',
+  sizeInvalid: 'Enter a size greater than 0.',
+  sizeTooSmall: 'This size is too small. Enter at least 0.0001 ha (1 m²).',
+  sizeTooLarge: 'Your fields add up to more than ARISETO can store. Check the size.',
   plantingDateRequired: 'Enter the planting date.',
   plantingDateInvalid: 'Enter a planting date within two years of today.',
-  areaPlantedRequired: 'Enter the area planted.',
-  areaPlantedTooLarge: 'Area planted cannot be more than the farm area.',
-  targetYieldInvalid: 'Enter a target yield greater than 0, in tons per hectare.',
-  cropsLoading: 'Loading crops…',
-  cropsFailed: 'Could not load the crop list.',
+  plantingMethodRequired: 'Choose the planting method.',
+  removeConfirm: (name) => `Remove ${name} from your farm?`,
+  fieldsNone: 'Add at least one field.',
+  fieldsTooFew: (added, expected) =>
+    `You said your farm has ${plural(expected, 'field')}, but you added ${added}. Add ${plural(expected - added, 'more field')}, or go back and change the number.`,
+  fieldsTooMany: (added, expected) =>
+    `You said your farm has ${plural(expected, 'field')}, but you added ${added}. Remove ${plural(added - expected, 'field')}, or go back and change the number.`,
+  notFarmOwner: 'Only the owner of this farm can add fields to it.',
+  coordinatesOutsideProvince: 'Your barangay’s location is outside Occidental Mindoro. Go back and choose your barangay again.',
   sessionExpired: 'Your session has expired. Please log in again.',
   unexpected: 'The server returned an unexpected response. Please try again.',
-  farmSavedRetry: 'Your farm was saved. Press Finish setup again to add your crop.',
-  geoDefault: 'Not set. We’ll use your barangay’s center point.',
-  geoLocating: 'Getting your location…',
-  geoUnsupported: 'This browser cannot share your location. We’ll use your barangay’s center point.',
-  geoDenied: 'Location permission was denied. We’ll use your barangay’s center point.',
-  geoFailed: 'Could not get a GPS fix. Try again outdoors, or skip this to use your barangay’s center point.',
-  geoOutside: 'That location is outside Occidental Mindoro. Try again while at the farm, or skip this to use your barangay’s center point.',
+  farmSavedRetry: 'Your farm was saved. Press Continue again to finish adding your fields.',
 };
 
 /**
- * farm:        step 1 answers (POST /farms body), not yet sent
+ * farm:        step 1 answers (POST /farms body without total_area_ha), not yet sent
  * place:       municipality and barangay names, kept for display only
- * createdFarm: farm returned by POST /farms (kept so a failed crop-cycle request is retried
- *              without creating the farm twice)
+ * fieldCount:  how many fields the farmer said the farm has
+ * season:      season shared by every field in this setup
+ * fields:      fields added in steps 2–3:
+ *              { key, field_name, crop, variety, area_ha, planting_date, planting_method }
+ * editing:     key of the field open in step 2, or null when adding a new one
+ * createdFarm: farm returned by POST /farms, and savedKeys the fields already sent, so a failed
+ *              request is retried without creating anything twice
  * result:      the finished farm shown on the success screen
  */
-const draft = { farm: null, place: null, createdFarm: null, result: null };
+const draft = {
+  farm: null,
+  place: null,
+  fieldCount: 0,
+  season: null,
+  fields: [],
+  editing: null,
+  createdFarm: null,
+  savedKeys: new Set(),
+  result: null,
+};
+let nextFieldKey = 1;
 
 /* ---------- Helpers ---------- */
 
@@ -70,25 +86,37 @@ function cleanText(raw) {
   return String(raw).trim().replace(/\s+/g, ' ');
 }
 
-/** Converts an area typed in ha or m² to hectares with 4 decimals; null when not a positive number. */
-function toHectares(raw, unit) {
-  const value = Number(raw);
-  if (!String(raw).trim() || !Number.isFinite(value) || value <= 0) return null;
-  const hectares = unit === 'sqm' ? value / 10000 : value;
-  return Math.round(hectares * 10000) / 10000;
+function plural(count, word) {
+  return `${count} ${word}${count === 1 ? '' : 's'}`;
 }
 
-function validateArea(input, unit, { required, tooLarge = MAX_AREA_HA, tooLargeMessage = MESSAGES.areaTooLarge }) {
-  if (!input.value.trim()) {
-    setFieldError(input, required);
-    return null;
-  }
-  const hectares = toHectares(input.value, unit);
-  if (hectares === null) setFieldError(input, MESSAGES.areaInvalid);
-  else if (hectares === 0) setFieldError(input, MESSAGES.areaTooSmall);
-  else if (hectares > tooLarge) setFieldError(input, tooLargeMessage);
-  else return hectares;
-  return null;
+function roundHectares(value) {
+  return Math.round(value * 10000) / 10000;
+}
+
+/** Hectares with 4 decimals; null when not a positive number. */
+function toHectares(raw) {
+  const value = Number(raw);
+  if (!String(raw).trim() || !Number.isFinite(value) || value <= 0) return null;
+  return roundHectares(value);
+}
+
+function formatHectares(value, { long = false } = {}) {
+  const amount = roundHectares(value).toLocaleString('en-PH', { maximumFractionDigits: 4 });
+  if (!long) return `${amount} ha`;
+  return `${amount} ${value === 1 ? 'hectare' : 'hectares'}`;
+}
+
+function totalAreaHa() {
+  return roundHectares(draft.fields.reduce((sum, field) => sum + field.area_ha, 0));
+}
+
+function cropOf(value) {
+  return CROPS.find((crop) => crop.value === value);
+}
+
+function labelOf(options, value) {
+  return options.find((option) => option.value === value)?.label ?? value;
 }
 
 function parseDate(value) {
@@ -100,12 +128,6 @@ function parseDate(value) {
 
 function formatDate(date) {
   return date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-/** Philippine wet season runs roughly June to November. */
-function seasonFor(date) {
-  const month = date.getMonth() + 1;
-  return month >= 6 && month <= 11 ? 'wet' : 'dry';
 }
 
 function bindHomeButtons(view, router) {
@@ -133,94 +155,45 @@ function mountStart(router) {
   });
 }
 
-/* ---------- Step 1: farm (FARM) ---------- */
-
-function mountGeo(form) {
-  const box = form.querySelector('[data-geo]');
-  const text = box.querySelector('[data-geo-text]');
-  const button = box.querySelector('[data-geo-capture]');
-  let coords = null;
-
-  function show(message, state = '') {
-    text.textContent = message;
-    box.dataset.state = state;
-  }
-
-  button.addEventListener('click', () => {
-    if (!('geolocation' in navigator)) {
-      show(MESSAGES.geoUnsupported, 'warn');
-      return;
-    }
-    button.disabled = true;
-    show(MESSAGES.geoLocating);
-
-    navigator.geolocation.getCurrentPosition(
-      ({ coords: { latitude, longitude, accuracy } }) => {
-        button.disabled = false;
-        const { minLat, maxLat, minLon, maxLon } = PROVINCE_BOUNDS;
-        if (latitude < minLat || latitude > maxLat || longitude < minLon || longitude > maxLon) {
-          coords = null;
-          show(MESSAGES.geoOutside, 'warn');
-          return;
-        }
-        coords = { latitude: Number(latitude.toFixed(6)), longitude: Number(longitude.toFixed(6)) };
-        show(`Saved: ${latitude.toFixed(5)}, ${longitude.toFixed(5)} (±${Math.round(accuracy)} m)`, 'ok');
-        button.textContent = 'Update';
-      },
-      (error) => {
-        button.disabled = false;
-        coords = null;
-        show(error.code === error.PERMISSION_DENIED ? MESSAGES.geoDenied : MESSAGES.geoFailed, 'warn');
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 },
-    );
-  });
-
-  return {
-    get coords() {
-      return coords;
-    },
-    reset() {
-      coords = null;
-      button.disabled = false;
-      button.textContent = 'Use my location';
-      show(MESSAGES.geoDefault);
-    },
-  };
-}
+/* ---------- Step 1: farm ---------- */
 
 function mountFarmStep(router) {
   const form = document.getElementById('setup-farm-form');
-  const { farm_name: farmName, municipality, barangay_id: barangay, area, area_unit: areaUnit } = form.elements;
-  const geo = mountGeo(form);
+  const { farm_name: farmName, municipality, barangay_id: barangay, field_count: fieldCount, season } = form.elements;
   const barangayPicker = mountBarangayPicker(municipality, barangay, {
     onChange: () => setFieldError(barangay, ''),
   });
 
   fillSelect(municipality, MUNICIPALITIES);
-  fillSelect(areaUnit, AREA_UNITS);
+  fillSelect(season, SEASONS);
   bindLiveErrorClearing(form);
 
   function validate() {
     const name = cleanText(farmName.value);
     const place = barangayPicker.selected();
+    const count = Number(fieldCount.value);
 
     if (!name) setFieldError(farmName, MESSAGES.farmNameRequired);
     if (!municipality.value) setFieldError(municipality, MESSAGES.municipalityRequired);
     else if (!place) setFieldError(barangay, MESSAGES.barangayRequired);
-    const totalAreaHa = validateArea(area, areaUnit.value, { required: MESSAGES.areaRequired });
+    if (!fieldCount.value.trim()) setFieldError(fieldCount, MESSAGES.fieldCountRequired);
+    else if (!Number.isInteger(count) || count < 1 || count > MAX_FIELDS) {
+      setFieldError(fieldCount, MESSAGES.fieldCountInvalid);
+    }
+    if (!season.value) setFieldError(season, MESSAGES.seasonRequired);
 
     if (form.querySelector('[aria-invalid="true"]')) return null;
-    // Without a GPS fix the farm is placed at its barangay's center point (FARM.latitude/longitude fallback).
+    // The farm is placed at its barangay's center point (FARM.latitude/longitude).
     return {
       farm: {
         farm_name: name,
         barangay_id: place.barangay_id,
-        latitude: geo.coords?.latitude ?? Number(place.center_latitude),
-        longitude: geo.coords?.longitude ?? Number(place.center_longitude),
-        total_area_ha: totalAreaHa,
+        latitude: Number(place.center_latitude),
+        longitude: Number(place.center_longitude),
       },
       place: { municipality: municipality.value, barangay_name: place.barangay_name },
+      fieldCount: count,
+      season: season.value,
     };
   }
 
@@ -235,14 +208,13 @@ function mountFarmStep(router) {
     }
 
     farmName.value = answers.farm.farm_name;
-    draft.farm = answers.farm;
-    draft.place = answers.place;
-    router.navigate('setup-cycle');
+    Object.assign(draft, answers);
+    router.navigate(draft.fields.length ? 'setup-fields' : 'setup-field');
   });
 
   router.route('setup-farm', {
     // Once the farm exists on the server it can no longer be edited from setup.
-    guard: () => (draft.createdFarm ? 'setup-cycle' : null),
+    guard: () => (draft.createdFarm ? 'setup-review' : null),
     onLeave() {
       clearFieldErrors(form);
     },
@@ -251,165 +223,294 @@ function mountFarmStep(router) {
   return {
     reset() {
       form.reset();
-      geo.reset();
       barangayPicker.reset();
     },
   };
 }
 
-/* ---------- Step 2: first crop cycle (CROP_CYCLE) ---------- */
+/** Steps 2 and 3 need step 1's answers, and are locked once the farm is saved. */
+function fieldStepsGuard() {
+  if (!draft.farm) return 'setup-farm';
+  if (draft.createdFarm) return 'setup-review';
+  return null;
+}
 
-function mountCycleStep(router, farmStep) {
-  const view = document.querySelector('[data-view="setup-cycle"]');
-  const form = document.getElementById('setup-cycle-form');
-  const backLink = view.querySelector('[data-cycle-back]');
-  const retryButton = view.querySelector('[data-retry-crops]');
-  const harvestHint = view.querySelector('[data-harvest-hint]');
+/* ---------- Step 2: add or edit one field ---------- */
+
+function mountFieldStep(router) {
+  const view = document.querySelector('[data-view="setup-field"]');
+  const form = document.getElementById('setup-field-form');
+  const heading = view.querySelector('[data-field-heading]');
+  const backLink = view.querySelector('[data-field-back]');
+  const cropOptions = view.querySelector('[data-crop-options]');
+  const cropError = view.querySelector('[data-crop-error]');
   const {
-    crop_id: crop,
-    variety_id: variety,
-    season,
+    field_name: fieldName,
+    variety,
+    area_ha: size,
     planting_date: plantingDate,
-    area_planted: areaPlanted,
-    area_planted_unit: areaPlantedUnit,
-    target_yield_t_ha: targetYield,
+    planting_method: plantingMethod,
   } = form.elements;
 
-  let cropList = null;
-  let loading = null;
-  let seasonTouched = false;
+  for (const crop of CROPS) {
+    const option = document.createElement('label');
+    option.className = 'crop-option';
+    option.innerHTML = `
+      <input class="crop-option__input" type="radio" name="crop" value="${crop.value}">
+      <svg class="crop-option__icon" aria-hidden="true"><use href="#${crop.icon}"/></svg>
+      <span class="crop-option__label">${crop.label}</span>`;
+    cropOptions.append(option);
+  }
+  const cropRadios = () => [...form.querySelectorAll('input[name="crop"]')];
 
-  fillSelect(season, SEASONS);
-  fillSelect(areaPlantedUnit, AREA_UNITS);
+  fillSelect(plantingMethod, PLANTING_METHODS);
   bindLiveErrorClearing(form);
 
-  const farmAreaHa = () => (draft.createdFarm ?? draft.farm)?.total_area_ha ?? MAX_AREA_HA;
-
-  function selectedVariety() {
-    const current = cropList?.find((c) => String(c.crop_id) === crop.value);
-    return current?.varieties?.find((v) => String(v.variety_id) === variety.value) ?? null;
-  }
-
-  function renderVarieties() {
-    const current = cropList?.find((c) => String(c.crop_id) === crop.value);
-    variety.replaceChildren(new Option(current ? 'Choose variety' : 'Choose a crop first', ''));
-    for (const v of current?.varieties ?? []) {
-      const maturity = v.maturity_days ? ` · ${v.maturity_days} days` : '';
-      variety.add(new Option(`${v.variety_name}${maturity}`, String(v.variety_id)));
+  // The crop is a radio group, so its error is set on every radio and shown once.
+  function setCropError(message) {
+    for (const radio of cropRadios()) {
+      if (message) radio.setAttribute('aria-invalid', 'true');
+      else radio.removeAttribute('aria-invalid');
     }
-    variety.disabled = !current;
-    renderHarvestHint();
+    cropError.textContent = message;
   }
+  cropOptions.addEventListener('change', () => setCropError(''));
 
-  function renderHarvestHint() {
-    const v = selectedVariety();
-    const date = parseDate(plantingDate.value);
-    if (!v?.maturity_days || !date) {
-      harvestHint.textContent = '';
-      return;
-    }
-    const harvest = new Date(date.getTime() + v.maturity_days * DAY_MS);
-    harvestHint.textContent = `Expected harvest around ${formatDate(harvest)} (${v.maturity_days} days after planting).`;
+  function clearErrors() {
+    clearFieldErrors(form);
+    setCropError('');
   }
-
-  async function loadCrops() {
-    if (cropList || loading) return loading;
-    retryButton.hidden = true;
-    setStatus(view, MESSAGES.cropsLoading, 'success');
-    crop.disabled = true;
-
-    loading = crops.list()
-      .then((list) => {
-        cropList = Array.isArray(list) ? list : [];
-        crop.replaceChildren(new Option('Choose crop', ''));
-        for (const c of cropList) crop.add(new Option(c.crop_name, String(c.crop_id)));
-        crop.disabled = false;
-        setStatus(view, '');
-      })
-      .catch((err) => {
-        crop.replaceChildren(new Option('Crops unavailable', ''));
-        setStatus(view, `${MESSAGES.cropsFailed} ${err.message}`, 'error');
-        retryButton.hidden = false;
-      })
-      .finally(() => {
-        loading = null;
-      });
-    return loading;
-  }
-
-  crop.addEventListener('change', renderVarieties);
-  variety.addEventListener('change', renderHarvestHint);
-  season.addEventListener('change', () => { seasonTouched = true; });
-  plantingDate.addEventListener('change', () => {
-    const date = parseDate(plantingDate.value);
-    if (date && !seasonTouched) {
-      season.value = seasonFor(date);
-      setFieldError(season, '');
-    }
-    renderHarvestHint();
-  });
-  retryButton.addEventListener('click', loadCrops);
 
   function validate() {
-    if (!crop.value) setFieldError(crop, MESSAGES.cropRequired);
-    if (!variety.value) setFieldError(variety, MESSAGES.varietyRequired);
-    if (!season.value) setFieldError(season, MESSAGES.seasonRequired);
+    const name = cleanText(fieldName.value);
+    const crop = form.elements.crop.value;
+    const varietyName = cleanText(variety.value);
+    const others = draft.fields.filter((field) => field.key !== draft.editing);
+
+    if (!name) setFieldError(fieldName, MESSAGES.fieldNameRequired);
+    else if (others.some((field) => field.field_name.toLowerCase() === name.toLowerCase())) {
+      setFieldError(fieldName, MESSAGES.fieldNameTaken);
+    }
+    if (!crop) setCropError(MESSAGES.cropRequired);
+    if (!varietyName) setFieldError(variety, MESSAGES.varietyRequired);
+
+    const areaHa = toHectares(size.value);
+    const othersHa = others.reduce((sum, field) => sum + field.area_ha, 0);
+    if (!size.value.trim()) setFieldError(size, MESSAGES.sizeRequired);
+    else if (areaHa === null) setFieldError(size, MESSAGES.sizeInvalid);
+    else if (areaHa === 0) setFieldError(size, MESSAGES.sizeTooSmall);
+    else if (othersHa + areaHa > MAX_AREA_HA) setFieldError(size, MESSAGES.sizeTooLarge);
 
     const date = parseDate(plantingDate.value);
     if (!plantingDate.value) setFieldError(plantingDate, MESSAGES.plantingDateRequired);
     else if (!date || Math.abs(date.getTime() - Date.now()) > PLANTING_WINDOW_DAYS * DAY_MS) {
       setFieldError(plantingDate, MESSAGES.plantingDateInvalid);
     }
-
-    const areaPlantedHa = validateArea(areaPlanted, areaPlantedUnit.value, {
-      required: MESSAGES.areaPlantedRequired,
-      tooLarge: farmAreaHa(),
-      tooLargeMessage: MESSAGES.areaPlantedTooLarge,
-    });
-
-    let target = null;
-    if (targetYield.value.trim()) {
-      target = Number(targetYield.value);
-      if (!Number.isFinite(target) || target <= 0 || target > MAX_TARGET_YIELD) {
-        setFieldError(targetYield, MESSAGES.targetYieldInvalid);
-      } else {
-        target = Math.round(target * 100) / 100;
-      }
-    }
+    if (!plantingMethod.value) setFieldError(plantingMethod, MESSAGES.plantingMethodRequired);
 
     if (form.querySelector('[aria-invalid="true"]')) return null;
     return {
-      variety_id: Number(variety.value),
-      season: season.value,
-      area_planted_ha: areaPlantedHa,
+      field_name: name,
+      crop,
+      variety: varietyName,
+      area_ha: areaHa,
       planting_date: plantingDate.value,
-      target_yield_t_ha: target,
+      planting_method: plantingMethod.value,
     };
   }
 
-  function reset() {
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    clearErrors();
+
+    const field = validate();
+    if (!field) {
+      focusFirstInvalid(form);
+      return;
+    }
+
+    const index = draft.fields.findIndex((f) => f.key === draft.editing);
+    if (index >= 0) draft.fields[index] = { ...draft.fields[index], ...field };
+    else draft.fields.push({ key: nextFieldKey++, ...field });
+    open(null);
+    router.navigate('setup-fields');
+  });
+
+  /** Prepares the form for a new field (key null) or fills it with an existing one. */
+  function open(key) {
+    const field = draft.fields.find((f) => f.key === key) ?? null;
+    draft.editing = field?.key ?? null;
     form.reset();
-    seasonTouched = false;
-    renderVarieties();
+    clearErrors();
+    if (!field) return;
+    fieldName.value = field.field_name;
+    for (const radio of cropRadios()) radio.checked = radio.value === field.crop;
+    variety.value = field.variety;
+    size.value = String(field.area_ha);
+    plantingDate.value = field.planting_date;
+    plantingMethod.value = field.planting_method;
+  }
+
+  router.route('setup-field', {
+    guard: fieldStepsGuard,
+    onEnter() {
+      heading.textContent = draft.editing === null ? 'Add your Field' : 'Edit your Field';
+      backLink.setAttribute('href', draft.fields.length ? '#/setup-fields' : '#/setup-farm');
+    },
+    onLeave() {
+      clearErrors();
+    },
+  });
+
+  return {
+    open,
+    reset() {
+      open(null);
+    },
+  };
+}
+
+/* ---------- Step 3: list of fields ---------- */
+
+function mountFieldsStep(router, fieldStep) {
+  const view = document.querySelector('[data-view="setup-fields"]');
+  const list = view.querySelector('[data-field-list]');
+  const template = view.querySelector('template[data-field-card]');
+  const countEl = view.querySelector('[data-field-count]');
+  const addButton = view.querySelector('[data-add-field]');
+  const continueButton = view.querySelector('[data-fields-continue]');
+
+  function card(field) {
+    const item = template.content.firstElementChild.cloneNode(true);
+    const crop = cropOf(field.crop);
+    const q = (selector) => item.querySelector(selector);
+
+    q('[data-crop-icon]').setAttribute('href', `#${crop.icon}`);
+    q('[data-name]').textContent = field.field_name;
+    q('[data-meta]').textContent = `${crop.label} · ${formatHectares(field.area_ha)}`;
+    q('[data-place]').textContent = draft.place.barangay_name;
+    q('[data-variety]').textContent = field.variety;
+    q('[data-planted]').textContent = formatDate(parseDate(field.planting_date));
+    q('[data-method]').textContent = labelOf(PLANTING_METHODS, field.planting_method);
+
+    const edit = q('[data-edit]');
+    edit.setAttribute('aria-label', `Edit ${field.field_name}`);
+    edit.addEventListener('click', () => {
+      fieldStep.open(field.key);
+      router.navigate('setup-field');
+    });
+
+    const remove = q('[data-remove]');
+    remove.setAttribute('aria-label', `Remove ${field.field_name}`);
+    remove.addEventListener('click', () => {
+      if (!window.confirm(MESSAGES.removeConfirm(field.field_name))) return;
+      draft.fields = draft.fields.filter((f) => f.key !== field.key);
+      setStatus(view, '');
+      render();
+      addButton.focus();
+    });
+
+    const toggle = q('[data-toggle]');
+    const more = q('[data-more]');
+    toggle.addEventListener('click', () => {
+      more.hidden = !more.hidden;
+      toggle.setAttribute('aria-expanded', String(!more.hidden));
+      toggle.querySelector('span').textContent = more.hidden ? 'View details' : 'Hide details';
+    });
+
+    return item;
+  }
+
+  function render() {
+    list.replaceChildren(...draft.fields.map(card));
+    countEl.textContent = `${draft.fields.length} of ${plural(draft.fieldCount, 'field')} added`;
+  }
+
+  addButton.addEventListener('click', () => {
+    fieldStep.open(null);
+    router.navigate('setup-field');
+  });
+
+  continueButton.addEventListener('click', () => {
+    const added = draft.fields.length;
+    const expected = draft.fieldCount;
+    if (!added) setStatus(view, MESSAGES.fieldsNone, 'error');
+    else if (added < expected) setStatus(view, MESSAGES.fieldsTooFew(added, expected), 'error');
+    else if (added > expected) setStatus(view, MESSAGES.fieldsTooMany(added, expected), 'error');
+    else router.navigate('setup-review');
+  });
+
+  router.route('setup-fields', {
+    guard: () => fieldStepsGuard() ?? (draft.fields.length ? null : 'setup-field'),
+    onEnter() {
+      render();
+    },
+    onLeave() {
+      setStatus(view, '');
+    },
+  });
+}
+
+/* ---------- Step 4: review and save ---------- */
+
+function mountReviewStep(router, farmStep, fieldStep) {
+  const view = document.querySelector('[data-view="setup-review"]');
+  const form = view.querySelector('[data-review-form]');
+  const backLink = view.querySelector('[data-review-back]');
+  const editLinks = view.querySelectorAll('[data-review-edit]');
+  const list = view.querySelector('[data-review-fields]');
+  const template = view.querySelector('template[data-review-card]');
+  const value = (name) => view.querySelector(`[data-review="${name}"]`);
+
+  function card(field) {
+    const item = template.content.firstElementChild.cloneNode(true);
+    const crop = cropOf(field.crop);
+    const q = (selector) => item.querySelector(selector);
+
+    q('[data-crop-icon]').setAttribute('href', `#${crop.icon}`);
+    q('[data-name]').textContent = field.field_name;
+    q('[data-crop]').textContent = `${crop.label} (${field.variety})`;
+    q('[data-area]').textContent = formatHectares(field.area_ha);
+    q('[data-planted]').textContent = formatDate(parseDate(field.planting_date));
+    return item;
+  }
+
+  function render() {
+    value('farm_name').textContent = draft.farm.farm_name;
+    value('location').textContent = `${draft.place.barangay_name}, ${draft.place.municipality}, Occidental Mindoro`;
+    value('total_area').textContent = formatHectares(totalAreaHa(), { long: true });
+    value('season').textContent = labelOf(SEASONS, draft.season);
+    list.replaceChildren(...draft.fields.map(card));
+
+    const locked = Boolean(draft.createdFarm);
+    backLink.hidden = locked;
+    editLinks.forEach((link) => { link.hidden = locked; });
+  }
+
+  function clearDraft() {
+    Object.assign(draft, {
+      farm: null,
+      place: null,
+      fieldCount: 0,
+      season: null,
+      fields: [],
+      editing: null,
+      createdFarm: null,
+      savedKeys: new Set(),
+    });
+    farmStep.reset();
+    fieldStep.reset();
   }
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (form.getAttribute('aria-busy') === 'true') return;
 
-    clearFieldErrors(form);
     setStatus(view, '');
-
-    const cycle = validate();
-    if (!cycle) {
-      focusFirstInvalid(form);
-      return;
-    }
-
     setBusy(form, true);
     try {
       if (!draft.createdFarm) {
-        const created = await farms.create(draft.farm);
+        const created = await farms.create({ ...draft.farm, total_area_ha: totalAreaHa() });
         const farmId = created?.farm_id ?? created?.id;
         if (farmId == null) throw new Error(MESSAGES.unexpected);
         draft.createdFarm = { ...draft.farm, ...draft.place, ...created, farm_id: farmId };
@@ -418,26 +519,22 @@ function mountCycleStep(router, farmStep) {
           farm_name: draft.createdFarm.farm_name,
           municipality: draft.createdFarm.municipality,
         });
-        backLink.hidden = true;
+        render();
       }
 
-      const createdCycle = await farms.createCycle(draft.createdFarm.farm_id, cycle);
+      for (const field of draft.fields) {
+        if (draft.savedKeys.has(field.key)) continue;
+        const { key, ...payload } = field;
+        await farms.addField(draft.createdFarm.farm_id, { ...payload, season: draft.season });
+        draft.savedKeys.add(key);
+      }
 
-      draft.result = { ...draft.createdFarm, expected_harvest_date: createdCycle?.expected_harvest_date ?? null };
-      draft.farm = null;
-      draft.place = null;
-      draft.createdFarm = null;
-      farmStep.reset();
-      reset();
+      draft.result = { farm_name: draft.createdFarm.farm_name };
+      clearDraft();
       router.navigate('setup-done', { replace: true });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         router.navigate('login', { state: { message: MESSAGES.sessionExpired, tone: 'error' } });
-        return;
-      }
-      if (err instanceof ApiError && err.code === 'area_exceeds_farm') {
-        setFieldError(areaPlanted, MESSAGES.areaPlantedTooLarge);
-        focusFirstInvalid(form);
         return;
       }
       if (err instanceof ApiError && err.code === 'coordinates_outside_province') {
@@ -454,15 +551,17 @@ function mountCycleStep(router, farmStep) {
     }
   });
 
-  router.route('setup-cycle', {
-    guard: () => (draft.farm || draft.createdFarm ? null : 'setup-farm'),
+  router.route('setup-review', {
+    guard: () => {
+      if (!draft.farm) return 'setup-farm';
+      if (!draft.fields.length) return 'setup-field';
+      return null;
+    },
     onEnter() {
-      backLink.hidden = Boolean(draft.createdFarm);
-      loadCrops();
+      render();
     },
     onLeave() {
-      clearFieldErrors(form);
-      if (cropList) setStatus(view, '');
+      setStatus(view, '');
     },
   });
 }
@@ -472,7 +571,6 @@ function mountCycleStep(router, farmStep) {
 function mountDone(router) {
   const view = document.querySelector('[data-view="setup-done"]');
   const farmNameEl = view.querySelector('[data-farm-name]');
-  const harvestEl = view.querySelector('[data-expected-harvest]');
 
   bindHomeButtons(view, router);
 
@@ -480,10 +578,6 @@ function mountDone(router) {
     guard: () => (draft.result ? null : 'setup'),
     onEnter() {
       farmNameEl.textContent = draft.result.farm_name;
-      // expected_harvest_date comes from POST /farms/{farm_id}/cycles (planting_date + maturity_days).
-      const harvest = parseDate(draft.result.expected_harvest_date ?? '');
-      harvestEl.textContent = harvest ? `Expected harvest: ${formatDate(harvest)}` : '';
-      harvestEl.hidden = !harvest;
     },
   });
 }
@@ -493,6 +587,8 @@ function mountDone(router) {
 export function mountSetupPages(router) {
   mountStart(router);
   const farmStep = mountFarmStep(router);
-  mountCycleStep(router, farmStep);
+  const fieldStep = mountFieldStep(router);
+  mountFieldsStep(router, fieldStep);
+  mountReviewStep(router, farmStep, fieldStep);
   mountDone(router);
 }

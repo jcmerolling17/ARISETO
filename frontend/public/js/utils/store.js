@@ -15,6 +15,14 @@ export function loadJSON(key, fallback = null) {
   }
 }
 
+export function removeJSON(key) {
+  try {
+    localStorage.removeItem(PREFIX + key);
+  } catch {
+    /* storage unavailable; nothing was saved */
+  }
+}
+
 export function saveJSON(key, value) {
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify(value));

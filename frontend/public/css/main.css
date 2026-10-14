@@ -172,7 +172,15 @@ svg {
   background: linear-gradient(180deg, #8fd0ee 0%, #cdeaf3 34%, #f3f0d6 52%, #a9d18a 53%);
 }
 
-/* Set --scene-photo: url("assets/farm.jpg") on :root to use a real photograph */
+/* Real photograph per screen; the drawn sun, hills and field remain the fallback */
+.scene--welcome { --scene-photo: url("../assets/images/bg-welcome.jpg"); }
+.scene--setup { --scene-photo: url("../assets/images/bg-setup.jpg"); }
+.scene--home { --scene-photo: url("../assets/images/bg-home.jpg"); }
+
+:is(.scene--welcome, .scene--setup, .scene--home) :is(.scene__sun, .scene__hills, .scene__field) {
+  display: none;
+}
+
 .scene__photo {
   position: absolute;
   inset: 0;
