@@ -45,8 +45,6 @@ const MESSAGES = {
     `You said your farm has ${plural(expected, 'field')}, but you added ${added}. Add ${plural(expected - added, 'more field')}, or go back and change the number.`,
   fieldsTooMany: (added, expected) =>
     `You said your farm has ${plural(expected, 'field')}, but you added ${added}. Remove ${plural(added - expected, 'field')}, or go back and change the number.`,
-  sessionExpired: 'Your session has expired. Please log in again.',
-  accountDeactivated: 'Your account has been deactivated. Please contact the MPMPC office.',
   unexpected: 'The server returned an unexpected response. Please try again.',
 };
 
@@ -356,10 +354,7 @@ function mountFieldStep(router) {
       }
     } catch (err) {
       if (id !== varietyRequest) return;
-      if (err instanceof ApiError && err.status === 401) {
-        router.navigate('login', { state: { message: MESSAGES.sessionExpired, tone: 'error' } });
-        return;
-      }
+      if (err instanceof ApiError && err.sessionEnded) return;
       setVarietyPlaceholder('Choose a crop first', 'failed');
       setFieldError(variety, MESSAGES.varietiesFailed);
     }
@@ -631,14 +626,7 @@ function mountReviewStep(router, farmStep, fieldStep) {
       clearDraft();
       router.navigate('setup-done', { replace: true });
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        router.navigate('login', { state: { message: MESSAGES.sessionExpired, tone: 'error' } });
-        return;
-      }
-      if (err instanceof ApiError && err.code === 'account_deactivated') {
-        setStatus(view, MESSAGES.accountDeactivated, 'error');
-        return;
-      }
+      if (err instanceof ApiError && err.sessionEnded) return;
       if (err instanceof ApiError && SAVE_ERRORS[err.code]) {
         // The variety list may be out of date; load it again when a field is edited.
         if (err.code === 'variety_not_found') forgetVarieties();
