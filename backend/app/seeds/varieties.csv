@@ -1,0 +1,16 @@
+crop,variety_name,maturity_class,maturity_days,source
+rice,RC-402,early,110,MPMPC
+rice,RC-18,medium,120,MPMPC
+rice,RC-218,early,110,MPMPC
+rice,C4-GREEN,very_early,100,MPMPC
+rice,RC-216,early,110,MPMPC
+corn,NK313 VIP,late,110,MPMPC
+corn,NK6410,early,90,MPMPC
+corn,DEKALB 8282,late,110,MPMPC
+corn,DEKALB 6919,medium,105,MPMPC
+corn,PIONEER 3582,late,110,MPMPC
+onion,SUPER PINOY,early,110,MPMPC
+onion,RED PINOY,medium,120,MPMPC
+onion,RED DRAGON,late,125,MPMPC (gave 120-130 days; 125 is a placeholder until MPMPC confirms the typical value)
+onion,RED ALLIUM,medium,120,MPMPC
+onion,SUPER TAKII (White Onion),early,105,MPMPC (gave 100-110 days; 105 is a placeholder until MPMPC confirms the typical value)

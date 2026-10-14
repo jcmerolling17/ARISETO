@@ -1,0 +1,1902 @@
+<!-- frontend/public/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2d8a3e">
+  <meta name="description" content="ARISETO — AI-powered tools that help Filipino farmers optimize their farming and maximize crop yields.">
+  <meta name="ariseto-api-base" content="/api/v1">
+  <title>Welcome · ARISETO</title>
+  <link rel="icon" type="image/png" href="assets/icons/logo-badge.png">
+  <link rel="apple-touch-icon" href="assets/icons/logo-badge.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/screens.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <!-- Shared icon sprite -->
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24">
+      <path d="M4 7h16M9 7V4.5h6V7M6 7l1 12.5a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5L18 7M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-check-circle" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="m8 12.5 2.7 2.7L16.2 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-arrow-right" viewBox="0 0 24 24">
+      <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-crop-rice" viewBox="0 0 24 24">
+      <path d="M12 21.5V10M12 16c-2.8-.4-5-2.3-6-5.5 3 .1 5.2 2 6 5M12 13.5c2.6-.6 4.6-2.6 5.3-5.7-2.9.4-4.8 2.4-5.3 5.2M12 10c-1.4-1.6-1.4-4.4 0-6.5 1.4 2.1 1.4 4.9 0 6.5Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-crop-corn" viewBox="0 0 24 24">
+      <path d="M12 2.5c2.5 0 3.8 3.4 3.8 7.6S14.4 17 12 17s-3.8-2.7-3.8-6.9S9.5 2.5 12 2.5ZM10 7h4M9.4 10h5.2M9.8 13h4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M8.3 10.5C6 12.5 5 16 5.8 21c2-1.3 4.2-2 6.2-2.2M15.7 10.5c2.3 2 3.3 5.5 2.5 10.5-2-1.3-4.2-2-6.2-2.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-crop-onion" viewBox="0 0 24 24">
+      <path d="M12 10c3.6 1.9 6 4 6 7.1a6 6 0 0 1-12 0C6 14 8.4 11.9 12 10ZM12 10V2.5M12 10C11 7.6 9.4 5.6 7.5 4.2M12 10c1-2.4 2.6-4.4 4.5-5.8M10.5 23l.6-.9M13.5 23l-.6-.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-back" viewBox="0 0 24 24">
+      <path d="M15 5 8 12l7 7" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24">
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+    </symbol>
+    <symbol id="icon-eye-off" viewBox="0 0 24 24">
+      <path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.9 3.8M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.6-.6 5-1.5M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+      <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-chevron-right" viewBox="0 0 24 24">
+      <path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-home" viewBox="0 0 24 24">
+      <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-pencil" viewBox="0 0 24 24">
+      <path d="M4 20h4L19 9l-4-4L4 16v4Zm9-13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-bell" viewBox="0 0 24 24">
+      <path d="M6 9a6 6 0 1 1 12 0c0 6.5 2.5 8 2.5 8h-17S6 15.5 6 9Z" fill="currentColor"/>
+      <path d="M10 20a2.2 2.2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-user" viewBox="0 0 24 24">
+      <circle cx="12" cy="9" r="4" fill="currentColor"/>
+      <path d="M4 21a8 8 0 0 1 16 0Z" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-scan" viewBox="0 0 24 24">
+      <path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      <path d="M12 16c-2.5 0-4-1.8-4-4.2 0-2.6 2.2-4.3 6-3.8.4 3.7-1.2 8-2 8Zm0 0c0-2 .6-3.6 2-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-chart" viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M8.5 16v-3M12 16V8M15.5 16v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-chat" viewBox="0 0 24 24">
+      <path d="M20.5 12a8.5 8.5 0 0 1-12.4 7.6L3.5 20.5l1-4.3A8.5 8.5 0 1 1 20.5 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-weather" viewBox="0 0 24 24">
+      <path d="M9 2.5v1.5M3.6 4.6l1 1M1.5 10H3M14.4 4.6l-1 1M5.6 12.4a4 4 0 1 1 7-3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      <path d="M8.5 20.5h9a3.5 3.5 0 0 0 .4-7A5 5 0 0 0 8.4 15a2.8 2.8 0 0 0 .1 5.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-wallet" viewBox="0 0 24 24">
+      <rect x="3" y="4.5" width="18" height="15" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M21 9.5h-5a2.5 2.5 0 0 0 0 5h5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+    </symbol>
+    <symbol id="icon-calendar" viewBox="0 0 24 24">
+      <rect x="3.5" y="5" width="17" height="15.5" rx="3" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M8 3v4M16 3v4M3.5 10.5h17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-thermometer" viewBox="0 0 24 24">
+      <path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M12 9v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-rain" viewBox="0 0 24 24">
+      <path d="M7 15h10a4 4 0 0 0 .6-8A6 6 0 0 0 6.3 8.6 3.3 3.3 0 0 0 7 15Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <path d="M8.5 18.5 7.5 21M12.5 18.5l-1 2.5M16.5 18.5l-1 2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-wind" viewBox="0 0 24 24">
+      <path d="M3 8.5h10.5a2.5 2.5 0 1 0-2.5-2.5M3 12.5h15a3 3 0 1 1-3 3M3 16.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-pin" viewBox="0 0 24 24">
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <circle cx="12" cy="9.5" r="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-more" viewBox="0 0 24 24">
+      <circle cx="12" cy="5.5" r="1.7" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.7" fill="currentColor"/>
+      <circle cx="12" cy="18.5" r="1.7" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-tag" viewBox="0 0 24 24">
+      <path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1a1 1 0 0 1 .7.3l7.2 7.2a1 1 0 0 1 0 1.4l-8.1 8.1a1 1 0 0 1-1.4 0l-7.2-7.2a1 1 0 0 1-.3-.7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-seeds" viewBox="0 0 24 24">
+      <path d="M12 21v-8M12 13c0-3.5-2.5-6-6.5-6 0 3.5 2.5 6 6.5 6ZM12 11c0-3.3 2.3-5.8 6-6 0 3.4-2.3 5.8-6 6ZM7 21h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-fertilizer" viewBox="0 0 24 24">
+      <path d="M12 3 20 12 12 21 4 12 12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <path d="M12 8.5v7M8.5 12h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-chemicals" viewBox="0 0 24 24">
+      <path d="M9.5 3.5h5M10.5 3.5v5.2L5.6 17.4A2 2 0 0 0 7.4 20.5h9.2a2 2 0 0 0 1.8-3.1l-4.9-8.7V3.5M7.6 14h8.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-labor" viewBox="0 0 24 24">
+      <circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M3.5 20a5.5 5.5 0 0 1 11 0M16 5.2a3.2 3.2 0 0 1 0 5.6M17.5 14.5a5.5 5.5 0 0 1 3 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-equipment" viewBox="0 0 24 24">
+      <rect x="3" y="8" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M8.5 8V5.5a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1V8M3 13h18M10 13v2h4v-2" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-fuel" viewBox="0 0 24 24">
+      <path d="M4.5 20.5V5a1.5 1.5 0 0 1 1.5-1.5h7A1.5 1.5 0 0 1 14.5 5v15.5M3 20.5h13M7 7.5h5M14.5 10h2a1.5 1.5 0 0 1 1.5 1.5v4.5a1.5 1.5 0 0 0 3 0V8.5L18.5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-others" viewBox="0 0 24 24">
+      <path d="M4 7h9M17 7h3M4 17h3M11 17h9M4 12h5M13 12h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      <circle cx="15" cy="7" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <circle cx="9" cy="17" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <circle cx="11" cy="12" r="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+    </symbol>
+    <symbol id="icon-trend-up" viewBox="0 0 24 24">
+      <path d="m3 17 6-6 4 4 8-8M15 7h6v6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-trend-down" viewBox="0 0 24 24">
+      <path d="m3 7 6 6 4-4 8 8M15 17h6v-6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-phone" viewBox="0 0 24 24">
+      <path d="M6.6 3.5h2.6l1.4 4-2 1.5a12 12 0 0 0 6.4 6.4l1.5-2 4 1.4v2.6a1.6 1.6 0 0 1-1.7 1.6A16.5 16.5 0 0 1 5 5.2a1.6 1.6 0 0 1 1.6-1.7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-wifi" viewBox="0 0 24 24">
+      <path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 16a5 5 0 0 1 6.8 0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/>
+      <circle cx="12" cy="19.2" r="1.3" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-translate" viewBox="0 0 24 24">
+      <path d="M3.5 6h9M8 4v2M10.5 6c-.8 3.6-3 6.4-6.5 8M6.5 9.5c1 1.9 2.6 3.4 4.5 4.3M12.5 20.5l4-9.5 4 9.5M14 17h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-help" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .9-1 1.6v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      <circle cx="12" cy="16.8" r="1.1" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24">
+      <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4.5 14.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-alert" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M12 7.5v5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="16.5" r="1.2" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-leaf" viewBox="0 0 24 24">
+      <path d="M5 19c0-8.5 5.5-14 15-14 0 9.5-5.5 15-14 15m0-1 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-soil" viewBox="0 0 24 24">
+      <path d="M3 9.5h18M3 14.5h18M3 19.5h18M7 4.5l1.5 2M12 4l0 2.5M17 4.5l-1.5 2M6 12h.01M11 12h.01M16 12h.01M8.5 17h.01M14 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-send" viewBox="0 0 24 24">
+      <path d="M4 12 20 4l-6 16-2.5-6.5L4 12Zm7.5 1.5L20 4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-note" viewBox="0 0 24 24">
+      <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20V3.5ZM14.5 3.5v4h4.5M9 12h7M9 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <!-- Weather conditions (colored) -->
+    <symbol id="wx-clear" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="10" fill="#ffb300"/>
+      <path d="M24 5v5M24 38v5M5 24h5M38 24h5M10.6 10.6l3.5 3.5M33.9 33.9l3.5 3.5M10.6 37.4l3.5-3.5M33.9 14.1l3.5-3.5" stroke="#ffb300" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="wx-partly" viewBox="0 0 48 48">
+      <circle cx="19" cy="18" r="10" fill="#ffb300"/>
+      <path d="M17 40h20a8 8 0 0 0 .7-16 11 11 0 0 0-20.9 3.6A6.3 6.3 0 0 0 17 40Z" fill="#eef4fa" stroke="#9fb9d3" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="wx-cloudy" viewBox="0 0 48 48">
+      <path d="M14 38h22a9 9 0 0 0 .8-18A12 12 0 0 0 13.9 24 7 7 0 0 0 14 38Z" fill="#dfe8f1" stroke="#8fa9c4" stroke-width="1.5"/>
+    </symbol>
+    <symbol id="wx-rain" viewBox="0 0 48 48">
+      <path d="M14 32h22a9 9 0 0 0 .8-18A12 12 0 0 0 13.9 18 7 7 0 0 0 14 32Z" fill="#dfe8f1" stroke="#8fa9c4" stroke-width="1.5"/>
+      <path d="M17 36l-2 6M25 36l-2 6M33 36l-2 6" stroke="#2a8fd6" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="wx-storm" viewBox="0 0 48 48">
+      <path d="M14 30h22a9 9 0 0 0 .8-18A12 12 0 0 0 13.9 16 7 7 0 0 0 14 30Z" fill="#c9d4df" stroke="#7d93ab" stroke-width="1.5"/>
+      <path d="M26 30l-6 9h5l-3 7 8-10h-5l3-6Z" fill="#ffc107"/>
+    </symbol>
+    <symbol id="wx-fog" viewBox="0 0 48 48">
+      <path d="M14 28h22a9 9 0 0 0 .8-18A12 12 0 0 0 13.9 14 7 7 0 0 0 14 28Z" fill="#dfe8f1" stroke="#8fa9c4" stroke-width="1.5"/>
+      <path d="M9 34h30M14 40h22" stroke="#9aa9b4" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+  </svg>
+
+  <div class="app-shell">
+    <div class="scene scene--welcome" aria-hidden="true">
+      <div class="scene__photo"></div>
+      <div class="scene__sun"></div>
+      <div class="scene__hills"></div>
+      <div class="scene__field"></div>
+      <div class="scene__shade"></div>
+    </div>
+
+    <main id="app" class="viewport">
+      <!-- Welcome -->
+      <section class="view view--welcome" data-view="welcome" aria-labelledby="welcome-title">
+        <header class="view__header">
+          <p class="view__label">Welcome</p>
+        </header>
+
+        <div class="brand">
+          <img class="brand__logo" src="assets/icons/logo.png" alt="ARISETO" width="236" height="256" decoding="async">
+        </div>
+
+        <div class="glass-card">
+          <h1 id="welcome-title" class="card__title" tabindex="-1" data-route-focus>
+            Empowering Your Agriculture Journey with Innovative AI Solutions
+          </h1>
+          <p class="card__text">
+            Harness the Power of Technology to Optimize Your Farming Experience and Maximize Crop Yields
+          </p>
+          <div class="stack">
+            <a href="#/signup" class="btn btn--gradient btn--block">Get started</a>
+            <a href="#/login" class="btn btn--outline btn--block">I have an account</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Login -->
+      <section class="view" data-view="login" aria-labelledby="login-title" hidden>
+        <header class="view__header">
+          <a href="#/welcome" class="icon-btn" aria-label="Back to welcome">
+            <svg aria-hidden="true"><use href="#icon-back"/></svg>
+          </a>
+          <p class="view__label">Login</p>
+        </header>
+
+        <div class="brand brand--compact">
+          <img class="brand__logo" src="assets/icons/logo.png" alt="ARISETO" width="236" height="256" decoding="async">
+        </div>
+
+        <div class="glass-card">
+          <h1 id="login-title" class="card__title" tabindex="-1" data-route-focus>Welcome Back!</h1>
+          <p class="card__subtitle">Login to your Account</p>
+
+          <form id="login-form" class="form" novalidate>
+            <div class="field">
+              <label for="login-identifier" class="field__label">Mobile Number / Email</label>
+              <input id="login-identifier" name="identifier" class="input" type="text"
+                     inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false"
+                     placeholder="+639XXXXXXXXX or name@email.com"
+                     aria-describedby="login-identifier-error" required>
+              <p id="login-identifier-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="login-password" class="field__label">Password</label>
+              <div class="input-group">
+                <input id="login-password" name="password" class="input" type="password"
+                       autocomplete="current-password" placeholder="Enter your password"
+                       aria-describedby="login-password-error" required>
+                <button type="button" class="input-group__toggle" data-toggle-password
+                        aria-controls="login-password" aria-label="Show password" aria-pressed="false">
+                  <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
+                  <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
+                </button>
+              </div>
+              <p id="login-password-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+            <button type="submit" class="btn btn--solid btn--block">
+              <span class="btn__label">Login</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+          </form>
+
+          <p class="card__footer">Don't have an account? <a href="#/signup" class="link">Sign up</a></p>
+        </div>
+      </section>
+
+      <!-- Sign up -->
+      <section class="view view--plain" data-view="signup" aria-labelledby="signup-title" hidden>
+        <header class="plain-header">
+          <a href="#/welcome" class="icon-btn icon-btn--square" aria-label="Back to welcome">
+            <svg aria-hidden="true"><use href="#icon-back"/></svg>
+          </a>
+          <p class="plain-header__aside">Already have an account? <a href="#/login" class="link">Log in</a></p>
+        </header>
+
+        <div class="plain-intro">
+          <h1 id="signup-title" class="plain-intro__title" tabindex="-1" data-route-focus>Welcome to ARISETO</h1>
+          <p class="plain-intro__text">Create an account to access ARISETO, and start to set up your farm.</p>
+        </div>
+
+        <form id="signup-form" class="form form--plain" novalidate>
+          <div class="field">
+            <label for="signup-first-name" class="sr-only">First Name</label>
+            <input id="signup-first-name" name="first_name" class="input" type="text" maxlength="60"
+                   autocomplete="given-name" autocapitalize="words" placeholder="First Name"
+                   aria-describedby="signup-first-name-error" required>
+            <p id="signup-first-name-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-last-name" class="sr-only">Last Name</label>
+            <input id="signup-last-name" name="last_name" class="input" type="text" maxlength="60"
+                   autocomplete="family-name" autocapitalize="words" placeholder="Last Name"
+                   aria-describedby="signup-last-name-error" required>
+            <p id="signup-last-name-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-member-no" class="sr-only">MPMPC Member Number</label>
+            <input id="signup-member-no" name="member_no" class="input" type="text" maxlength="20"
+                   autocomplete="off" autocapitalize="characters" spellcheck="false"
+                   placeholder="MPMPC Member Number" aria-describedby="signup-member-no-error" required>
+            <p id="signup-member-no-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-mobile" class="sr-only">Mobile Number</label>
+            <input id="signup-mobile" name="mobile_no" class="input" type="tel"
+                   inputmode="tel" autocomplete="tel" placeholder="Mobile Number (+639XXXXXXXXX)"
+                   aria-describedby="signup-mobile-error" required>
+            <p id="signup-mobile-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-email" class="sr-only">Email Address (optional)</label>
+            <input id="signup-email" name="email" class="input" type="email"
+                   inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"
+                   placeholder="Email Address (optional)" aria-describedby="signup-email-error">
+            <p id="signup-email-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-password" class="sr-only">Password</label>
+            <div class="input-group">
+              <input id="signup-password" name="password" class="input" type="password"
+                     autocomplete="new-password" placeholder="Password (8+ Characters)"
+                     aria-describedby="signup-password-error" required>
+              <button type="button" class="input-group__toggle" data-toggle-password
+                      aria-controls="signup-password" aria-label="Show password" aria-pressed="false">
+                <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
+                <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
+              </button>
+            </div>
+            <p id="signup-password-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-municipality" class="sr-only">Municipality</label>
+            <select id="signup-municipality" name="municipality" class="input select"
+                    aria-describedby="signup-municipality-error" required>
+              <option value="">Municipality</option>
+            </select>
+            <p id="signup-municipality-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-barangay" class="sr-only">Barangay (optional)</label>
+            <select id="signup-barangay" name="barangay_id" class="input select"
+                    aria-describedby="signup-barangay-hint" disabled data-barangay-select>
+              <option value="">Barangay (choose municipality first)</option>
+            </select>
+            <p id="signup-barangay-hint" class="field__hint" data-barangay-hint aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="signup-language" class="sr-only">Preferred language</label>
+            <select id="signup-language" name="preferred_language" class="input select">
+              <option value="fil" selected>Language: Filipino</option>
+              <option value="en">Language: English</option>
+            </select>
+          </div>
+
+          <div class="form__end">
+            <p class="form__legal">
+              By continuing, you agree to ARISETO’s
+              <a href="terms.html" class="link" target="_blank" rel="noopener">Terms &amp; Conditions</a>
+              and <a href="privacy.html" class="link" target="_blank" rel="noopener">Privacy Policy</a>
+            </p>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+            <button type="submit" class="btn btn--gradient btn--block btn--rounded">
+              <span class="btn__label">Continue</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Farm setup: start -->
+      <section class="view view--plain view--setup-start" data-view="setup" aria-labelledby="setup-title" hidden>
+        <div class="setup-hero" aria-hidden="true">
+          <div class="scene scene--setup">
+            <div class="scene__photo"></div>
+            <div class="scene__sun"></div>
+            <div class="scene__hills"></div>
+            <div class="scene__field"></div>
+          </div>
+
+          <div class="farm-preview">
+            <div class="farm-preview__head">
+              <span class="farm-preview__name">
+                Corn Field
+                <svg class="farm-preview__edit"><use href="#icon-pencil"/></svg>
+              </span>
+              <span class="farm-preview__more">
+                More Details
+                <svg><use href="#icon-chevron-right"/></svg>
+              </span>
+            </div>
+            <div class="farm-preview__stats">
+              <div class="farm-stat farm-stat--good">
+                <span class="farm-stat__label">Crop Health</span>
+                <span class="farm-stat__value">Good</span>
+              </div>
+              <div class="farm-stat">
+                <span class="farm-stat__label">Planting date</span>
+                <span class="farm-stat__value">12/01/2026</span>
+              </div>
+              <div class="farm-stat">
+                <span class="farm-stat__label">Harvest time</span>
+                <span class="farm-stat__value">~4 Months</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-start__body">
+          <h1 id="setup-title" class="setup-start__title" tabindex="-1" data-route-focus>Let’s Start Setting Up Your Farm</h1>
+          <p class="setup-start__text">
+            Hi <span data-user-name>there</span>, let’s start working on your farm settings so you can know more
+            about it with the help of AI.
+          </p>
+        </div>
+
+        <div class="stack setup-actions">
+          <a href="#/setup-farm" class="btn btn--gradient btn--block btn--rounded">Get started</a>
+          <button type="button" class="btn btn--social btn--block btn--rounded btn--center" data-go-home>
+            <svg class="btn__icon" aria-hidden="true"><use href="#icon-clock"/></svg>
+            <span>Set up later</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Farm setup: step 1 of 4 (farm) -->
+      <section class="view view--plain" data-view="setup-farm" aria-labelledby="setup-farm-title" hidden>
+        <header class="setup-header">
+          <a href="#/setup" class="icon-btn icon-btn--square" aria-label="Back">
+            <svg aria-hidden="true"><use href="#icon-back"/></svg>
+          </a>
+          <h1 id="setup-farm-title" class="setup-header__title" tabindex="-1" data-route-focus>Set up your farm</h1>
+        </header>
+        <div class="stepper" aria-hidden="true"><span class="is-active"></span><span></span><span></span><span></span></div>
+        <p class="sr-only">Step 1 of 4</p>
+
+        <form id="setup-farm-form" class="form form--plain" novalidate>
+          <div class="setup-lead">
+            <h2 class="setup-lead__title">Tell us about your farm</h2>
+            <p class="setup-lead__text">Provide your farm’s location, number of fields, and season to get started.</p>
+          </div>
+
+          <div class="field">
+            <label for="setup-farm-name" class="field__label">Farm Name</label>
+            <input id="setup-farm-name" name="farm_name" class="input" type="text" maxlength="100"
+                   autocomplete="off" autocapitalize="words" placeholder="e.g. MPMPC Farm"
+                   aria-describedby="setup-farm-name-error" required>
+            <p id="setup-farm-name-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="setup-municipality" class="field__label">Location / Municipality</label>
+            <select id="setup-municipality" name="municipality" class="input select"
+                    aria-describedby="setup-municipality-error" required>
+              <option value="">Choose location</option>
+            </select>
+            <p id="setup-municipality-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="setup-barangay" class="field__label">Barangay</label>
+            <select id="setup-barangay" name="barangay_id" class="input select"
+                    aria-describedby="setup-barangay-error setup-barangay-hint" required disabled data-barangay-select>
+              <option value="">Choose municipality first</option>
+            </select>
+            <p id="setup-barangay-error" class="field__error" aria-live="polite"></p>
+            <p id="setup-barangay-hint" class="field__hint" data-barangay-hint aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="setup-field-count" class="field__label">Number of Fields</label>
+            <input id="setup-field-count" name="field_count" class="input" type="number" inputmode="numeric"
+                   min="1" step="1" placeholder="e.g. 2" aria-describedby="setup-field-count-error" required>
+            <p id="setup-field-count-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="setup-season" class="field__label">Season</label>
+            <select id="setup-season" name="season" class="input select" aria-describedby="setup-season-error" required>
+              <option value="">Choose season</option>
+            </select>
+            <p id="setup-season-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="form__end">
+            <button type="submit" class="btn btn--gradient btn--block btn--rounded">Continue</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Farm setup: step 2 of 4 (add or edit a field) -->
+      <section class="view view--plain" data-view="setup-field" aria-labelledby="setup-field-title" hidden>
+        <header class="setup-header">
+          <a href="#/setup-farm" class="icon-btn icon-btn--square" aria-label="Back" data-field-back>
+            <svg aria-hidden="true"><use href="#icon-back"/></svg>
+          </a>
+          <h1 id="setup-field-title" class="setup-header__title" tabindex="-1" data-route-focus>Farm Details</h1>
+        </header>
+        <div class="stepper" aria-hidden="true"><span class="is-active"></span><span class="is-active"></span><span></span><span></span></div>
+        <p class="sr-only">Step 2 of 4</p>
+
+        <form id="setup-field-form" class="form form--plain" novalidate>
+          <div class="setup-lead">
+            <h2 class="setup-lead__title" data-field-heading>Add your Field</h2>
+            <p class="setup-lead__text">Enter your plot size, crop type, variety, and sowing date.</p>
+          </div>
+
+          <div class="field">
+            <label for="setup-field-name" class="field__label">Field Name</label>
+            <input id="setup-field-name" name="field_name" class="input" type="text" maxlength="50"
+                   autocomplete="off" autocapitalize="words" placeholder="e.g. Field A"
+                   aria-describedby="setup-field-name-error" required>
+            <p id="setup-field-name-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <fieldset class="field crop-picker" aria-describedby="setup-crop-error">
+            <legend class="field__label">What are you planting?</legend>
+            <div class="crop-picker__options" data-crop-options></div>
+            <p id="setup-crop-error" class="field__error" aria-live="polite" data-crop-error></p>
+          </fieldset>
+
+          <div class="field">
+            <label for="setup-variety" class="field__label">Variety</label>
+            <select id="setup-variety" name="variety_id" class="input select"
+                    aria-describedby="setup-variety-error" required disabled>
+              <option value="">Choose a crop first</option>
+            </select>
+            <p id="setup-variety-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="setup-size" class="field__label">Size (Ha)</label>
+            <input id="setup-size" name="area_ha" class="input" type="number" inputmode="decimal"
+                   min="0" step="any" placeholder="e.g. 1" aria-describedby="setup-size-error" required>
+            <p id="setup-size-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <h3 class="form__section-title">Planting Status</h3>
+
+          <div class="field">
+            <label for="setup-planting-date" class="field__label">Sowing Date</label>
+            <input id="setup-planting-date" name="planting_date" class="input" type="date"
+                   aria-describedby="setup-planting-date-error" required>
+            <p id="setup-planting-date-error" class="field__error" aria-live="polite"></p>
+          </div>
+
+          <div class="form__end">
+            <button type="submit" class="btn btn--gradient btn--block btn--rounded">Continue</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Farm setup: step 3 of 4 (list of fields) -->
+      <section class="view view--plain" data-view="setup-fields" aria-labelledby="setup-fields-title" hidden>
+        <header class="setup-header">
+          <a href="#/setup-farm" class="icon-btn icon-btn--square" aria-label="Back to farm details">
+            <svg aria-hidden="true"><use href="#icon-back"/></svg>
+          </a>
+          <h1 id="setup-fields-title" class="setup-header__title" tabindex="-1" data-route-focus>Field Setup</h1>
+        </header>
+        <div class="stepper" aria-hidden="true"><span class="is-active"></span><span class="is-active"></span><span class="is-active"></span><span></span></div>
+        <p class="sr-only">Step 3 of 4</p>
+
+        <div class="setup-lead">
+          <h2 class="setup-lead__title">Your Fields</h2>
+          <p class="setup-lead__text">List all the plots you want to manage. You can add more later in your profile.</p>
+          <p class="setup-lead__count" data-field-count aria-live="polite"></p>
+        </div>
+
+        <ul class="field-list" data-field-list></ul>
+
+        <button type="button" class="field-add" data-add-field>
+          <svg aria-hidden="true"><use href="#icon-plus"/></svg>
+          <span>Add Another Field</span>
+        </button>
+
+        <div class="form__end">
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+          <button type="button" class="btn btn--gradient btn--block btn--rounded" data-fields-continue>Continue</button>
+        </div>
+
+        <template data-field-card>
+          <li class="field-card">
+            <svg class="field-card__crop" aria-hidden="true"><use data-crop-icon href=""/></svg>
+            <div class="field-card__body">
+              <div class="field-card__head">
+                <h3 class="field-card__name" data-name></h3>
+                <div class="field-card__actions">
+                  <button type="button" class="field-card__icon-btn" data-edit>
+                    <svg aria-hidden="true"><use href="#icon-pencil"/></svg>
+                  </button>
+                  <button type="button" class="field-card__icon-btn" data-remove>
+                    <svg aria-hidden="true"><use href="#icon-trash"/></svg>
+                  </button>
+                </div>
+              </div>
+              <p class="field-card__meta" data-meta></p>
+              <div class="field-card__foot">
+                <span class="field-card__place">
+                  <svg aria-hidden="true"><use href="#icon-pin"/></svg>
+                  <span data-place></span>
+                </span>
+                <button type="button" class="field-card__details" aria-expanded="false" data-toggle>
+                  <span>View details</span>
+                  <svg aria-hidden="true"><use href="#icon-arrow-right"/></svg>
+                </button>
+              </div>
+              <dl class="field-card__more" data-more hidden>
+                <div><dt>Variety</dt><dd data-variety></dd></div>
+                <div><dt>Sown</dt><dd data-planted></dd></div>
+              </dl>
+            </div>
+          </li>
+        </template>
+      </section>
+
+      <!-- Farm setup: step 4 of 4 (review and save) -->
+      <section class="view view--plain" data-view="setup-review" aria-labelledby="setup-review-title" hidden>
+        <header class="setup-header">
+          <a href="#/setup-fields" class="icon-btn icon-btn--square" aria-label="Back to your fields" data-review-back>
+            <svg aria-hidden="true"><use href="#icon-back"/></svg>
+          </a>
+          <h1 id="setup-review-title" class="setup-header__title" tabindex="-1" data-route-focus>Review Your Farm</h1>
+        </header>
+        <div class="stepper" aria-hidden="true"><span class="is-active"></span><span class="is-active"></span><span class="is-active"></span><span class="is-active"></span></div>
+        <p class="sr-only">Step 4 of 4</p>
+
+        <div class="setup-lead">
+          <h2 class="setup-lead__title">Ready to Grow?</h2>
+          <p class="setup-lead__text">Please double-check your farm information. Accurate details ensure better crop insights and yield estimates.</p>
+        </div>
+
+        <section class="review" aria-labelledby="review-farm-title">
+          <div class="review__head">
+            <h3 id="review-farm-title" class="review__title">Farm Details</h3>
+            <a href="#/setup-farm" class="review__edit" data-review-edit>
+              <svg aria-hidden="true"><use href="#icon-pencil"/></svg>
+              <span>Edit</span>
+            </a>
+          </div>
+          <dl class="review__list">
+            <div class="review__item"><dt>Farm name</dt><dd data-review="farm_name"></dd></div>
+            <div class="review__item"><dt>Location</dt><dd data-review="location"></dd></div>
+            <div class="review__item"><dt>Total area</dt><dd data-review="total_area"></dd></div>
+            <div class="review__item"><dt>Season</dt><dd data-review="season"></dd></div>
+          </dl>
+        </section>
+
+        <section class="review" aria-labelledby="review-fields-title">
+          <div class="review__head">
+            <h3 id="review-fields-title" class="review__title">Fields and Crops</h3>
+            <a href="#/setup-fields" class="review__edit" data-review-edit>
+              <svg aria-hidden="true"><use href="#icon-pencil"/></svg>
+              <span>Edit</span>
+            </a>
+          </div>
+          <ul class="review__fields" data-review-fields></ul>
+        </section>
+
+        <form class="form__end" data-review-form novalidate>
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+          <button type="submit" class="btn btn--gradient btn--block btn--rounded">
+            <span class="btn__label">Continue</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+
+        <template data-review-card>
+          <li class="review-field">
+            <div class="review-field__head">
+              <svg class="review-field__crop" aria-hidden="true"><use data-crop-icon href=""/></svg>
+              <h4 class="review-field__name" data-name></h4>
+              <svg class="review-field__check" aria-hidden="true"><use href="#icon-check-circle"/></svg>
+            </div>
+            <dl class="review-field__stats">
+              <div><dt>Crop type</dt><dd data-crop></dd></div>
+              <div><dt>Area size</dt><dd data-area></dd></div>
+            </dl>
+            <p class="review-field__planted">Planted: <span data-planted></span></p>
+          </li>
+        </template>
+      </section>
+
+      <!-- Farm setup: done -->
+      <section class="view view--plain" data-view="setup-done" aria-labelledby="setup-done-title" hidden>
+        <header class="setup-header">
+          <button type="button" class="icon-btn icon-btn--square" aria-label="Close and go to home" data-go-home>
+            <svg aria-hidden="true"><use href="#icon-close"/></svg>
+          </button>
+        </header>
+
+        <div class="success-card">
+          <div class="success-card__top">
+            <span class="success-card__logo">
+              <img src="assets/icons/logo-badge.png" alt="" width="512" height="512" decoding="async">
+            </span>
+            <h1 id="setup-done-title" class="success-card__title" tabindex="-1" data-route-focus>Farm set up successful</h1>
+            <p class="success-card__text">
+              Farm has been setup! You can now start using ARISETO, your Integrated Farm Management System
+            </p>
+          </div>
+          <div class="success-card__farm">
+            <span class="success-card__farm-name" data-farm-name></span>
+            <span class="success-card__farm-label">Farm name</span>
+          </div>
+        </div>
+
+        <div class="stack setup-actions">
+          <button type="button" class="btn btn--gradient btn--block btn--rounded" data-open-farm>Open your farm</button>
+          <button type="button" class="btn btn--social btn--block btn--rounded btn--center" data-go-home>
+            <svg class="btn__icon" aria-hidden="true"><use href="#icon-home"/></svg>
+            <span>Go to Home</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Home -->
+      <section class="view view--home" data-view="home" aria-labelledby="home-title" hidden>
+        <div class="home-hero">
+          <div class="scene scene--home" aria-hidden="true">
+            <div class="scene__photo"></div>
+            <div class="scene__hills"></div>
+            <div class="scene__field"></div>
+          </div>
+
+          <header class="home-header">
+            <span class="home-brand">
+              <img src="assets/icons/logo-horizontal.png" alt="ARISETO" width="720" height="185" decoding="async">
+            </span>
+            <div class="home-header__actions">
+              <a href="#/notifications" class="home-icon-btn" aria-label="Notifications" data-bell>
+                <svg aria-hidden="true"><use href="#icon-bell"/></svg>
+                <span class="home-icon-btn__dot" data-bell-dot hidden></span>
+              </a>
+              <a href="#/profile" class="avatar" aria-label="Profile">
+                <span class="avatar__initial" data-avatar-initial hidden></span>
+                <svg class="avatar__icon" aria-hidden="true"><use href="#icon-user"/></svg>
+              </a>
+            </div>
+          </header>
+
+          <h1 id="home-title" class="sr-only" tabindex="-1" data-route-focus>Home</h1>
+
+          <a href="#/weather" class="weather" data-weather data-state="loading" aria-live="polite" aria-describedby="home-weather-hint">
+            <span id="home-weather-hint" class="sr-only">Opens the Weather Tracker.</span>
+            <svg class="weather__art" data-kind="partly" viewBox="0 0 120 108" aria-hidden="true">
+              <defs>
+                <radialGradient id="wa-sun-fill" cx="40%" cy="35%" r="70%">
+                  <stop offset="0" stop-color="#ffe082"/>
+                  <stop offset="0.6" stop-color="#ffb300"/>
+                  <stop offset="1" stop-color="#fb8c00"/>
+                </radialGradient>
+                <linearGradient id="wa-cloud-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#ffffff"/>
+                  <stop offset="1" stop-color="#cfe0f2"/>
+                </linearGradient>
+              </defs>
+              <g class="wa-sun">
+                <circle cx="54" cy="40" r="30" fill="#ffcc4d" opacity=".25"/>
+                <circle cx="54" cy="40" r="22" fill="url(#wa-sun-fill)"/>
+              </g>
+              <path class="wa-cloud" d="M40 88h50a17 17 0 0 0 2-33.9A23 23 0 0 0 48 58a15 15 0 0 0-8 30Z" fill="url(#wa-cloud-fill)" stroke="#b9cfe6" stroke-width="1"/>
+              <path class="wa-rain" d="M52 94l-4 9M68 94l-4 9M84 94l-4 9" stroke="#3d8fd9" stroke-width="3" stroke-linecap="round"/>
+              <path class="wa-bolt" d="M70 88l-9 12h8l-4 8 12-13h-8l4-7Z" fill="#ffc107"/>
+              <path class="wa-fog" d="M30 96h64M42 103h48" stroke="#b0bec5" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <p class="weather__temp"><span data-w="temp">--</span>°</p>
+            <p class="weather__summary" data-w="summary">Loading today’s weather…</p>
+            <p class="weather__place" data-w="place"></p>
+
+            <dl class="weather-stats">
+              <div class="weather-stat">
+                <dt><svg class="weather-stat__icon weather-stat__icon--heat" aria-hidden="true"><use href="#icon-thermometer"/></svg><span>Feels Like</span></dt>
+                <dd data-w="feels">--°</dd>
+              </div>
+              <div class="weather-stat">
+                <dt><svg class="weather-stat__icon weather-stat__icon--rain" aria-hidden="true"><use href="#icon-rain"/></svg><span>Rain</span></dt>
+                <dd data-w="rain">--%</dd>
+              </div>
+              <div class="weather-stat">
+                <dt><svg class="weather-stat__icon" aria-hidden="true"><use href="#icon-wind"/></svg><span>Wind</span></dt>
+                <dd data-w="wind">-- km/h</dd>
+              </div>
+            </dl>
+          </a>
+        </div>
+
+        <div class="home-body">
+          <h2 class="home-section__title">Quick Actions</h2>
+          <ul class="quick-actions">
+            <li><a href="#/scan" class="quick-action">
+              <svg aria-hidden="true"><use href="#icon-scan"/></svg><span>Disease Detection</span>
+            </a></li>
+            <li><a href="#/yield" class="quick-action">
+              <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield Estimation</span>
+            </a></li>
+            <li><a href="#/chatbot" class="quick-action">
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg><span>AI Chatbot</span>
+            </a></li>
+            <li><a href="#/weather" class="quick-action">
+              <svg aria-hidden="true"><use href="#icon-weather"/></svg><span>Weather Tracker</span>
+            </a></li>
+            <li><a href="#/expenses" class="quick-action">
+              <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Farm Expenses</span>
+            </a></li>
+            <li><a href="#/calendar" class="quick-action">
+              <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span>Crop Calendar</span>
+            </a></li>
+          </ul>
+
+          <h2 class="home-section__title">Today’s Reminders</h2>
+          <div class="reminders-empty">
+            <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <p>No reminders for today.</p>
+          </div>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="home"></nav>
+      </section>
+
+      <!-- Crop Calendar (sample data: js/data/sample-calendar.js) -->
+      <section class="view view--app" data-view="calendar" aria-labelledby="calendar-title" hidden>
+        <header class="app-header app-header--photo">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="calendar-title" class="app-header__title" tabindex="-1" data-route-focus>Crop Calendar</h1>
+              <p class="app-header__subtitle">Manage your farm tasks and timelines.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+          <label class="field-picker">
+            <span class="field-picker__label">Field</span>
+            <select class="field-picker__select" data-field-picker></select>
+          </label>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <p data-empty-text></p>
+            <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
+          </div>
+
+          <div class="app-stack" data-content>
+            <section class="summary-card" aria-labelledby="schedule-title">
+              <div class="summary-card__head">
+                <span class="summary-card__icon"><svg aria-hidden="true"><use data-crop-icon href=""/></svg></span>
+                <div>
+                  <h2 id="schedule-title" class="summary-card__title" data-schedule-title></h2>
+                  <p class="summary-card__sub" data-schedule-season></p>
+                </div>
+              </div>
+              <dl class="stat-grid">
+                <div class="stat"><dt>Season completion</dt><dd data-stat="completion"></dd></div>
+                <div class="stat"><dt>Expected value</dt><dd data-stat="value"></dd></div>
+                <div class="stat"><dt>Planting date</dt><dd data-stat="planted"></dd></div>
+                <div class="stat"><dt>Harvest time</dt><dd data-stat="harvest"></dd></div>
+              </dl>
+            </section>
+
+            <section aria-labelledby="daily-title">
+              <h2 id="daily-title" class="section-title">Daily Schedule</h2>
+              <div class="card daily">
+                <div class="daily__toolbar">
+                  <label class="sr-only" for="calendar-month">Month</label>
+                  <select id="calendar-month" class="daily__month" data-month></select>
+                  <a href="#/tasks" class="icon-plain" aria-label="Search all tasks" data-search-tasks>
+                    <svg aria-hidden="true"><use href="#icon-search"/></svg>
+                  </a>
+                </div>
+                <div class="day-strip" data-day-strip aria-label="Days of the week"></div>
+                <ol class="day-list" data-day-list aria-live="polite"></ol>
+                <p class="muted-note" data-day-empty hidden>No tasks on this day.</p>
+              </div>
+            </section>
+
+            <a href="#/tasks" class="btn btn--gradient btn--block btn--rounded">Manage All Tasks</a>
+
+            <section aria-labelledby="timeline-title">
+              <div class="section-head">
+                <h2 id="timeline-title" class="section-title">Weekly Timeline</h2>
+                <a href="#/tasks" class="section-link">View all</a>
+              </div>
+              <ol class="week-list" data-week-list></ol>
+              <button type="button" class="link-plain week-more" aria-expanded="false" data-week-more hidden>Show all weeks</button>
+              <p class="muted-note" data-week-empty hidden>No tasks for this field yet. Add one from Manage All Tasks.</p>
+            </section>
+
+            <a href="#/chatbot" class="chat-link">
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg>
+              <span>Ask the chatbot about this</span>
+            </a>
+          </div>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
+
+        <template data-day-tpl>
+          <button type="button" class="day-chip" aria-pressed="false">
+            <span class="day-chip__dow" data-dow></span>
+            <span class="day-chip__date" data-date></span>
+            <span class="day-chip__dot" data-dot hidden></span>
+          </button>
+        </template>
+        <template data-day-task-tpl>
+          <li class="day-task">
+            <span class="day-task__time" data-time></span>
+            <label class="day-task__card">
+              <input type="checkbox" class="check" data-check>
+              <span class="day-task__title" data-title></span>
+            </label>
+          </li>
+        </template>
+        <template data-week-tpl>
+          <li class="week-card">
+            <div class="week-card__head">
+              <div>
+                <p class="week-card__no" data-no></p>
+                <h3 class="week-card__stage" data-stage></h3>
+                <p class="week-card__range" data-range></p>
+              </div>
+              <svg class="week-card__done" aria-hidden="true" data-done-icon hidden><use href="#icon-check-circle"/></svg>
+            </div>
+            <div class="progress-label"><span>Completion</span><span data-pct></span></div>
+            <div class="progress" aria-hidden="true"><span class="progress__bar" data-bar></span></div>
+            <button type="button" class="week-card__toggle" aria-expanded="false" data-toggle>
+              <span class="sr-only" data-toggle-label>Show tasks</span>
+              <svg aria-hidden="true"><use href="#icon-chevron-down"/></svg>
+            </button>
+            <ul class="week-card__tasks" data-tasks hidden></ul>
+          </li>
+        </template>
+        <template data-check-tpl>
+          <li>
+            <label class="check-row">
+              <input type="checkbox" class="check" data-check>
+              <span class="check-row__text" data-title></span>
+              <span class="status-tag" data-tag hidden></span>
+            </label>
+          </li>
+        </template>
+      </section>
+
+      <!-- Manage All Tasks -->
+      <section class="view view--app" data-view="tasks" aria-labelledby="tasks-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/calendar" class="app-header__back" aria-label="Back to crop calendar">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="tasks-title" class="app-header__title" tabindex="-1" data-route-focus>Manage All Tasks</h1>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <label class="search-box">
+            <svg aria-hidden="true"><use href="#icon-search"/></svg>
+            <span class="sr-only">Search tasks</span>
+            <input type="search" class="search-box__input" placeholder="Search" data-task-search>
+          </label>
+
+          <div class="chip-row" data-chips>
+            <button type="button" class="chip" aria-pressed="true" data-chip-all>All Plots</button>
+            <label class="chip chip--select">
+              <span class="sr-only">Field</span>
+              <select data-chip-field></select>
+            </label>
+            <button type="button" class="chip" aria-pressed="false" data-chip-completed>Completed</button>
+          </div>
+
+          <div class="task-groups" data-task-groups aria-live="polite"></div>
+
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <p data-empty-text></p>
+            <a href="#/setup" class="link" data-empty-setup hidden>Set up your farm</a>
+          </div>
+
+          <a href="#/task-new" class="btn btn--gradient btn--block btn--rounded" data-add-task>Add a New Task</a>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
+
+        <input type="date" class="visually-hidden-input" tabindex="-1" aria-hidden="true" data-reschedule>
+
+        <template data-group-tpl>
+          <section class="task-group">
+            <h2 class="section-title" data-group-title></h2>
+            <p class="task-group__week" data-group-week></p>
+            <ul class="task-list" data-group-list></ul>
+          </section>
+        </template>
+        <template data-task-tpl>
+          <li class="task-card">
+            <label class="task-card__check">
+              <input type="checkbox" class="check" data-check>
+              <span class="sr-only" data-check-label></span>
+            </label>
+            <div class="task-card__body">
+              <div class="task-card__head">
+                <h3 class="task-card__title" data-title></h3>
+                <span class="task-card__date" data-date></span>
+              </div>
+              <p class="task-card__desc" data-desc></p>
+              <p class="task-card__meta">
+                <span data-meta></span>
+                <span class="status-tag" data-tag hidden></span>
+              </p>
+            </div>
+            <div class="task-menu">
+              <button type="button" class="task-menu__btn" aria-haspopup="menu" aria-expanded="false" data-menu-btn>
+                <svg aria-hidden="true"><use href="#icon-more"/></svg>
+              </button>
+              <ul class="task-menu__list" role="menu" data-menu hidden>
+                <li role="none"><button type="button" role="menuitem" data-action="skip">Skip</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="reschedule">Reschedule</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="edit">Edit</button></li>
+                <li role="none"><button type="button" role="menuitem" class="is-danger" data-action="delete">Delete</button></li>
+              </ul>
+            </div>
+          </li>
+        </template>
+      </section>
+
+      <!-- New / edit farm task -->
+      <section class="view view--app" data-view="task-new" aria-labelledby="task-new-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/tasks" class="app-header__back" aria-label="Back to all tasks">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="task-new-title" class="app-header__title" tabindex="-1" data-route-focus data-form-title>New Farm Task</h1>
+              <p class="app-header__subtitle">Schedule a new activity for your crop calendar.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
+            <p>No fields yet. Set up your farm before adding tasks.</p>
+            <a href="#/setup" class="link">Set up your farm</a>
+          </div>
+
+          <form id="task-form" class="form app-form" novalidate>
+            <div class="field">
+              <label for="task-title" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-note"/></svg>Task Name
+              </label>
+              <input id="task-title" name="title" class="input" type="text" maxlength="100"
+                     autocomplete="off" placeholder="e.g. Apply Fertilizer" aria-describedby="task-title-error" required>
+              <p id="task-title-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="task-field" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-pin"/></svg>Field
+              </label>
+              <select id="task-field" name="field_id" class="input select" aria-describedby="task-field-error" required></select>
+              <p id="task-field-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="task-stage" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-tag"/></svg>Crop Stage
+              </label>
+              <select id="task-stage" name="growth_stage" class="input select" aria-describedby="task-stage-error" required>
+                <option value="">Select growth stage</option>
+              </select>
+              <p id="task-stage-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="task-date" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Date
+                </label>
+                <input id="task-date" name="scheduled_date" class="input" type="date" aria-describedby="task-date-error" required>
+                <p id="task-date-error" class="field__error" aria-live="polite"></p>
+              </div>
+              <div class="field">
+                <label for="task-time" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-clock"/></svg>Start Time
+                </label>
+                <input id="task-time" name="start_time" class="input" type="time" aria-describedby="task-time-error">
+                <p id="task-time-error" class="field__error" aria-live="polite"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="task-reminder" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-bell"/></svg>Reminder
+              </label>
+              <select id="task-reminder" name="reminder" class="input select" aria-describedby="task-reminder-error"></select>
+              <p id="task-reminder-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="task-notes" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-note"/></svg>Additional Notes
+              </label>
+              <textarea id="task-notes" name="description" class="input input--textarea" rows="4" maxlength="500"
+                        placeholder="Add any specific observations or details here…"></textarea>
+            </div>
+
+            <div class="form__end app-form__end">
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded" data-save-label>Save Task</button>
+              <button type="button" class="link-plain" data-cancel>Cancel and go back</button>
+            </div>
+          </form>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
+      </section>
+      <!-- Farm Expenses (sample data: js/data/sample-expenses.js) -->
+      <section class="view view--app" data-view="expenses" aria-labelledby="expenses-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="expenses-title" class="app-header__title" tabindex="-1" data-route-focus>Farm Expense Tracker</h1>
+              <p class="app-header__subtitle">Monitor your farm’s budget and spending.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+          <div class="picker-row">
+            <label class="field-picker">
+              <span class="field-picker__label">Season</span>
+              <select class="field-picker__select" data-season-picker></select>
+            </label>
+            <label class="field-picker">
+              <span class="field-picker__label">Field</span>
+              <select class="field-picker__select" data-field-filter></select>
+            </label>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-wallet"/></svg>
+            <p data-empty-text></p>
+            <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
+          </div>
+
+          <div class="app-stack" data-content>
+            <div class="money-grid">
+              <div class="money-card">
+                <p class="money-card__label"><svg class="money-card__icon money-card__icon--down" aria-hidden="true"><use href="#icon-trend-down"/></svg>Total expense</p>
+                <p class="money-card__value" data-total="expense"></p>
+              </div>
+              <div class="money-card">
+                <p class="money-card__label"><svg class="money-card__icon" aria-hidden="true"><use href="#icon-trend-up"/></svg>Total income</p>
+                <p class="money-card__value" data-total="income"></p>
+              </div>
+              <div class="money-card money-card--wide">
+                <p class="money-card__label"><svg class="money-card__icon" aria-hidden="true"><use href="#icon-wallet"/></svg>Net profit</p>
+                <p class="money-card__value money-card__value--lg" data-total="net"></p>
+                <p class="money-card__note" data-net-note></p>
+              </div>
+            </div>
+
+            <a href="#/expense-new" class="btn btn--gradient btn--block btn--rounded">Add Expense</a>
+
+            <section aria-labelledby="breakdown-title">
+              <h2 id="breakdown-title" class="section-title">Category Breakdown</h2>
+              <ul class="category-list" data-category-list></ul>
+            </section>
+
+            <section class="card" aria-labelledby="spend-title">
+              <div class="section-head">
+                <h2 id="spend-title" class="section-title">Spend Distribution</h2>
+                <span class="pill-label">All expenses</span>
+              </div>
+              <div class="donut">
+                <svg class="donut__chart" viewBox="0 0 42 42" aria-hidden="true" data-donut></svg>
+                <div class="donut__center">
+                  <p class="donut__value" data-donut-value></p>
+                  <p class="donut__label">Net profit</p>
+                </div>
+              </div>
+              <ul class="legend" data-legend></ul>
+            </section>
+
+            <section aria-labelledby="history-title">
+              <div class="section-head">
+                <h2 id="history-title" class="section-title">Transaction History</h2>
+                <button type="button" class="section-link section-link--button" data-view-all>View all</button>
+              </div>
+              <div class="card tx-card">
+                <label class="search-box">
+                  <svg aria-hidden="true"><use href="#icon-search"/></svg>
+                  <span class="sr-only">Search transactions</span>
+                  <input type="search" class="search-box__input" placeholder="Search" data-tx-search>
+                </label>
+                <ul class="tx-list" data-tx-list aria-live="polite"></ul>
+                <p class="muted-note" data-tx-empty hidden>No transactions.</p>
+                <button type="button" class="link-plain tx-more" data-tx-more hidden>View more</button>
+              </div>
+            </section>
+
+            <a href="#/chatbot" class="chat-link">
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg>
+              <span>Ask the chatbot about this</span>
+            </a>
+          </div>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses"></nav>
+
+        <template data-category-tpl>
+          <li class="category-row">
+            <span class="category-row__icon"><svg aria-hidden="true"><use data-icon href=""/></svg></span>
+            <span class="category-row__name" data-name></span>
+            <span class="category-row__amount" data-amount></span>
+          </li>
+        </template>
+        <template data-legend-tpl>
+          <li class="legend__item"><span class="legend__swatch" data-swatch></span><span data-name></span></li>
+        </template>
+        <template data-tx-tpl>
+          <li class="tx-row">
+            <span class="tx-row__icon"><svg aria-hidden="true"><use href="#icon-trend-down"/></svg></span>
+            <div class="tx-row__body">
+              <p class="tx-row__title" data-title></p>
+              <p class="tx-row__meta">
+                <span data-date></span>
+                <span class="tx-row__tag"><svg aria-hidden="true"><use href="#icon-tag"/></svg><span data-category></span></span>
+                <span data-plot></span>
+              </p>
+            </div>
+            <span class="tx-row__amount" data-amount></span>
+          </li>
+        </template>
+      </section>
+
+      <!-- Add expense -->
+      <section class="view view--app" data-view="expense-new" aria-labelledby="expense-new-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/expenses" class="app-header__back" aria-label="Back to farm expenses">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="expense-new-title" class="app-header__title" tabindex="-1" data-route-focus>Add Expenses</h1>
+              <p class="app-header__subtitle">Log a new farm expense.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-wallet"/></svg>
+            <p>No fields yet. Set up your farm before recording expenses.</p>
+            <a href="#/setup" class="link">Set up your farm</a>
+          </div>
+
+          <form id="expense-form" class="form app-form" novalidate>
+            <fieldset class="field crop-picker" aria-describedby="expense-category-error">
+              <legend class="section-title">Expense Category</legend>
+              <div class="cat-picker" data-category-options></div>
+              <p id="expense-category-error" class="field__error" aria-live="polite" data-category-error></p>
+            </fieldset>
+
+            <div class="field">
+              <label for="expense-amount" class="section-title">Transaction Amount</label>
+              <div class="amount-input">
+                <span class="amount-input__peso" aria-hidden="true">₱</span>
+                <input id="expense-amount" name="amount_php" class="input amount-input__field" type="text"
+                       inputmode="decimal" autocomplete="off" placeholder="0.00" aria-describedby="expense-amount-error" required>
+              </div>
+              <p id="expense-amount-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <h2 class="section-title section-title--flush">Expense Details</h2>
+
+            <div class="field">
+              <label for="expense-description" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-note"/></svg>Description
+              </label>
+              <input id="expense-description" name="description" class="input" type="text" maxlength="255"
+                     autocomplete="off" placeholder="e.g. 50kg bags of urea" aria-describedby="expense-description-error">
+              <p id="expense-description-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="expense-date" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Date
+                </label>
+                <input id="expense-date" name="expense_date" class="input" type="date" aria-describedby="expense-date-error" required>
+                <p id="expense-date-error" class="field__error" aria-live="polite"></p>
+              </div>
+              <div class="field">
+                <label for="expense-quantity" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-chart"/></svg>Quantity
+                </label>
+                <div class="qty-input">
+                  <input id="expense-quantity" name="quantity" class="input" type="number" inputmode="decimal"
+                         min="0" step="any" placeholder="e.g. 2" aria-describedby="expense-quantity-error">
+                  <select name="unit" class="input select qty-input__unit" aria-label="Unit"></select>
+                </div>
+                <p id="expense-quantity-error" class="field__error" aria-live="polite"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="expense-plot" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-pin"/></svg>Linked Plot
+              </label>
+              <select id="expense-plot" name="plot" class="input select" aria-describedby="expense-plot-error" required></select>
+              <p id="expense-plot-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="form__end app-form__end">
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded">Save Expense</button>
+              <button type="button" class="link-plain" data-cancel>Cancel and go back</button>
+            </div>
+          </form>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses"></nav>
+      </section>
+      <!-- Notifications (sample data: js/data/sample-notifications.js) -->
+      <section class="view view--app" data-view="notifications" aria-labelledby="notifications-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="notifications-title" class="app-header__title" tabindex="-1" data-route-focus>Notifications</h1>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="chip-row" role="group" aria-label="Show">
+            <button type="button" class="chip" aria-pressed="true" data-tab="all">All</button>
+            <button type="button" class="chip" aria-pressed="false" data-tab="unread">Unread <span class="chip__count" data-unread-count></span></button>
+            <button type="button" class="chip" aria-pressed="false" data-tab="alerts">Farm Alerts</button>
+          </div>
+
+          <ul class="notice-list" data-notice-list aria-live="polite"></ul>
+
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-bell"/></svg>
+            <p data-empty-text></p>
+          </div>
+        </div>
+
+        <template data-notice-tpl>
+          <li>
+            <button type="button" class="notice" data-notice>
+              <span class="notice__icon" data-icon-box><svg aria-hidden="true"><use data-icon href=""/></svg></span>
+              <span class="notice__body">
+                <span class="notice__head">
+                  <span class="notice__title" data-title></span>
+                  <span class="notice__time" data-time></span>
+                </span>
+                <span class="notice__message" data-message></span>
+              </span>
+              <span class="notice__dot" data-dot aria-hidden="true"></span>
+            </button>
+          </li>
+        </template>
+      </section>
+      <!-- Profile (sample data: js/data/sample-profile.js and sample-farm.js) -->
+      <section class="view view--app" data-view="profile" aria-labelledby="profile-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="profile-title" class="app-header__title" tabindex="-1" data-route-focus>Profile</h1>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <section class="card profile-card" aria-label="Account">
+            <div class="profile-card__top">
+              <span class="profile-card__avatar" aria-hidden="true" data-initials></span>
+              <div class="profile-card__who">
+                <p class="profile-card__name" data-full-name></p>
+                <p class="profile-card__line"><svg aria-hidden="true"><use href="#icon-phone"/></svg><span data-mobile></span></p>
+              </div>
+              <span class="pill-label profile-card__plots" data-plot-count></span>
+            </div>
+            <div class="profile-card__bottom">
+              <p class="profile-card__status" data-online>
+                <svg aria-hidden="true"><use href="#icon-wifi"/></svg>
+                <span><strong data-online-title></strong><span data-online-text></span></span>
+              </p>
+              <button type="button" class="section-link--button profile-card__edit" data-soon="Edit Profile">Edit Profile</button>
+            </div>
+          </section>
+
+          <section aria-labelledby="security-title">
+            <h2 id="security-title" class="section-title">Account Security</h2>
+            <div class="setting-list">
+              <button type="button" class="setting-row" data-soon="Changing your mobile number">
+                <span class="setting-row__text"><span class="setting-row__label">Mobile number</span><span class="setting-row__value" data-mobile></span></span>
+                <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+              </button>
+              <button type="button" class="setting-row" data-soon="Changing your password">
+                <span class="setting-row__text"><span class="setting-row__label">Password</span><span class="setting-row__value" aria-label="Hidden">••••••••••</span></span>
+                <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+              </button>
+            </div>
+          </section>
+
+          <section aria-labelledby="plots-title">
+            <div class="section-head">
+              <h2 id="plots-title" class="section-title">Farm and Plots</h2>
+              <button type="button" class="add-link" data-soon="Adding a plot">
+                <svg aria-hidden="true"><use href="#icon-plus"/></svg>Add Plot
+              </button>
+            </div>
+            <ul class="field-list" data-plot-list></ul>
+            <div class="app-empty" data-plots-empty hidden>
+              <svg aria-hidden="true"><use href="#icon-pin"/></svg>
+              <p>No plots yet. Set up your farm to add your fields.</p>
+              <a href="#/setup" class="link">Set up your farm</a>
+            </div>
+          </section>
+
+          <section aria-labelledby="language-title">
+            <h2 id="language-title" class="section-title">Language</h2>
+            <label class="setting-row setting-row--toggle">
+              <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-translate"/></svg>
+              <span class="setting-row__text"><span class="setting-row__title">Translate</span><span class="setting-row__hint">Translate to Filipino</span></span>
+              <input type="checkbox" class="switch" role="switch" data-language-switch>
+            </label>
+          </section>
+
+          <section aria-labelledby="help-title">
+            <h2 id="help-title" class="section-title">Help and Support</h2>
+            <div class="setting-list">
+              <button type="button" class="setting-row" data-soon="Frequently Asked Questions">
+                <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-help"/></svg>
+                <span class="setting-row__text"><span class="setting-row__title">Frequently Asked Questions</span></span>
+                <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+              </button>
+              <a href="#/chatbot" class="setting-row">
+                <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-chat"/></svg>
+                <span class="setting-row__text"><span class="setting-row__title">Ask the Chatbot</span></span>
+                <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+              </a>
+            </div>
+          </section>
+
+          <button type="button" class="btn btn--gradient btn--block btn--rounded" data-logout>Log Out</button>
+        </div>
+
+        <template data-plot-tpl>
+          <li class="field-card">
+            <svg class="field-card__crop" aria-hidden="true"><use data-crop-icon href=""/></svg>
+            <div class="field-card__body">
+              <div class="field-card__head">
+                <h3 class="field-card__name" data-name></h3>
+                <div class="field-card__actions">
+                  <button type="button" class="field-card__icon-btn" data-soon="Editing a plot" data-edit>
+                    <svg aria-hidden="true"><use href="#icon-pencil"/></svg>
+                  </button>
+                  <button type="button" class="field-card__icon-btn" data-soon="Removing a plot" data-remove>
+                    <svg aria-hidden="true"><use href="#icon-trash"/></svg>
+                  </button>
+                </div>
+              </div>
+              <p class="field-card__meta" data-meta></p>
+              <div class="field-card__foot">
+                <span class="field-card__place">
+                  <svg aria-hidden="true"><use href="#icon-pin"/></svg>
+                  <span data-place></span>
+                </span>
+                <button type="button" class="field-card__details" data-soon="Plot details">
+                  <span>View details</span>
+                  <svg aria-hidden="true"><use href="#icon-arrow-right"/></svg>
+                </button>
+              </div>
+            </div>
+          </li>
+        </template>
+      </section>
+      <!-- Weather Tracker (sample data: js/data/sample-weather.js) -->
+      <section class="view view--app view--weather" data-view="weather" aria-labelledby="weather-title" hidden>
+        <header class="weather-top">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <h1 id="weather-title" class="weather-top__title" tabindex="-1" data-route-focus>Weather Tracker</h1>
+            <span class="demo-badge demo-badge--dark">Demo data</span>
+          </div>
+          <p class="weather-top__place" data-place></p>
+          <p class="weather-top__sub" data-place-sub></p>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-weather"/></svg>
+            <p>No weather reading for your farm yet. Check back soon.</p>
+          </div>
+
+          <div class="app-stack" data-content>
+            <section class="wx-panel wx-now" aria-label="Current weather">
+              <svg class="wx-now__icon" aria-hidden="true"><use data-now-icon href=""/></svg>
+              <p class="wx-now__temp"><span data-now-temp></span>°</p>
+              <p class="wx-now__summary" data-now-summary></p>
+              <dl class="weather-stats wx-now__stats">
+                <div class="weather-stat">
+                  <dt><svg class="weather-stat__icon weather-stat__icon--heat" aria-hidden="true"><use href="#icon-thermometer"/></svg><span>Feels Like</span></dt>
+                  <dd data-now-feels></dd>
+                </div>
+                <div class="weather-stat">
+                  <dt><svg class="weather-stat__icon weather-stat__icon--rain" aria-hidden="true"><use href="#icon-rain"/></svg><span>Rain</span></dt>
+                  <dd data-now-rain></dd>
+                </div>
+                <div class="weather-stat">
+                  <dt><svg class="weather-stat__icon" aria-hidden="true"><use href="#icon-wind"/></svg><span>Wind</span></dt>
+                  <dd data-now-wind></dd>
+                </div>
+              </dl>
+              <p class="wx-now__updated" data-updated></p>
+            </section>
+
+            <section class="wx-panel" aria-labelledby="wx-today-title">
+              <div class="section-head">
+                <h2 id="wx-today-title" class="section-title">Today</h2>
+                <p class="wx-panel__date" data-today-date></p>
+              </div>
+              <ol class="wx-hours" data-hours aria-label="Next 24 hours, every 3 hours"></ol>
+            </section>
+
+            <section class="wx-panel" aria-labelledby="wx-summary-title">
+              <h2 id="wx-summary-title" class="section-title">Weather Summary</h2>
+              <ul class="wx-days" data-days></ul>
+            </section>
+          </div>
+        </div>
+
+        <template data-hour-tpl>
+          <li class="wx-hour">
+            <span class="wx-hour__temp" data-temp></span>
+            <svg class="wx-hour__icon" aria-hidden="true"><use data-icon href=""/></svg>
+            <span class="wx-hour__rain" data-rain></span>
+            <span class="wx-hour__time" data-time></span>
+          </li>
+        </template>
+        <template data-day-tpl>
+          <li class="wx-day">
+            <span class="wx-day__name" data-name></span>
+            <svg class="wx-day__icon" aria-hidden="true"><use data-icon href=""/></svg>
+            <span class="wx-day__label" data-label></span>
+            <span class="wx-day__range" data-range></span>
+          </li>
+        </template>
+      </section>
+      <!-- Disease Detection: capture (sample results: js/data/sample-disease.js) -->
+      <section class="view view--app view--scan" data-view="scan" aria-labelledby="scan-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="scan-title" class="app-header__title" tabindex="-1" data-route-focus>Disease Detection</h1>
+              <p class="app-header__subtitle">Capture or upload an image of the affected plant.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+          <label class="field-picker">
+            <span class="field-picker__label">Field</span>
+            <select class="field-picker__select" data-scan-field></select>
+          </label>
+        </header>
+
+        <div class="scan-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-scan"/></svg>
+            <p>No fields yet. Set up your farm to check your crops for disease.</p>
+            <a href="#/setup" class="link">Set up your farm</a>
+          </div>
+
+          <div class="scan-content" data-content>
+            <p class="scan-crop" data-scan-crop></p>
+            <div class="scan-frame">
+              <img class="scan-frame__photo" alt="" data-preview hidden>
+              <p class="scan-frame__hint" data-frame-hint>Point the camera at one affected leaf, then take the photo.</p>
+            </div>
+            <p class="scan-status" role="status" aria-live="polite" data-scan-status></p>
+
+            <label class="scan-upload">
+              <span>Upload From Gallery</span>
+              <svg aria-hidden="true"><use href="#icon-upload"/></svg>
+              <input type="file" class="sr-only" accept="image/*" data-upload>
+            </label>
+            <label class="scan-shutter">
+              <span class="sr-only">Take a photo</span>
+              <input type="file" class="sr-only" accept="image/*" capture="environment" data-camera>
+            </label>
+
+            <fieldset class="demo-switch">
+              <legend>Demo result</legend>
+              <label><input type="radio" name="demo-result" value="diseased" checked data-demo-diseased> <span>Leaf blight (corn)</span></label>
+              <label><input type="radio" name="demo-result" value="healthy"> <span>Healthy</span></label>
+              <label><input type="radio" name="demo-result" value="unrecognized"> <span>Unrecognized</span></label>
+            </fieldset>
+          </div>
+        </div>
+      </section>
+
+      <!-- Disease Detection: results -->
+      <section class="view view--app view--result" data-view="scan-result" aria-labelledby="result-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/scan" class="app-header__back" aria-label="Back to disease detection">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <p class="app-header__title">Detection Results</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="result-photo">
+          <img alt="Your leaf photo" data-result-img hidden>
+          <svg class="result-photo__placeholder" aria-hidden="true" data-result-placeholder><use href="#icon-leaf"/></svg>
+        </div>
+
+        <div class="result-sheet">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-scan"/></svg>
+            <p>No scan yet. Take a photo of a leaf to check it.</p>
+            <a href="#/scan" class="link">Scan a leaf</a>
+          </div>
+
+          <div class="result-content" data-content>
+            <h1 id="result-title" class="result-title" tabindex="-1" data-route-focus data-result-title></h1>
+            <p class="result-confidence" data-result-confidence></p>
+            <p class="result-for" data-result-for></p>
+
+            <section class="result-block" data-block="description">
+              <h2 class="result-block__title result-block__title--muted">Description</h2>
+              <p class="result-block__text" data-description></p>
+            </section>
+
+            <section class="result-block" data-block="signs">
+              <h2 class="result-block__title result-block__title--warn">
+                <svg aria-hidden="true"><use href="#icon-alert"/></svg><span data-signs-title>Warning Signs</span>
+              </h2>
+              <ul class="result-list" data-signs></ul>
+            </section>
+
+            <section class="result-block" data-block="actions">
+              <h2 class="result-block__title result-block__title--ok">
+                <svg aria-hidden="true"><use href="#icon-check-circle"/></svg><span data-actions-title>Recommended Actions</span>
+              </h2>
+              <ol class="result-list result-list--numbered" data-actions></ol>
+              <p class="result-source" data-source></p>
+            </section>
+
+            <section class="result-why" data-block="why">
+              <h2 class="result-why__title"><svg aria-hidden="true"><use href="#icon-alert"/></svg>Why this matters</h2>
+              <p data-why></p>
+            </section>
+
+            <a href="#/chatbot" class="chat-link">
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg>
+              <span>Ask the chatbot about this</span>
+            </a>
+
+            <div class="stack">
+              <a href="#/scan" class="btn btn--outline btn--block btn--rounded result-retake" data-retake hidden>Retake photo</a>
+              <a href="#/home" class="btn btn--gradient btn--block btn--rounded">Done</a>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Yield Estimation (sample data: js/data/sample-yield.js) -->
+      <section class="view view--app" data-view="yield" aria-labelledby="yield-title" hidden>
+        <header class="app-header app-header--photo">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="yield-title" class="app-header__title" tabindex="-1" data-route-focus>Yield Estimation</h1>
+              <p class="app-header__subtitle">Track your expected harvest.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+          <label class="field-picker">
+            <span class="field-picker__label">Field</span>
+            <select class="field-picker__select" data-yield-field></select>
+          </label>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-chart"/></svg>
+            <p data-empty-text></p>
+            <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
+          </div>
+
+          <div class="app-stack" data-content>
+            <section class="summary-card yield-card" aria-labelledby="yield-total-label">
+              <p class="yield-card__label" id="yield-total-label">
+                <svg aria-hidden="true"><use href="#icon-seeds"/></svg>Estimated Yield
+              </p>
+              <p class="yield-card__total"><span data-total></span> <span class="yield-card__unit">tons</span></p>
+              <dl class="stat-grid">
+                <div class="stat"><dt>Yield per hectare</dt><dd data-per-ha></dd></div>
+                <div class="stat"><dt>Expected value</dt><dd data-value></dd></div>
+              </dl>
+              <p class="yield-card__meta" data-estimated-at></p>
+            </section>
+
+            <section aria-labelledby="factors-title">
+              <h2 id="factors-title" class="section-title">Impact Factors</h2>
+              <ul class="factor-grid" data-factors></ul>
+            </section>
+
+            <section class="card" aria-labelledby="history-chart-title">
+              <h2 id="history-chart-title" class="section-title">Estimate history</h2>
+              <p class="muted-note yield-history__note">Estimated total harvest each time the estimate was run.</p>
+              <svg class="history-chart" viewBox="0 0 320 180" role="img" data-history-chart></svg>
+            </section>
+
+            <a href="#/chatbot" class="chat-link">
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg>
+              <span>Ask the chatbot about this</span>
+            </a>
+
+            <button type="button" class="btn btn--gradient btn--block btn--rounded" data-soon="Recalculating the estimate">Recalculate Estimation</button>
+          </div>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="yield"></nav>
+
+        <template data-factor-tpl>
+          <li class="factor">
+            <p class="factor__head">
+              <svg class="factor__icon" aria-hidden="true"><use data-icon href=""/></svg>
+              <span class="factor__name" data-name></span>
+            </p>
+            <p class="factor__value" data-value></p>
+            <p class="factor__note" data-note></p>
+          </li>
+        </template>
+      </section>
+      <!-- Chatbot (sample data: js/data/sample-chatbot.js) -->
+      <section class="view view--app view--chat" data-view="chatbot" aria-labelledby="chat-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/home" class="app-header__back" aria-label="Back to home">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="chat-title" class="app-header__title" tabindex="-1" data-route-focus>Chatbot</h1>
+              <p class="app-header__subtitle">Get instant answers to your farming questions.</p>
+            </div>
+            <span class="demo-badge">Demo data</span>
+          </div>
+        </header>
+
+        <div class="chat-body">
+          <ol class="chat-log" data-chat-log aria-live="polite" aria-label="Conversation"></ol>
+          <p class="chat-empty" data-chat-empty hidden>Ask a question about your farm, or tap a topic below.</p>
+        </div>
+
+        <div class="chat-compose">
+          <div class="chat-chips" role="group" aria-label="Quick questions" data-chips></div>
+          <form class="chat-form" data-chat-form>
+            <a href="#/scan" class="chat-form__camera" aria-label="Scan a leaf with the camera">
+              <svg aria-hidden="true"><use href="#icon-scan"/></svg>
+            </a>
+            <label class="sr-only" for="chat-input">Message</label>
+            <input id="chat-input" class="chat-form__input" type="text" maxlength="500" autocomplete="off"
+                   placeholder="Type a message" data-chat-input>
+            <button type="submit" class="chat-form__send" aria-label="Send">
+              <svg aria-hidden="true"><use href="#icon-send"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="chatbot"></nav>
+
+        <template data-message-tpl>
+          <li class="chat-msg">
+            <img class="chat-msg__avatar" src="assets/icons/logo-badge.png" alt="" width="36" height="36" data-avatar>
+            <div class="chat-msg__content">
+              <p class="chat-msg__bubble" data-text></p>
+              <div class="chat-msg__chips" data-msg-chips hidden></div>
+              <p class="chat-msg__time" data-time></p>
+            </div>
+          </li>
+        </template>
+      </section>
+    </main>
+
+    <p class="toast" role="status" aria-live="polite" data-app-toast hidden></p>
+
+    <!-- Bottom navigation shared by Home and the feature screens (js/utils/bottom-nav.js) -->
+    <template id="bottom-nav-template">
+      <a href="#/home" class="bottom-nav__item" data-nav-item="home">
+        <svg aria-hidden="true"><use href="#icon-home"/></svg><span>Home</span>
+      </a>
+      <a href="#/yield" class="bottom-nav__item" data-nav-item="yield">
+        <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield</span>
+      </a>
+      <a href="#/scan" class="bottom-nav__fab" data-nav-item="scan" aria-label="Scan a crop for disease">
+        <svg aria-hidden="true"><use href="#icon-scan"/></svg>
+      </a>
+      <a href="#/calendar" class="bottom-nav__item" data-nav-item="calendar">
+        <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span>Calendar</span>
+      </a>
+      <a href="#/expenses" class="bottom-nav__item" data-nav-item="expenses">
+        <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Expenses</span>
+      </a>
+    </template>
+  </div>
+
+  <noscript>
+    <p class="noscript">ARISETO needs JavaScript enabled to sign you in.</p>
+  </noscript>
+</body>
+</html>
