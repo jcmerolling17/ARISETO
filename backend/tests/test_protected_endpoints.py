@@ -48,6 +48,19 @@ def test_every_api_route_is_listed_as_public_or_protected() -> None:
     assert _api_routes() == PUBLIC | PROTECTED
 
 
+def test_openapi_declares_the_bearer_scheme_on_every_protected_endpoint() -> None:
+    """/docs "Authorize" sends Authorization: Bearer <token> only where the schema asks for it."""
+    schema = app.openapi()
+
+    assert schema["components"]["securitySchemes"] == {
+        "HTTPBearer": {"type": "http", "scheme": "bearer"}
+    }
+    for method, path in PROTECTED:
+        assert schema["paths"][path][method.lower()]["security"] == [{"HTTPBearer": []}], path
+    for method, path in PUBLIC:
+        assert "security" not in schema["paths"][path][method.lower()], path
+
+
 def _set_status(db, user_id: int, status: AccountStatus) -> None:
     db.get(User, user_id).account_status = status
     db.commit()
