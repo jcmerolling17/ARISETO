@@ -33,15 +33,16 @@ _INACTIVE_CODES = {
 
 
 def require_active_user(user: User = Depends(get_current_user)) -> User:
-    """A user whose account is active; 403 account_pending or account_deactivated otherwise
-    (a token outlives a later deactivation)."""
+    """The account check every protected endpoint goes through: a user whose account is
+    active; 403 account_pending or account_deactivated otherwise (a token outlives a later
+    deactivation). Role checks build on this, so status is always checked first."""
     if user.account_status in _INACTIVE_CODES:
         raise AppError(403, _INACTIVE_CODES[user.account_status])
     return user
 
 
-def require_admin(user: User = Depends(get_current_user)) -> User:
-    """An active coop_admin; 403 not_admin for anyone else."""
-    if user.role != UserRole.COOP_ADMIN or user.account_status != AccountStatus.ACTIVE:
+def require_admin(user: User = Depends(require_active_user)) -> User:
+    """An active coop_admin; 403 not_admin for an active member."""
+    if user.role != UserRole.COOP_ADMIN:
         raise AppError(403, "not_admin")
     return user
