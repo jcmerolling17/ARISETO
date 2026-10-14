@@ -1,6 +1,7 @@
 // frontend/public/js/app.js
 
 import { Router } from './router.js';
+import { onSessionEnd } from './api/client.js';
 import { mountAuthPages } from './pages/login.js';
 import { mountSetupPages } from './pages/setup.js';
 import { mountDashboardPage } from './pages/dashboard.js';
@@ -43,6 +44,11 @@ function bootstrap() {
       yield: { title: 'Yield Estimation' },
       chatbot: { title: 'Chatbot' },
     },
+  });
+
+  // Any API call that ends the session (token already cleared by the client) lands on Login.
+  onSessionEnd((message) => {
+    router.navigate('login', { replace: true, state: { message, tone: 'error' } });
   });
 
   mountBottomNavs();

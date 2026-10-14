@@ -14,6 +14,8 @@ export class ApiError extends Error {
     this.status = status;
     this.details = details;
     this.code = errorCode(details);
+    /** True when this response ended the session; the app is already on its way to Login. */
+    this.sessionEnded = false;
   }
 }
 
@@ -49,6 +51,28 @@ export const tokenStore = {
     }
   },
 };
+
+// A protected call answered with one of these ends the session (Section 6): the saved token
+// is cleared and the app goes to Login with the message.
+const SESSION_END_MESSAGES = {
+  '401:not_authenticated': 'Please log in again.',
+  '403:account_deactivated': 'Your account has been deactivated. Contact MPMPC.',
+};
+
+let sessionEndHandler = null;
+
+/** Registers the one handler for an ended session; app.js uses it to go to Login. */
+export function onSessionEnd(handler) {
+  sessionEndHandler = handler;
+}
+
+function endSession(message, sentToken) {
+  // Only the session the request was sent with ends: a newer login keeps its token, and
+  // several calls failing together lead to Login once.
+  if (tokenStore.get() !== sentToken) return;
+  tokenStore.clear();
+  sessionEndHandler?.(message);
+}
 
 async function parseBody(response) {
   if (response.status === 204) return null;
@@ -98,7 +122,14 @@ export async function request(path, { method = 'GET', body, headers = {}, auth =
 
     const data = await parseBody(response);
     if (!response.ok) {
-      throw new ApiError(errorMessage(data, response.status), { status: response.status, details: data });
+      const error = new ApiError(errorMessage(data, response.status), { status: response.status, details: data });
+      // Login and sign-up (auth: false) show their own 401/403 messages instead.
+      const sessionMessage = auth ? SESSION_END_MESSAGES[`${error.status}:${error.code}`] : undefined;
+      if (sessionMessage) {
+        error.sessionEnded = true;
+        endSession(sessionMessage, token);
+      }
+      throw error;
     }
     return data;
   } catch (err) {

@@ -5,7 +5,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
-from app.core.security import create_access_token, hash_password, verify_password
+from app.core.security import (
+    create_access_token,
+    hash_password,
+    password_needs_rehash,
+    verify_password,
+)
 from app.models import Barangay, User
 from app.models.enums import AccountStatus, LanguageCode, UserRole
 from app.schemas.auth import LoginRequest, LoginResponse, LoginUser, RegisterRequest
@@ -87,6 +92,11 @@ def login(db: Session, data: LoginRequest) -> LoginResponse:
         raise AppError(401, "invalid_credentials")
     if user.account_status in _STATUS_ERRORS:
         raise AppError(403, _STATUS_ERRORS[user.account_status])
+
+    # A hash made with older parameters is replaced once the password is known to be right.
+    if password_needs_rehash(user.password_hash):
+        user.password_hash = hash_password(data.password)
+        db.commit()
 
     return LoginResponse(
         access_token=create_access_token(user.user_id, user.role.value),

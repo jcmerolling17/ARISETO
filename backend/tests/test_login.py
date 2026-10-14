@@ -3,9 +3,11 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
+from app.core.security import password_needs_rehash, verify_password
 from app.models import User
 from app.models.enums import AccountStatus
 from tests.conftest import MEMBER_PASSWORD, member_payload
+from tests.test_security import older_parameters_hash, passlib_style_hash
 
 URL = "/api/v1/auth/login"
 
@@ -83,6 +85,65 @@ def test_login_pending_with_wrong_password_does_not_reveal_status(client: TestCl
 
     assert response.status_code == 401
     assert response.json() == {"detail": {"code": "invalid_credentials"}}
+
+
+def _set_hash(db, user: User, password_hash: str) -> None:
+    user.password_hash = password_hash
+    db.commit()
+
+
+def _stored_hash(db, user: User) -> str:
+    db.expire_all()
+    return db.get(User, user.user_id).password_hash
+
+
+def test_login_accepts_a_passlib_style_hash_and_keeps_it(client: TestClient, db) -> None:
+    user = _register(client, db)
+    old_hash = passlib_style_hash(MEMBER_PASSWORD)
+    _set_hash(db, user, old_hash)
+
+    response = client.post(URL, json={"mobile_no": "+639171234567", "password": MEMBER_PASSWORD})
+
+    assert response.status_code == 200
+    assert _stored_hash(db, user) == old_hash
+
+
+def test_login_rehashes_a_hash_with_older_parameters(client: TestClient, db) -> None:
+    user = _register(client, db)
+    old_hash = older_parameters_hash(MEMBER_PASSWORD)
+    _set_hash(db, user, old_hash)
+
+    response = client.post(URL, json={"mobile_no": "+639171234567", "password": MEMBER_PASSWORD})
+
+    assert response.status_code == 200
+    new_hash = _stored_hash(db, user)
+    assert new_hash != old_hash
+    assert not password_needs_rehash(new_hash)
+    assert verify_password(MEMBER_PASSWORD, new_hash)
+    # The password still works on the next login.
+    again = client.post(URL, json={"mobile_no": "+639171234567", "password": MEMBER_PASSWORD})
+    assert again.status_code == 200
+
+
+@pytest.mark.parametrize(
+    ("status", "password", "expected_status"),
+    [
+        (AccountStatus.ACTIVE, "wrong-password", 401),
+        (AccountStatus.PENDING, MEMBER_PASSWORD, 403),
+        (AccountStatus.DEACTIVATED, MEMBER_PASSWORD, 403),
+    ],
+)
+def test_login_never_rehashes_when_login_fails(
+    client: TestClient, db, status: AccountStatus, password: str, expected_status: int
+) -> None:
+    user = _register(client, db, status=status)
+    old_hash = older_parameters_hash(MEMBER_PASSWORD)
+    _set_hash(db, user, old_hash)
+
+    response = client.post(URL, json={"mobile_no": "+639171234567", "password": password})
+
+    assert response.status_code == expected_status
+    assert _stored_hash(db, user) == old_hash
 
 
 @pytest.mark.parametrize(
