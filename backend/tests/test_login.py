@@ -36,9 +36,7 @@ def test_login_with_mobile_returns_token_and_user(client: TestClient, db) -> Non
 def test_login_with_email_is_case_insensitive(client: TestClient, db) -> None:
     _register(client, db)
 
-    response = client.post(
-        URL, json={"email": "CRISTINA@Example.com", "password": MEMBER_PASSWORD}
-    )
+    response = client.post(URL, json={"email": "CRISTINA@Example.com", "password": MEMBER_PASSWORD})
 
     assert response.status_code == 200
 

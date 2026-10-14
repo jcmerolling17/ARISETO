@@ -8,10 +8,14 @@ from app.models.enums import AccountStatus, UserRole
 
 ARGS = [
     "create-admin",
-    "--first-name", "Maria",
-    "--last-name", "Santos",
-    "--mobile-no", "+639990000009",
-    "--municipality", "San Jose",
+    "--first-name",
+    "Maria",
+    "--last-name",
+    "Santos",
+    "--mobile-no",
+    "+639990000009",
+    "--municipality",
+    "San Jose",
 ]
 
 

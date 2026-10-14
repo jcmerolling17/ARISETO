@@ -16,12 +16,27 @@ def test_empty_table_returns_empty_list(client: TestClient) -> None:
 def test_lists_only_that_municipality_sorted_by_name(client: TestClient, db) -> None:
     db.add_all(
         [
-            Barangay(psgc_code="1", municipality="Sablayan", barangay_name="Tuban",
-                     center_latitude=12.9, center_longitude=120.8),
-            Barangay(psgc_code="2", municipality="Sablayan", barangay_name="Poblacion",
-                     center_latitude=12.836, center_longitude=120.777),
-            Barangay(psgc_code="3", municipality="San Jose", barangay_name="Labangan",
-                     center_latitude=12.35, center_longitude=121.07),
+            Barangay(
+                psgc_code="1",
+                municipality="Sablayan",
+                barangay_name="Tuban",
+                center_latitude=12.9,
+                center_longitude=120.8,
+            ),
+            Barangay(
+                psgc_code="2",
+                municipality="Sablayan",
+                barangay_name="Poblacion",
+                center_latitude=12.836,
+                center_longitude=120.777,
+            ),
+            Barangay(
+                psgc_code="3",
+                municipality="San Jose",
+                barangay_name="Labangan",
+                center_latitude=12.35,
+                center_longitude=121.07,
+            ),
         ]
     )
     db.commit()

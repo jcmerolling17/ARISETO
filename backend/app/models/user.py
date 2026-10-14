@@ -43,6 +43,4 @@ class User(Base):
     account_status: Mapped[AccountStatus] = mapped_column(
         account_status, server_default=AccountStatus.PENDING.value
     )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

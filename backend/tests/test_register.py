@@ -145,8 +145,9 @@ def test_register_invalid_fields_use_fastapi_422(client: TestClient, overrides: 
     assert isinstance(response.json()["detail"], list)
 
 
-@pytest.mark.parametrize("missing", ["first_name", "last_name", "mobile_no", "password",
-                                     "member_no", "municipality"])
+@pytest.mark.parametrize(
+    "missing", ["first_name", "last_name", "mobile_no", "password", "member_no", "municipality"]
+)
 def test_register_missing_required_field_is_422(client: TestClient, missing: str) -> None:
     payload = member_payload()
     payload.pop(missing)

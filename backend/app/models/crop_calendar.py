@@ -25,9 +25,7 @@ class CalendarTemplateTask(Base):
 
     __tablename__ = "calendar_template_task"
 
-    template_task_id: Mapped[int] = mapped_column(
-        Integer, Identity(always=True), primary_key=True
-    )
+    template_task_id: Mapped[int] = mapped_column(Integer, Identity(always=True), primary_key=True)
     variety_id: Mapped[int] = mapped_column(ForeignKey("crop_variety.variety_id"))
     week_no: Mapped[int] = mapped_column(SmallInteger)
     task_type: Mapped[TaskType] = mapped_column(task_type)
@@ -53,6 +51,4 @@ class CropActivity(Base):
     )
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     client_uuid: Mapped[uuid.UUID] = mapped_column(Uuid, unique=True)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
