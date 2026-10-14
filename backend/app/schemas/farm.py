@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
 
-from app.models.enums import CropSeason
+from app.models.enums import CropSeason, FarmRole
 
 
 def _collapse_spaces(value: str) -> str:
@@ -78,3 +78,15 @@ class FieldCreated(CreatedField):
     """POST /farms/{farm_id}/fields response, with the farm's new total area."""
 
     total_area_ha: float
+
+
+class FarmSummary(BaseModel):
+    """GET /farms item: a farm the caller owns or works on, with their role on it."""
+
+    farm_id: int
+    farm_name: str
+    barangay_id: int
+    latitude: float
+    longitude: float
+    total_area_ha: float
+    role_on_farm: FarmRole

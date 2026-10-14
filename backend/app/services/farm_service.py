@@ -22,7 +22,14 @@ from app.models import (
     User,
 )
 from app.models.enums import CropSeason, CycleStatus, FarmRole
-from app.schemas.farm import CreatedField, FarmCreate, FarmCreated, FieldCreate, FieldCreated
+from app.schemas.farm import (
+    CreatedField,
+    FarmCreate,
+    FarmCreated,
+    FarmSummary,
+    FieldCreate,
+    FieldCreated,
+)
 
 _FIELD_NAME_INDEX = "uq_field_farm_id_lower_field_name"
 
@@ -195,3 +202,25 @@ def add_field(db: Session, user: User, farm_id: int, data: FieldCreate) -> Field
         expected_harvest_date=cycle.expected_harvest_date,
         total_area_ha=farm.total_area_ha,
     )
+
+
+def list_farms(db: Session, user: User) -> list[FarmSummary]:
+    """Farms the caller owns or works on, oldest first, so the app's "first farm" is stable."""
+    rows = db.execute(
+        select(Farm, FarmAssignment.role_on_farm)
+        .join(FarmAssignment, FarmAssignment.farm_id == Farm.farm_id)
+        .where(FarmAssignment.user_id == user.user_id)
+        .order_by(Farm.farm_id)
+    )
+    return [
+        FarmSummary(
+            farm_id=farm.farm_id,
+            farm_name=farm.farm_name,
+            barangay_id=farm.barangay_id,
+            latitude=farm.latitude,
+            longitude=farm.longitude,
+            total_area_ha=farm.total_area_ha,
+            role_on_farm=role,
+        )
+        for farm, role in rows
+    ]

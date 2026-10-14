@@ -342,3 +342,63 @@ def test_rejects_invalid_field(
     assert response.status_code == 422
     assert isinstance(response.json()["detail"], list)
     assert saved_rows(db) == NOTHING_SAVED
+
+
+def test_lists_the_callers_farms_oldest_first(
+    client: TestClient, db, member_token: str, admin_token: str, barangay_id: int, variety_ids
+) -> None:
+    corn = variety_ids["NK6410"]
+    for name in ("First Farm", "Second Farm"):
+        payload = farm_payload(barangay_id, [setup_field(corn)], farm_name=name)
+        client.post(URL, json=payload, headers=auth_header(member_token))
+    admin_farm = farm_payload(barangay_id, [setup_field(corn)], farm_name="Admin Farm")
+    admin_farm_id = client.post(URL, json=admin_farm, headers=auth_header(admin_token)).json()[
+        "farm_id"
+    ]
+    member = db.scalar(select(User).where(User.mobile_no == "+639171234567"))
+    db.add(FarmAssignment(farm_id=admin_farm_id, user_id=member.user_id, role_on_farm="worker"))
+    db.commit()
+
+    response = client.get(URL, headers=auth_header(member_token))
+
+    assert response.status_code == 200
+    farms = response.json()
+    assert [(f["farm_name"], f["role_on_farm"]) for f in farms] == [
+        ("First Farm", "owner"),
+        ("Second Farm", "owner"),
+        ("Admin Farm", "worker"),
+    ]
+    assert farms[0] == {
+        "farm_id": farms[0]["farm_id"],
+        "farm_name": "First Farm",
+        "barangay_id": barangay_id,
+        "latitude": 13.271995,
+        "longitude": 120.624727,
+        "total_area_ha": 1.25,
+        "role_on_farm": "owner",
+    }
+
+
+def test_lists_no_farms_before_setup(client: TestClient, member_token: str) -> None:
+    response = client.get(URL, headers=auth_header(member_token))
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_listing_requires_login(client: TestClient) -> None:
+    response = client.get(URL)
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": {"code": "not_authenticated"}}
+
+
+def test_listing_refuses_a_deactivated_account(client: TestClient, db, member_token: str) -> None:
+    member = db.scalar(select(User).where(User.mobile_no == "+639171234567"))
+    member.account_status = AccountStatus.DEACTIVATED
+    db.commit()
+
+    response = client.get(URL, headers=auth_header(member_token))
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": {"code": "account_deactivated"}}
