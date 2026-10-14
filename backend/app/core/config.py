@@ -1,6 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -22,6 +23,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24 * 7
     jwt_algorithm: str = "HS256"
     frontend_dir: Path = REPO_ROOT / "frontend" / "public"
+    # Optional so the API starts without it; weather fetching then reports missing_key.
+    # SecretStr keeps the value out of reprs and logs.
+    openweathermap_api_key: SecretStr | None = None
 
     @property
     def is_development(self) -> bool:

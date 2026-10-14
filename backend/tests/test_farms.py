@@ -372,6 +372,8 @@ def test_lists_the_callers_farms_oldest_first(
         "farm_id": farms[0]["farm_id"],
         "farm_name": "First Farm",
         "barangay_id": barangay_id,
+        "barangay_name": "Tangkalan",
+        "municipality": "Mamburao",
         "latitude": 13.271995,
         "longitude": 120.624727,
         "total_area_ha": 1.25,

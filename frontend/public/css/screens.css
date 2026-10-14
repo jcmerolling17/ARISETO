@@ -1803,13 +1803,11 @@ a.weather {
   list-style: none;
 }
 
-/* Day name with its condition underneath, then the icon and the temperature range */
+/* Day name, then its temperature range (daily has no condition per day) */
 .wx-day {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 32px auto;
-  grid-template-areas:
-    "name icon range"
-    "label icon range";
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "name range";
   align-items: center;
   column-gap: var(--space-3);
   min-height: 52px;
@@ -1823,18 +1821,6 @@ a.weather {
 .wx-day__name {
   grid-area: name;
   font-weight: 600;
-}
-
-.wx-day__icon {
-  grid-area: icon;
-  width: 30px;
-  height: 30px;
-}
-
-.wx-day__label {
-  grid-area: label;
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
 }
 
 .wx-day__range {

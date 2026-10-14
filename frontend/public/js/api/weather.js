@@ -24,14 +24,35 @@ export const SUMMARIES = {
   storm: { day: 'Thunderstorms expected. Stay safe!', night: 'Thunderstorms tonight. Stay safe!' },
 };
 
-function isDaytime(date) {
-  const hour = date.getHours();
+/** Weather times are stored in UTC and shown in Philippine time, whatever the phone's zone. */
+export const TIME_ZONE = 'Asia/Manila';
+
+/** Hour (0–23) and date key (YYYY-MM-DD) of a moment in Philippine time. */
+export function manilaParts(date) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-PH', {
+    timeZone: TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', hourCycle: 'h23',
+  }).formatToParts(date).map((p) => [p.type, p.value]));
+  return { day: `${parts.year}-${parts.month}-${parts.day}`, hour: Number(parts.hour) };
+}
+
+export function isDaytime(date) {
+  const { hour } = manilaParts(date);
   return hour >= 6 && hour < 18;
+}
+
+/** e.g. "5:20 PM" in Philippine time. */
+export function formatClock(date) {
+  return date.toLocaleTimeString('en-PH', { timeZone: TIME_ZONE, hour: 'numeric', minute: '2-digit' });
+}
+
+/** Rounded number, or null when the API had no value. */
+export function rounded(value, factor = 1) {
+  return value == null ? null : Math.round(Number(value) * factor);
 }
 
 /**
  * Latest weather for a farm from GET /farms/{farm_id}/weather (WEATHER_LOG, refreshed by the scheduler).
- * Resolves to { temp, feelsLike, rainChance, wind, kind, summary, isDay, fetchedAt };
+ * Resolves to { temp, feelsLike, humidity, rainChance, wind, kind, summary, isDay, fetchedAt };
  * feelsLike is OpenWeatherMap's feels_like_c, wind is converted from m/s to km/h.
  */
 export async function getFarmWeather(farmId) {
@@ -39,16 +60,16 @@ export async function getFarmWeather(farmId) {
   const reading = data?.current ?? data;
   if (!reading || reading.temp_c == null) throw new Error('No weather reading yet.');
 
-  const tempC = Number(reading.temp_c);
   const kind = kindFor(Number(reading.condition_code));
   const isDay = isDaytime(new Date());
   const fetchedAt = reading.fetched_at ? new Date(reading.fetched_at) : null;
 
   return {
-    temp: Math.round(tempC),
-    feelsLike: reading.feels_like_c == null ? null : Math.round(Number(reading.feels_like_c)),
-    rainChance: reading.precip_probability_pct == null ? null : Math.round(Number(reading.precip_probability_pct)),
-    wind: reading.wind_speed_mps == null ? null : Math.round(Number(reading.wind_speed_mps) * 3.6),
+    temp: rounded(reading.temp_c),
+    feelsLike: rounded(reading.feels_like_c),
+    humidity: rounded(reading.humidity_pct),
+    rainChance: rounded(reading.precip_probability_pct),
+    wind: rounded(reading.wind_speed_mps, 3.6),
     kind,
     isDay,
     summary: SUMMARIES[kind][isDay ? 'day' : 'night'],

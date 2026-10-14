@@ -1,6 +1,6 @@
 // frontend/public/js/pages/dashboard.js
 
-import { getFarmWeather } from '../api/weather.js';
+import { getFarmWeather, formatClock } from '../api/weather.js';
 import { ApiError } from '../api/client.js';
 import { loadJSON } from '../utils/store.js';
 import { unreadCount } from './notifications.js';
@@ -13,10 +13,6 @@ const WEATHER_MESSAGES = {
   notMember: 'You are no longer a member of this farm, so its weather is hidden.',
 };
 
-function formatTime(date) {
-  return date.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
-}
-
 function mountWeather(view) {
   const box = view.querySelector('[data-weather]');
   const art = box.querySelector('.weather__art');
@@ -26,6 +22,7 @@ function mountWeather(view) {
   function showMessage(message, state) {
     field('temp').textContent = '--';
     field('feels').textContent = '--°';
+    field('humidity').textContent = '--%';
     field('rain').textContent = '--%';
     field('wind').textContent = '-- km/h';
     field('summary').textContent = message;
@@ -53,9 +50,11 @@ function mountWeather(view) {
       field('temp').textContent = String(w.temp);
       field('summary').textContent = w.summary;
       field('feels').textContent = w.feelsLike == null ? '--°' : `${w.feelsLike}°`;
+      field('humidity').textContent = w.humidity == null ? '--%' : `${w.humidity}%`;
       field('rain').textContent = w.rainChance == null ? '--%' : `${w.rainChance}%`;
       field('wind').textContent = w.wind == null ? '-- km/h' : `${w.wind} km/h`;
-      if (w.fetchedAt) field('place').textContent += ` · updated ${formatTime(w.fetchedAt)}`;
+      // fetched_at is shown in Philippine time, whatever the phone's time zone.
+      if (w.fetchedAt) field('place').textContent += ` · Updated ${formatClock(w.fetchedAt)}`;
       box.dataset.state = 'ready';
     } catch (err) {
       if (id !== requestId) return;

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import require_active_user
@@ -6,7 +6,7 @@ from app.db.session import get_db
 from app.models import User
 from app.schemas.farm import FarmCreate, FarmCreated, FarmSummary, FieldCreate, FieldCreated
 from app.schemas.weather import FarmWeather
-from app.services import farm_service, weather_service
+from app.services import farm_service, weather_fetch_service, weather_service
 
 router = APIRouter(prefix="/farms", tags=["farms"])
 
@@ -26,17 +26,21 @@ def list_farms(
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=FarmCreated)
 def create_farm(
     data: FarmCreate,
+    background_tasks: BackgroundTasks,
     user: User = Depends(require_active_user),
     db: Session = Depends(get_db),
 ) -> FarmCreated:
     """Save a farm with its fields, each field's first crop cycle, and their calendars in
-    one transaction; the caller becomes the owner.
+    one transaction; the caller becomes the owner. After the response, the farm's weather
+    is fetched in the background; a failed fetch never changes the response.
 
     Errors: 401 not_authenticated; 403 account_pending | account_deactivated;
     422 no_fields | field_name_taken | barangay_not_found | planting_date_out_of_range |
     variety_not_found.
     """
-    return farm_service.create_farm(db, user, data)
+    created = farm_service.create_farm(db, user, data)
+    background_tasks.add_task(weather_fetch_service.fetch_new_farm, created.farm_id)
+    return created
 
 
 @router.post("/{farm_id}/fields", status_code=status.HTTP_201_CREATED, response_model=FieldCreated)
@@ -61,8 +65,9 @@ def farm_weather(
     user: User = Depends(require_active_user),
     db: Session = Depends(get_db),
 ) -> FarmWeather:
-    """Latest reading and upcoming forecast from WEATHER_LOG; never fetched live. Before the
-    first fetch, current is null and forecast and alerts are empty. Farm members only.
+    """Latest reading, upcoming forecast, and yesterday/today/tomorrow ranges from
+    WEATHER_LOG; never fetched live. Before the first fetch, current is null and the lists
+    are empty; alerts stay empty until alert rules have a source. Farm members only.
 
     Errors: 401 not_authenticated; 403 account_pending | account_deactivated | not_farm_member.
     """
