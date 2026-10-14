@@ -1,25 +1,39 @@
 from datetime import UTC, datetime, timedelta
 
 import jwt
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerificationError
 
 from app.core.config import get_settings
 
-_password_context = CryptContext(schemes=["argon2"], deprecated="auto")
+# Argon2id with argon2-cffi's default parameters (Section 4).
+_password_hasher = PasswordHasher()
 
 # Verified when no account matches, so a missing account takes as long as a wrong password.
-_DUMMY_HASH = _password_context.hash("not-a-real-password")
+_DUMMY_HASH = _password_hasher.hash("not-a-real-password")
 
 
 def hash_password(password: str) -> str:
-    return _password_context.hash(password)
+    return _password_hasher.hash(password)
+
+
+def _verify(password_hash: str, password: str) -> bool:
+    try:
+        return _password_hasher.verify(password_hash, password)
+    except (VerificationError, InvalidHashError):
+        return False
 
 
 def verify_password(password: str, password_hash: str | None) -> bool:
     if password_hash is None:
-        _password_context.verify(password, _DUMMY_HASH)
+        _verify(_DUMMY_HASH, password)
         return False
-    return _password_context.verify(password, password_hash)
+    return _verify(password_hash, password)
+
+
+def password_needs_rehash(password_hash: str) -> bool:
+    """True when a stored hash uses parameters other than the current ones."""
+    return _password_hasher.check_needs_rehash(password_hash)
 
 
 def create_access_token(user_id: int, role: str) -> str:

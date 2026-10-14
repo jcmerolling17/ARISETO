@@ -16,7 +16,7 @@ dependencies = [
     "pydantic-settings>=2.4",
     "email-validator>=2.2",
     "pyjwt>=2.9",
-    "passlib[argon2]>=1.7.4",
+    "argon2-cffi>=23.1",
     "httpx2>=2.13",
     "apscheduler>=3.10,<4",
 ]
@@ -33,10 +33,6 @@ include = ["app*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
-filterwarnings = [
-    # passlib 1.7.4 is unmaintained and reads argon2.__version__; the warning is harmless.
-    "ignore:Accessing argon2.__version__ is deprecated:DeprecationWarning",
-]
 
 [tool.ruff]
 line-length = 100
