@@ -1400,6 +1400,7 @@
   line-height: 1.25;
   color: var(--primary-green-dark);
   text-align: center;
+  text-decoration: none;
   transition: transform 120ms ease, border-color 160ms ease;
 }
 
