@@ -2,7 +2,7 @@
 
 import { auth, farms, ApiError } from '../api/client.js';
 import { MUNICIPALITIES } from '../data/farm-options.js';
-import { loadJSON, saveJSON, removeJSON } from '../utils/store.js';
+import { saveJSON, removeJSON } from '../utils/store.js';
 import { mountBarangayPicker } from '../utils/barangay-picker.js';
 import {
   setFieldError,
@@ -51,12 +51,12 @@ async function rememberFirstFarm() {
     removeJSON('farm');
     return 'setup';
   }
-  // GET /farms has no municipality; keep the one saved by farm setup on this phone, if any.
-  const saved = loadJSON('farm');
+  // The barangay and municipality name the place the weather is for (the barangay center).
   saveJSON('farm', {
     farm_id: farm.farm_id,
     farm_name: farm.farm_name,
-    municipality: saved?.farm_id === farm.farm_id ? saved.municipality : undefined,
+    barangay_name: farm.barangay_name,
+    municipality: farm.municipality,
   });
   return 'home';
 }

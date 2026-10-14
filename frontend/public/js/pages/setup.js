@@ -624,6 +624,7 @@ function mountReviewStep(router, farmStep, fieldStep) {
       saveJSON('farm', {
         farm_id: created.farm_id,
         farm_name: draft.farm.farm_name,
+        barangay_name: draft.place.barangay_name,
         municipality: draft.place.municipality,
       });
       draft.result = { farm_name: draft.farm.farm_name };

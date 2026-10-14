@@ -164,7 +164,8 @@ export const farms = {
 
   /**
    * Farms the caller owns or works on, oldest first ([] before farm setup):
-   * 200 [{ farm_id, farm_name, barangay_id, latitude, longitude, total_area_ha, role_on_farm }]
+   * 200 [{ farm_id, farm_name, barangay_id, barangay_name, municipality, latitude, longitude,
+   *        total_area_ha, role_on_farm }]
    */
   list() {
     return request('/farms');
@@ -186,8 +187,12 @@ export const farms = {
    * Weather for the farm, served from WEATHER_LOG (never fetched live per request):
    * 200 { current: { temp_c, feels_like_c, humidity_pct, wind_speed_mps, precip_probability_pct,
    *                  rain_mm, condition_code, fetched_at },
-   *       forecast: [...same fields with forecast_for], alerts: [...] }
-   * 403 not_farm_member
+   *       forecast: [...same fields with forecast_for],
+   *       daily: [{ date: 'YYYY-MM-DD', temp_min_c, temp_max_c }], alerts: [] }
+   * current is null and the lists are empty until the farm's weather has been fetched;
+   * daily covers yesterday, today, and tomorrow in Philippine dates, leaving out days
+   * without readings.
+   * 403 not_farm_member (also for a farm that does not exist)
    */
   weather(farmId) {
     return request(`/farms/${encodeURIComponent(farmId)}/weather`);

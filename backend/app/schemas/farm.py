@@ -81,11 +81,15 @@ class FieldCreated(CreatedField):
 
 
 class FarmSummary(BaseModel):
-    """GET /farms item: a farm the caller owns or works on, with their role on it."""
+    """GET /farms item: a farm the caller owns or works on, with their role on it.
+    barangay_name and municipality come from BARANGAY, so the app can name the place its
+    weather is for (the barangay center)."""
 
     farm_id: int
     farm_name: str
     barangay_id: int
+    barangay_name: str
+    municipality: str
     latitude: float
     longitude: float
     total_area_ha: float
