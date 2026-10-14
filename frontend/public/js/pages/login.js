@@ -1,7 +1,8 @@
 // frontend/public/js/pages/login.js
 
-import { auth, ApiError } from '../api/client.js';
+import { auth, farms, ApiError } from '../api/client.js';
 import { MUNICIPALITIES } from '../data/farm-options.js';
+import { loadJSON, saveJSON, removeJSON } from '../utils/store.js';
 import { mountBarangayPicker } from '../utils/barangay-picker.js';
 import {
   setFieldError,
@@ -36,7 +37,29 @@ const MESSAGES = {
   emailTaken: 'This email is already registered.',
   memberNoTaken: 'This member number is already registered.',
   signupSuccess: 'Account created. An MPMPC administrator will review it, and you can log in once it is approved.',
+  farmsFailed: 'You are signed in, but your farm could not be loaded. Check your connection and log in again.',
 };
+
+/**
+ * After login, finds the member's farm with GET /farms so Home works on any phone.
+ * Resolves to 'home' (the first farm is remembered on this device) or 'setup' (no farm yet).
+ */
+async function rememberFirstFarm() {
+  const list = await farms.list();
+  const farm = Array.isArray(list) ? list[0] : null;
+  if (!farm) {
+    removeJSON('farm');
+    return 'setup';
+  }
+  // GET /farms has no municipality; keep the one saved by farm setup on this phone, if any.
+  const saved = loadJSON('farm');
+  saveJSON('farm', {
+    farm_id: farm.farm_id,
+    farm_name: farm.farm_name,
+    municipality: saved?.farm_id === farm.farm_id ? saved.municipality : undefined,
+  });
+  return 'home';
+}
 
 /* ---------- Validation ---------- */
 
@@ -151,7 +174,18 @@ function mountLogin(router) {
       resetPasswordVisibility(form);
       setStatus(view, MESSAGES.loginSuccess, 'success');
       window.dispatchEvent(new CustomEvent('ariseto:authenticated', { detail: session }));
-      router.navigate('setup', { state: { user: session?.user ?? session } });
+      const user = session?.user ?? session;
+      if (user?.first_name) saveJSON('user', { first_name: user.first_name });
+
+      let next;
+      try {
+        next = await rememberFirstFarm();
+      } catch {
+        // Without the farm list, sending the member to setup could create a second farm.
+        setStatus(view, MESSAGES.farmsFailed, 'error');
+        return;
+      }
+      router.navigate(next, next === 'setup' ? { state: { user } } : undefined);
     } catch (err) {
       setStatus(view, loginErrorMessage(err), 'error');
       password.select();

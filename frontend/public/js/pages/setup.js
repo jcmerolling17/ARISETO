@@ -1,7 +1,7 @@
 // frontend/public/js/pages/setup.js
 
-import { farms, ApiError } from '../api/client.js';
-import { MUNICIPALITIES, SEASONS, CROPS, PLANTING_METHODS } from '../data/farm-options.js';
+import { farms, crops, ApiError } from '../api/client.js';
+import { MUNICIPALITIES, SEASONS, CROPS, suggestedSeason } from '../data/farm-options.js';
 import {
   setFieldError,
   clearFieldErrors,
@@ -15,8 +15,7 @@ import { mountBarangayPicker } from '../utils/barangay-picker.js';
 
 const MAX_AREA_HA = 999999.9999; // FARM.total_area_ha NUMERIC(10,4)
 const MAX_FIELDS = 20;
-const PLANTING_WINDOW_DAYS = 730;
-const DAY_MS = 24 * 60 * 60 * 1000;
+const PLANTING_WINDOW_YEARS = 2; // CROP_CYCLE.planting_date: within 2 years of today
 
 const MESSAGES = {
   farmNameRequired: 'Enter your farm name.',
@@ -28,37 +27,46 @@ const MESSAGES = {
   fieldNameRequired: 'Enter a name for this field.',
   fieldNameTaken: 'You already have a field with this name.',
   cropRequired: 'Choose what you are planting.',
-  varietyRequired: 'Enter the variety.',
+  varietyRequired: 'Choose the variety.',
+  varietiesLoading: 'Loading varieties…',
+  varietiesWait: 'Wait for the varieties to load, then choose one.',
+  varietiesNone: 'No varieties for this crop yet',
+  varietiesNoneError: 'There are no varieties for this crop yet. Please contact the MPMPC office.',
+  varietiesFailed: 'Could not load the varieties. Check your connection, then choose the crop again.',
   sizeRequired: 'Enter the field size in hectares.',
   sizeInvalid: 'Enter a size greater than 0.',
   sizeTooSmall: 'This size is too small. Enter at least 0.0001 ha (1 m²).',
   sizeTooLarge: 'Your fields add up to more than ARISETO can store. Check the size.',
-  plantingDateRequired: 'Enter the planting date.',
-  plantingDateInvalid: 'Enter a planting date within two years of today.',
-  plantingMethodRequired: 'Choose the planting method.',
+  plantingDateRequired: 'Enter the sowing date.',
+  plantingDateInvalid: 'Enter a sowing date within two years of today.',
   removeConfirm: (name) => `Remove ${name} from your farm?`,
   fieldsNone: 'Add at least one field.',
   fieldsTooFew: (added, expected) =>
     `You said your farm has ${plural(expected, 'field')}, but you added ${added}. Add ${plural(expected - added, 'more field')}, or go back and change the number.`,
   fieldsTooMany: (added, expected) =>
     `You said your farm has ${plural(expected, 'field')}, but you added ${added}. Remove ${plural(added - expected, 'field')}, or go back and change the number.`,
-  notFarmOwner: 'Only the owner of this farm can add fields to it.',
-  coordinatesOutsideProvince: 'Your barangay’s location is outside Occidental Mindoro. Go back and choose your barangay again.',
   sessionExpired: 'Your session has expired. Please log in again.',
+  accountDeactivated: 'Your account has been deactivated. Please contact the MPMPC office.',
   unexpected: 'The server returned an unexpected response. Please try again.',
-  farmSavedRetry: 'Your farm was saved. Press Continue again to finish adding your fields.',
+};
+
+/** Messages for the POST /farms error codes (Section 6). Nothing is saved when one occurs. */
+const SAVE_ERRORS = {
+  no_fields: 'Add at least one field before saving your farm.',
+  field_name_taken: 'Two of your fields have the same name. Edit one so each field has its own name.',
+  barangay_not_found: 'We could not find your barangay. Edit your farm details and choose your barangay again.',
+  planting_date_out_of_range: 'A sowing date is more than two years from today. Edit the field and check its sowing date.',
+  variety_not_found: 'A variety you chose is no longer on the list. Edit the field and choose its variety again.',
 };
 
 /**
- * farm:        step 1 answers (POST /farms body without total_area_ha), not yet sent
+ * farm:        step 1 answers { farm_name, barangay_id }, not yet sent
  * place:       municipality and barangay names, kept for display only
  * fieldCount:  how many fields the farmer said the farm has
  * season:      season shared by every field in this setup
  * fields:      fields added in steps 2–3:
- *              { key, field_name, crop, variety, area_ha, planting_date, planting_method }
+ *              { key, field_name, crop, variety_id, variety_name, area_ha, planting_date }
  * editing:     key of the field open in step 2, or null when adding a new one
- * createdFarm: farm returned by POST /farms, and savedKeys the fields already sent, so a failed
- *              request is retried without creating anything twice
  * result:      the finished farm shown on the success screen
  */
 const draft = {
@@ -68,8 +76,6 @@ const draft = {
   season: null,
   fields: [],
   editing: null,
-  createdFarm: null,
-  savedKeys: new Set(),
   result: null,
 };
 let nextFieldKey = 1;
@@ -130,6 +136,45 @@ function formatDate(date) {
   return date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function toISODate(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/** The same day `years` later or earlier; Feb 29 becomes Feb 28 in a common year. */
+function yearsFrom(day, years) {
+  const year = day.getFullYear() + years;
+  const lastDay = new Date(year, day.getMonth() + 1, 0).getDate();
+  return new Date(year, day.getMonth(), Math.min(day.getDate(), lastDay));
+}
+
+/** First and last allowed sowing dates, matching the backend's planting window. */
+function plantingWindow(today = new Date()) {
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return [yearsFrom(start, -PLANTING_WINDOW_YEARS), yearsFrom(start, PLANTING_WINDOW_YEARS)];
+}
+
+/**
+ * Varieties per crop value ('rice', 'corn', 'onion') from GET /crops, loaded once.
+ * A failed load is forgotten so the next call tries again.
+ */
+let varietiesRequest = null;
+function loadVarieties() {
+  varietiesRequest ??= crops.list().then((list) => {
+    const byCrop = new Map();
+    for (const crop of list ?? []) byCrop.set(String(crop.crop_name).toLowerCase(), crop.varieties ?? []);
+    return byCrop;
+  });
+  varietiesRequest.catch(() => {
+    varietiesRequest = null;
+  });
+  return varietiesRequest;
+}
+
+function forgetVarieties() {
+  varietiesRequest = null;
+}
+
 function bindHomeButtons(view, router) {
   view.querySelectorAll('[data-go-home], [data-open-farm]').forEach((button) => {
     button.addEventListener('click', () => router.navigate('home'));
@@ -166,6 +211,8 @@ function mountFarmStep(router) {
 
   fillSelect(municipality, MUNICIPALITIES);
   fillSelect(season, SEASONS);
+  // Suggested from today's date; the farmer can change it.
+  season.value = suggestedSeason();
   bindLiveErrorClearing(form);
 
   function validate() {
@@ -183,14 +230,9 @@ function mountFarmStep(router) {
     if (!season.value) setFieldError(season, MESSAGES.seasonRequired);
 
     if (form.querySelector('[aria-invalid="true"]')) return null;
-    // The farm is placed at its barangay's center point (FARM.latitude/longitude).
+    // The backend places the farm at its barangay's center point.
     return {
-      farm: {
-        farm_name: name,
-        barangay_id: place.barangay_id,
-        latitude: Number(place.center_latitude),
-        longitude: Number(place.center_longitude),
-      },
+      farm: { farm_name: name, barangay_id: place.barangay_id },
       place: { municipality: municipality.value, barangay_name: place.barangay_name },
       fieldCount: count,
       season: season.value,
@@ -213,8 +255,6 @@ function mountFarmStep(router) {
   });
 
   router.route('setup-farm', {
-    // Once the farm exists on the server it can no longer be edited from setup.
-    guard: () => (draft.createdFarm ? 'setup-review' : null),
     onLeave() {
       clearFieldErrors(form);
     },
@@ -224,15 +264,14 @@ function mountFarmStep(router) {
     reset() {
       form.reset();
       barangayPicker.reset();
+      season.value = suggestedSeason();
     },
   };
 }
 
-/** Steps 2 and 3 need step 1's answers, and are locked once the farm is saved. */
+/** Steps 2 and 3 need step 1's answers. */
 function fieldStepsGuard() {
-  if (!draft.farm) return 'setup-farm';
-  if (draft.createdFarm) return 'setup-review';
-  return null;
+  return draft.farm ? null : 'setup-farm';
 }
 
 /* ---------- Step 2: add or edit one field ---------- */
@@ -246,10 +285,9 @@ function mountFieldStep(router) {
   const cropError = view.querySelector('[data-crop-error]');
   const {
     field_name: fieldName,
-    variety,
+    variety_id: variety,
     area_ha: size,
     planting_date: plantingDate,
-    planting_method: plantingMethod,
   } = form.elements;
 
   for (const crop of CROPS) {
@@ -263,7 +301,6 @@ function mountFieldStep(router) {
   }
   const cropRadios = () => [...form.querySelectorAll('input[name="crop"]')];
 
-  fillSelect(plantingMethod, PLANTING_METHODS);
   bindLiveErrorClearing(form);
 
   // The crop is a radio group, so its error is set on every radio and shown once.
@@ -274,7 +311,72 @@ function mountFieldStep(router) {
     }
     cropError.textContent = message;
   }
-  cropOptions.addEventListener('change', () => setCropError(''));
+
+  // 'empty' (no crop), 'loading', 'none' (crop has no varieties), 'failed', or 'ready'.
+  let varietyState = 'empty';
+  const VARIETY_ERRORS = {
+    loading: MESSAGES.varietiesWait,
+    none: MESSAGES.varietiesNoneError,
+    failed: MESSAGES.varietiesFailed,
+    ready: MESSAGES.varietyRequired,
+  };
+
+  function setVarietyPlaceholder(text, state) {
+    variety.replaceChildren(new Option(text, ''));
+    variety.disabled = true;
+    varietyState = state;
+  }
+
+  /** Fills the variety list for a crop from GET /crops, keeping selectedId if it is listed. */
+  let varietyRequest = 0;
+  async function fillVarieties(crop, selectedId = null) {
+    const id = (varietyRequest += 1);
+    if (!crop) {
+      setVarietyPlaceholder('Choose a crop first', 'empty');
+      return;
+    }
+    setVarietyPlaceholder(MESSAGES.varietiesLoading, 'loading');
+    try {
+      const varieties = (await loadVarieties()).get(crop) ?? [];
+      if (id !== varietyRequest) return;
+      if (!varieties.length) {
+        setVarietyPlaceholder(MESSAGES.varietiesNone, 'none');
+        return;
+      }
+      variety.replaceChildren(new Option('Choose variety', ''));
+      for (const item of varieties) {
+        const option = new Option(`${item.variety_name} · ${item.maturity_days} days`, String(item.variety_id));
+        option.dataset.name = item.variety_name;
+        variety.add(option);
+      }
+      variety.disabled = false;
+      varietyState = 'ready';
+      if (selectedId != null && varieties.some((item) => item.variety_id === selectedId)) {
+        variety.value = String(selectedId);
+      }
+    } catch (err) {
+      if (id !== varietyRequest) return;
+      if (err instanceof ApiError && err.status === 401) {
+        router.navigate('login', { state: { message: MESSAGES.sessionExpired, tone: 'error' } });
+        return;
+      }
+      setVarietyPlaceholder('Choose a crop first', 'failed');
+      setFieldError(variety, MESSAGES.varietiesFailed);
+    }
+  }
+
+  cropOptions.addEventListener('change', () => {
+    setCropError('');
+    setFieldError(variety, '');
+    fillVarieties(form.elements.crop.value);
+  });
+
+  // Keep the date picker inside the allowed sowing window.
+  function limitPlantingDate() {
+    const [first, last] = plantingWindow();
+    plantingDate.min = toISODate(first);
+    plantingDate.max = toISODate(last);
+  }
 
   function clearErrors() {
     clearFieldErrors(form);
@@ -284,7 +386,7 @@ function mountFieldStep(router) {
   function validate() {
     const name = cleanText(fieldName.value);
     const crop = form.elements.crop.value;
-    const varietyName = cleanText(variety.value);
+    const varietyOption = variety.value ? variety.selectedOptions[0] : null;
     const others = draft.fields.filter((field) => field.key !== draft.editing);
 
     if (!name) setFieldError(fieldName, MESSAGES.fieldNameRequired);
@@ -292,7 +394,7 @@ function mountFieldStep(router) {
       setFieldError(fieldName, MESSAGES.fieldNameTaken);
     }
     if (!crop) setCropError(MESSAGES.cropRequired);
-    if (!varietyName) setFieldError(variety, MESSAGES.varietyRequired);
+    else if (!varietyOption) setFieldError(variety, VARIETY_ERRORS[varietyState] ?? MESSAGES.varietyRequired);
 
     const areaHa = toHectares(size.value);
     const othersHa = others.reduce((sum, field) => sum + field.area_ha, 0);
@@ -302,20 +404,20 @@ function mountFieldStep(router) {
     else if (othersHa + areaHa > MAX_AREA_HA) setFieldError(size, MESSAGES.sizeTooLarge);
 
     const date = parseDate(plantingDate.value);
+    const [first, last] = plantingWindow();
     if (!plantingDate.value) setFieldError(plantingDate, MESSAGES.plantingDateRequired);
-    else if (!date || Math.abs(date.getTime() - Date.now()) > PLANTING_WINDOW_DAYS * DAY_MS) {
+    else if (!date || date < first || date > last) {
       setFieldError(plantingDate, MESSAGES.plantingDateInvalid);
     }
-    if (!plantingMethod.value) setFieldError(plantingMethod, MESSAGES.plantingMethodRequired);
 
     if (form.querySelector('[aria-invalid="true"]')) return null;
     return {
       field_name: name,
       crop,
-      variety: varietyName,
+      variety_id: Number(variety.value),
+      variety_name: varietyOption.dataset.name,
       area_ha: areaHa,
       planting_date: plantingDate.value,
-      planting_method: plantingMethod.value,
     };
   }
 
@@ -342,18 +444,21 @@ function mountFieldStep(router) {
     draft.editing = field?.key ?? null;
     form.reset();
     clearErrors();
-    if (!field) return;
+    if (!field) {
+      fillVarieties(null);
+      return;
+    }
     fieldName.value = field.field_name;
     for (const radio of cropRadios()) radio.checked = radio.value === field.crop;
-    variety.value = field.variety;
+    fillVarieties(field.crop, field.variety_id);
     size.value = String(field.area_ha);
     plantingDate.value = field.planting_date;
-    plantingMethod.value = field.planting_method;
   }
 
   router.route('setup-field', {
     guard: fieldStepsGuard,
     onEnter() {
+      limitPlantingDate();
       heading.textContent = draft.editing === null ? 'Add your Field' : 'Edit your Field';
       backLink.setAttribute('href', draft.fields.length ? '#/setup-fields' : '#/setup-farm');
     },
@@ -389,9 +494,8 @@ function mountFieldsStep(router, fieldStep) {
     q('[data-name]').textContent = field.field_name;
     q('[data-meta]').textContent = `${crop.label} · ${formatHectares(field.area_ha)}`;
     q('[data-place]').textContent = draft.place.barangay_name;
-    q('[data-variety]').textContent = field.variety;
+    q('[data-variety]').textContent = field.variety_name;
     q('[data-planted]').textContent = formatDate(parseDate(field.planting_date));
-    q('[data-method]').textContent = labelOf(PLANTING_METHODS, field.planting_method);
 
     const edit = q('[data-edit]');
     edit.setAttribute('aria-label', `Edit ${field.field_name}`);
@@ -456,8 +560,6 @@ function mountFieldsStep(router, fieldStep) {
 function mountReviewStep(router, farmStep, fieldStep) {
   const view = document.querySelector('[data-view="setup-review"]');
   const form = view.querySelector('[data-review-form]');
-  const backLink = view.querySelector('[data-review-back]');
-  const editLinks = view.querySelectorAll('[data-review-edit]');
   const list = view.querySelector('[data-review-fields]');
   const template = view.querySelector('template[data-review-card]');
   const value = (name) => view.querySelector(`[data-review="${name}"]`);
@@ -469,7 +571,7 @@ function mountReviewStep(router, farmStep, fieldStep) {
 
     q('[data-crop-icon]').setAttribute('href', `#${crop.icon}`);
     q('[data-name]').textContent = field.field_name;
-    q('[data-crop]').textContent = `${crop.label} (${field.variety})`;
+    q('[data-crop]').textContent = `${crop.label} (${field.variety_name})`;
     q('[data-area]').textContent = formatHectares(field.area_ha);
     q('[data-planted]').textContent = formatDate(parseDate(field.planting_date));
     return item;
@@ -481,10 +583,6 @@ function mountReviewStep(router, farmStep, fieldStep) {
     value('total_area').textContent = formatHectares(totalAreaHa(), { long: true });
     value('season').textContent = labelOf(SEASONS, draft.season);
     list.replaceChildren(...draft.fields.map(card));
-
-    const locked = Boolean(draft.createdFarm);
-    backLink.hidden = locked;
-    editLinks.forEach((link) => { link.hidden = locked; });
   }
 
   function clearDraft() {
@@ -495,11 +593,23 @@ function mountReviewStep(router, farmStep, fieldStep) {
       season: null,
       fields: [],
       editing: null,
-      createdFarm: null,
-      savedKeys: new Set(),
     });
     farmStep.reset();
     fieldStep.reset();
+  }
+
+  /** POST /farms body: the whole farm, saved in one transaction (Section 6). */
+  function payload() {
+    return {
+      ...draft.farm,
+      season: draft.season,
+      fields: draft.fields.map((field) => ({
+        field_name: field.field_name,
+        area_ha: field.area_ha,
+        variety_id: field.variety_id,
+        planting_date: field.planting_date,
+      })),
+    };
   }
 
   form.addEventListener('submit', async (event) => {
@@ -509,27 +619,14 @@ function mountReviewStep(router, farmStep, fieldStep) {
     setStatus(view, '');
     setBusy(form, true);
     try {
-      if (!draft.createdFarm) {
-        const created = await farms.create({ ...draft.farm, total_area_ha: totalAreaHa() });
-        const farmId = created?.farm_id ?? created?.id;
-        if (farmId == null) throw new Error(MESSAGES.unexpected);
-        draft.createdFarm = { ...draft.farm, ...draft.place, ...created, farm_id: farmId };
-        saveJSON('farm', {
-          farm_id: farmId,
-          farm_name: draft.createdFarm.farm_name,
-          municipality: draft.createdFarm.municipality,
-        });
-        render();
-      }
-
-      for (const field of draft.fields) {
-        if (draft.savedKeys.has(field.key)) continue;
-        const { key, ...payload } = field;
-        await farms.addField(draft.createdFarm.farm_id, { ...payload, season: draft.season });
-        draft.savedKeys.add(key);
-      }
-
-      draft.result = { farm_name: draft.createdFarm.farm_name };
+      const created = await farms.create(payload());
+      if (created?.farm_id == null) throw new Error(MESSAGES.unexpected);
+      saveJSON('farm', {
+        farm_id: created.farm_id,
+        farm_name: draft.farm.farm_name,
+        municipality: draft.place.municipality,
+      });
+      draft.result = { farm_name: draft.farm.farm_name };
       clearDraft();
       router.navigate('setup-done', { replace: true });
     } catch (err) {
@@ -537,15 +634,17 @@ function mountReviewStep(router, farmStep, fieldStep) {
         router.navigate('login', { state: { message: MESSAGES.sessionExpired, tone: 'error' } });
         return;
       }
-      if (err instanceof ApiError && err.code === 'coordinates_outside_province') {
-        setStatus(view, MESSAGES.coordinatesOutsideProvince, 'error');
+      if (err instanceof ApiError && err.code === 'account_deactivated') {
+        setStatus(view, MESSAGES.accountDeactivated, 'error');
         return;
       }
-      if (err instanceof ApiError && err.code === 'not_farm_owner') {
-        setStatus(view, MESSAGES.notFarmOwner, 'error');
+      if (err instanceof ApiError && SAVE_ERRORS[err.code]) {
+        // The variety list may be out of date; load it again when a field is edited.
+        if (err.code === 'variety_not_found') forgetVarieties();
+        setStatus(view, SAVE_ERRORS[err.code], 'error');
         return;
       }
-      setStatus(view, draft.createdFarm ? `${err.message} ${MESSAGES.farmSavedRetry}` : err.message, 'error');
+      setStatus(view, err.message, 'error');
     } finally {
       setBusy(form, false);
     }

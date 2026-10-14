@@ -21,17 +21,17 @@ export const SEASONS = [
   { value: 'dry', label: 'Dry season' },
 ];
 
+/** The season the app suggests (Section 4): 'wet' from June to November, 'dry' otherwise. */
+export function suggestedSeason(today = new Date()) {
+  const month = today.getMonth() + 1;
+  return month >= 6 && month <= 11 ? 'wet' : 'dry';
+}
+
 /** Crops a field can be planted with during farm setup; icon is the sprite symbol id. */
 export const CROPS = [
   { value: 'rice', label: 'Rice', icon: 'icon-crop-rice' },
   { value: 'corn', label: 'Corn', icon: 'icon-crop-corn' },
   { value: 'onion', label: 'Onion', icon: 'icon-crop-onion' },
-];
-
-/** How a field was planted. */
-export const PLANTING_METHODS = [
-  { value: 'transplanting', label: 'Transplanting' },
-  { value: 'direct_seeding', label: 'Direct seeding' },
 ];
 
 /** Growth stage of a crop calendar task, in season order (headings of the weekly timeline). */

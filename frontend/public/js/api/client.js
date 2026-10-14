@@ -149,21 +149,34 @@ export const auth = {
 
 export const farms = {
   /**
-   * payload: { farm_name, barangay_id, latitude, longitude, total_area_ha }
-   * 201 { farm_id }: the caller is saved as the farm's 'owner' in FARM_ASSIGNMENT.
-   * 422 coordinates_outside_province (latitude/longitude outside Occidental Mindoro)
+   * Saves the farm, its fields, each field's first crop cycle, and their calendars in one
+   * transaction; the caller becomes the owner. The backend sets the location from the barangay
+   * center and the total area from the fields.
+   * payload: { farm_name, barangay_id, season: 'wet'|'dry',
+   *            fields: [{ field_name, area_ha, variety_id, planting_date: 'YYYY-MM-DD' (sowing) }] }
+   * 201 { farm_id, total_area_ha, fields: [{ field_id, cycle_id, expected_harvest_date }] }
+   * 422 no_fields | field_name_taken | barangay_not_found | planting_date_out_of_range |
+   *     variety_not_found
    */
   create(payload) {
     return request('/farms', { method: 'POST', body: payload });
   },
 
   /**
-   * Adds one field (plot) to a farm (owner only). Planned endpoint; not yet in the backend.
-   * payload: { field_name, crop: 'rice'|'corn'|'onion', variety, area_ha,
-   *            planting_date: 'YYYY-MM-DD', planting_method: 'transplanting'|'direct_seeding',
-   *            season: 'wet'|'dry' }
-   * 201 { field_id }
-   * 403 not_farm_owner; 409 field_name_taken
+   * Farms the caller owns or works on, oldest first ([] before farm setup):
+   * 200 [{ farm_id, farm_name, barangay_id, latitude, longitude, total_area_ha, role_on_farm }]
+   */
+  list() {
+    return request('/farms');
+  },
+
+  /**
+   * Adds a field to a farm after setup and opens its first crop cycle (owner only).
+   * payload: { field_name, area_ha, variety_id, season: 'wet'|'dry',
+   *            planting_date: 'YYYY-MM-DD' (sowing), target_yield_t_ha (optional) }
+   * 201 { field_id, cycle_id, expected_harvest_date, total_area_ha }
+   * 403 not_farm_owner; 404 farm_not_found; 409 field_name_taken;
+   * 422 planting_date_out_of_range | variety_not_found
    */
   addField(farmId, payload) {
     return request(`/farms/${encodeURIComponent(farmId)}/fields`, { method: 'POST', body: payload });
@@ -178,6 +191,16 @@ export const farms = {
    */
   weather(farmId) {
     return request(`/farms/${encodeURIComponent(farmId)}/weather`);
+  },
+};
+
+export const crops = {
+  /**
+   * Crops with their varieties (any logged-in user):
+   * 200 [{ crop_id, crop_name, varieties: [{ variety_id, variety_name, maturity_class, maturity_days }] }]
+   */
+  list() {
+    return request('/crops');
   },
 };
 

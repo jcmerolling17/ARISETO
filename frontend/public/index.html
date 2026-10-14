@@ -561,7 +561,7 @@
         <form id="setup-field-form" class="form form--plain" novalidate>
           <div class="setup-lead">
             <h2 class="setup-lead__title" data-field-heading>Add your Field</h2>
-            <p class="setup-lead__text">Enter your plot size, crop type, variety, and planting date.</p>
+            <p class="setup-lead__text">Enter your plot size, crop type, variety, and sowing date.</p>
           </div>
 
           <div class="field">
@@ -578,38 +578,29 @@
             <p id="setup-crop-error" class="field__error" aria-live="polite" data-crop-error></p>
           </fieldset>
 
-          <div class="field-row">
-            <div class="field">
-              <label for="setup-variety" class="field__label">Variety</label>
-              <input id="setup-variety" name="variety" class="input" type="text" maxlength="50"
-                     autocomplete="off" placeholder="e.g. Pioneer 30W" aria-describedby="setup-variety-error" required>
-              <p id="setup-variety-error" class="field__error" aria-live="polite"></p>
-            </div>
+          <div class="field">
+            <label for="setup-variety" class="field__label">Variety</label>
+            <select id="setup-variety" name="variety_id" class="input select"
+                    aria-describedby="setup-variety-error" required disabled>
+              <option value="">Choose a crop first</option>
+            </select>
+            <p id="setup-variety-error" class="field__error" aria-live="polite"></p>
+          </div>
 
-            <div class="field">
-              <label for="setup-size" class="field__label">Size (Ha)</label>
-              <input id="setup-size" name="area_ha" class="input" type="number" inputmode="decimal"
-                     min="0" step="any" placeholder="e.g. 1" aria-describedby="setup-size-error" required>
-              <p id="setup-size-error" class="field__error" aria-live="polite"></p>
-            </div>
+          <div class="field">
+            <label for="setup-size" class="field__label">Size (Ha)</label>
+            <input id="setup-size" name="area_ha" class="input" type="number" inputmode="decimal"
+                   min="0" step="any" placeholder="e.g. 1" aria-describedby="setup-size-error" required>
+            <p id="setup-size-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <h3 class="form__section-title">Planting Status</h3>
 
           <div class="field">
-            <label for="setup-planting-date" class="field__label">Planting Date</label>
+            <label for="setup-planting-date" class="field__label">Sowing Date</label>
             <input id="setup-planting-date" name="planting_date" class="input" type="date"
                    aria-describedby="setup-planting-date-error" required>
             <p id="setup-planting-date-error" class="field__error" aria-live="polite"></p>
-          </div>
-
-          <div class="field">
-            <label for="setup-planting-method" class="field__label">Planting Method</label>
-            <select id="setup-planting-method" name="planting_method" class="input select"
-                    aria-describedby="setup-planting-method-error" required>
-              <option value="">Select method</option>
-            </select>
-            <p id="setup-planting-method-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="form__end">
@@ -675,8 +666,7 @@
               </div>
               <dl class="field-card__more" data-more hidden>
                 <div><dt>Variety</dt><dd data-variety></dd></div>
-                <div><dt>Planted</dt><dd data-planted></dd></div>
-                <div><dt>Method</dt><dd data-method></dd></div>
+                <div><dt>Sown</dt><dd data-planted></dd></div>
               </dl>
             </div>
           </li>
