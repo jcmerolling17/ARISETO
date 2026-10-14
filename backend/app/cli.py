@@ -14,6 +14,11 @@ Load the barangays and crop varieties in app/seeds/ (safe to run again):
 Fetch OpenWeatherMap once for every farm, or for one farm (needs OPENWEATHERMAP_API_KEY):
 
     python -m app.cli fetch-weather [--farm-id 3]
+
+Run the weather scheduler as its own process: every farm now, then every 3 hours, until
+Ctrl+C. Never start it inside the API server.
+
+    python -m app.cli weather-scheduler
 """
 
 import argparse
@@ -26,7 +31,7 @@ from pydantic import ValidationError
 from app.core.errors import AppError
 from app.db.session import SessionLocal
 from app.schemas.admin import AdminCreate
-from app.services import auth_service, seed_service, weather_fetch_service
+from app.services import auth_service, seed_service, weather_fetch_service, weather_scheduler
 
 LOG_FORMAT = "%(asctime)s %(levelname)s %(message)s"
 
@@ -101,6 +106,14 @@ def _fetch_weather(args: argparse.Namespace) -> int:
     return 1 if summary.failed else 0
 
 
+def _weather_scheduler(_args: argparse.Namespace) -> int:
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    # One line per run from app.weather; APScheduler's own per-job lines only on problems.
+    logging.getLogger("apscheduler").setLevel(logging.WARNING)
+    weather_scheduler.run_forever()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -121,6 +134,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     fetch_weather.add_argument("--farm-id", type=int, help="Only this farm (default: all)")
     fetch_weather.set_defaults(handler=_fetch_weather)
+
+    scheduler = commands.add_parser(
+        "weather-scheduler", help="Fetch every farm now and then every 3 hours (own process)"
+    )
+    scheduler.set_defaults(handler=_weather_scheduler)
 
     args = parser.parse_args(argv)
     return args.handler(args)
