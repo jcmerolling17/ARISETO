@@ -1,0 +1,18 @@
+{
+  "name": "ARISETO",
+  "short_name": "ARISETO",
+  "description": "ARISETO — AI-powered tools that help Filipino farmers optimize their farming and maximize crop yields.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f4f2",
+  "theme_color": "#2d8a3e",
+  "icons": [
+    {
+      "src": "assets/icons/logo-badge.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

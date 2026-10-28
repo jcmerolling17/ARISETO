@@ -4,6 +4,7 @@ import { auth, farms, ApiError } from '../api/client.js';
 import { MUNICIPALITIES } from '../data/farm-options.js';
 import { saveJSON, removeJSON } from '../utils/store.js';
 import { mountBarangayPicker } from '../utils/barangay-picker.js';
+import { takeLegalAnswer } from './legal.js';
 import {
   setFieldError,
   clearFieldErrors,
@@ -37,6 +38,7 @@ const MESSAGES = {
   emailTaken: 'This email is already registered.',
   memberNoTaken: 'This member number is already registered.',
   signupSuccess: 'Account created. An MPMPC administrator will review it, and you can log in once it is approved.',
+  termsNotAccepted: 'Please agree to the Terms & Conditions and Privacy Policy to create your account.',
   farmsFailed: 'You are signed in, but your farm could not be loaded. Check your connection and log in again.',
 };
 
@@ -94,13 +96,13 @@ export function parseIdentifier(raw) {
   return isValidMobile(mobile) ? { field: 'mobile_no', value: mobile } : { error: MESSAGES.mobileInvalid };
 }
 
-function cleanName(raw) {
+export function cleanName(raw) {
   return String(raw).trim().replace(/\s+/g, ' ');
 }
 
 /* ---------- Form helpers ---------- */
 
-function bindPasswordToggles(root) {
+export function bindPasswordToggles(root) {
   root.querySelectorAll('[data-toggle-password]').forEach((toggle) => {
     const input = document.getElementById(toggle.getAttribute('aria-controls'));
     if (!input) return;
@@ -114,7 +116,7 @@ function bindPasswordToggles(root) {
   });
 }
 
-function resetPasswordVisibility(form) {
+export function resetPasswordVisibility(form) {
   form.querySelectorAll('[data-toggle-password]').forEach((toggle) => {
     const input = document.getElementById(toggle.getAttribute('aria-controls'));
     if (input) input.type = 'password';
@@ -225,6 +227,23 @@ function mountSignup(router) {
     password,
   } = form.elements;
 
+  const agree = form.querySelector('[data-agree]');
+  const submit = form.querySelector('[type="submit"]');
+  // Documents accepted on their own screens during this sign-up; both tick the agreement box.
+  const acceptedDocs = new Set();
+
+  // Continue stays disabled until the Terms & Conditions and Privacy Policy are accepted.
+  function syncSubmit() {
+    submit.disabled = !agree.checked || form.getAttribute('aria-busy') === 'true';
+  }
+
+  agree.addEventListener('change', () => {
+    if (!agree.checked) acceptedDocs.clear();
+    setStatus(view, '');
+    syncSubmit();
+  });
+  syncSubmit();
+
   for (const name of MUNICIPALITIES) municipality.add(new Option(name, name));
   const barangayPicker = mountBarangayPicker(municipality, barangay, {
     placeholder: 'Barangay (optional)',
@@ -272,6 +291,7 @@ function mountSignup(router) {
       barangay_id: barangay.value ? Number(barangay.value) : null,
       preferred_language: language.value,
       password: password.value,
+      accepted_terms: agree.checked,
     };
   }
 
@@ -294,6 +314,7 @@ function mountSignup(router) {
     try {
       await auth.register(payload);
       form.reset();
+      acceptedDocs.clear();
       barangayPicker.reset();
       resetPasswordVisibility(form);
       router.navigate('login', {
@@ -304,16 +325,35 @@ function mountSignup(router) {
       if (conflict) {
         setFieldError(...conflict);
         focusFirstInvalid(form);
+      } else if (err instanceof ApiError && err.code === 'terms_not_accepted') {
+        setStatus(view, MESSAGES.termsNotAccepted, 'error');
       } else {
         setStatus(view, err instanceof ApiError && err.status === 409 ? MESSAGES.accountExists : err.message, 'error');
       }
     } finally {
       setBusy(form, false);
+      syncSubmit();
     }
   });
 
   router.route('signup', {
-    onLeave() {
+    onEnter() {
+      // Accept on both documents ticks the box; Decline on either unticks it.
+      const answer = takeLegalAnswer();
+      if (!answer) return;
+      if (answer.accepted) {
+        acceptedDocs.add(answer.doc);
+        if (acceptedDocs.size === 2) agree.checked = true;
+      } else {
+        acceptedDocs.delete(answer.doc);
+        agree.checked = false;
+        setStatus(view, MESSAGES.termsNotAccepted, 'error');
+      }
+      syncSubmit();
+    },
+    onLeave({ to } = {}) {
+      // Reading the Terms or Privacy Policy keeps what was typed.
+      if (to === 'terms' || to === 'privacy') return;
       password.value = '';
       resetPasswordVisibility(form);
       clearFieldErrors(form);

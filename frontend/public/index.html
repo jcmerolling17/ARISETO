@@ -10,6 +10,7 @@
   <title>Welcome · ARISETO</title>
   <link rel="icon" type="image/png" href="assets/icons/logo-badge.png">
   <link rel="apple-touch-icon" href="assets/icons/logo-badge.png">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
@@ -202,6 +203,22 @@
     </symbol>
     <symbol id="icon-note" viewBox="0 0 24 24">
       <path d="M6 3.5h9l4 4V20a.5.5 0 0 1-.5.5h-12A.5.5 0 0 1 6 20V3.5ZM14.5 3.5v4h4.5M9 12h7M9 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-mail" viewBox="0 0 24 24">
+      <path d="M4 6h16a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5H4a.5.5 0 0 1-.5-.5v-11A.5.5 0 0 1 4 6Zm-.2.6L12 13l8.2-6.4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24">
+      <path d="M12 3.5 19 6v5.5c0 4.3-2.9 7.6-7 9-4.1-1.4-7-4.7-7-9V6l7-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-sync" viewBox="0 0 24 24">
+      <path d="M19.5 10A7.5 7.5 0 0 0 6 7M4.5 14A7.5 7.5 0 0 0 18 17M6 3.5V7h3.5M18 20.5V17h-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24">
+      <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M4.5 14.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="icon-user-x" viewBox="0 0 24 24">
+      <circle cx="10" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+      <path d="M3.5 19.5c.6-3.4 3.2-5.5 6.5-5.5 1.3 0 2.5.3 3.5.9M16 15l4 4M20 15l-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
     </symbol>
     <!-- Weather conditions (colored) -->
     <symbol id="wx-clear" viewBox="0 0 48 48">
@@ -414,15 +431,20 @@
           </div>
 
           <div class="form__end">
-            <p class="form__legal">
-              By continuing, you agree to ARISETO’s
-              <a href="terms.html" class="link" target="_blank" rel="noopener">Terms &amp; Conditions</a>
-              and <a href="privacy.html" class="link" target="_blank" rel="noopener">Privacy Policy</a>
-            </p>
+            <div class="field">
+              <label class="agree" for="signup-agree">
+                <input id="signup-agree" name="accepted_terms" type="checkbox" class="check" data-agree>
+                <span>
+                  I have read and agree to ARISETO’s
+                  <a href="#/terms" class="link">Terms &amp; Conditions</a>
+                  and <a href="#/privacy" class="link">Privacy Policy</a>.
+                </span>
+              </label>
+            </div>
 
             <p class="form__status" role="status" aria-live="polite" data-form-status></p>
 
-            <button type="submit" class="btn btn--gradient btn--block btn--rounded">
+            <button type="submit" class="btn btn--gradient btn--block btn--rounded" disabled>
               <span class="btn__label">Continue</span>
               <span class="spinner" aria-hidden="true"></span>
             </button>
@@ -1452,7 +1474,6 @@
             <div class="app-header__text">
               <h1 id="profile-title" class="app-header__title" tabindex="-1" data-route-focus>Profile</h1>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
         </header>
 
@@ -1469,30 +1490,32 @@
             <div class="profile-card__bottom">
               <p class="profile-card__status" data-online>
                 <svg aria-hidden="true"><use href="#icon-wifi"/></svg>
-                <span><strong data-online-title></strong><span data-online-text></span></span>
+                <strong data-online-title></strong>
               </p>
-              <button type="button" class="section-link--button profile-card__edit" data-soon="Edit Profile">Edit Profile</button>
+              <a href="#/edit-profile" class="profile-card__edit">Edit Profile</a>
             </div>
           </section>
+
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
 
           <section aria-labelledby="security-title">
             <h2 id="security-title" class="section-title">Account Security</h2>
             <div class="setting-list">
-              <button type="button" class="setting-row" data-soon="Changing your mobile number">
+              <a href="#/edit-profile" class="setting-row">
                 <span class="setting-row__text"><span class="setting-row__label">Mobile number</span><span class="setting-row__value" data-mobile></span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
-              </button>
-              <button type="button" class="setting-row" data-soon="Changing your password">
+              </a>
+              <a href="#/change-password" class="setting-row">
                 <span class="setting-row__text"><span class="setting-row__label">Password</span><span class="setting-row__value" aria-label="Hidden">••••••••••</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
-              </button>
+              </a>
             </div>
           </section>
 
           <section aria-labelledby="plots-title">
             <div class="section-head">
               <h2 id="plots-title" class="section-title">Farm and Plots</h2>
-              <button type="button" class="add-link" data-soon="Adding a plot">
+              <button type="button" class="add-link" data-add-plot hidden>
                 <svg aria-hidden="true"><use href="#icon-plus"/></svg>Add Plot
               </button>
             </div>
@@ -1506,11 +1529,46 @@
 
           <section aria-labelledby="language-title">
             <h2 id="language-title" class="section-title">Language</h2>
-            <label class="setting-row setting-row--toggle">
+            <label class="setting-row setting-row--toggle" data-soon="Translate">
               <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-translate"/></svg>
               <span class="setting-row__text"><span class="setting-row__title">Translate</span><span class="setting-row__hint">Translate to Filipino</span></span>
-              <input type="checkbox" class="switch" role="switch" data-language-switch>
+              <input type="checkbox" class="switch" role="switch" disabled>
             </label>
+          </section>
+
+          <section aria-labelledby="sync-title">
+            <h2 id="sync-title" class="section-title">Sync and Offline</h2>
+            <label class="setting-row setting-row--toggle" data-soon="Auto-Sync">
+              <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-sync"/></svg>
+              <span class="setting-row__text"><span class="setting-row__title">Auto-Sync Data</span><span class="setting-row__hint">Syncs when Wi-Fi is available</span></span>
+              <input type="checkbox" class="switch" role="switch" disabled>
+            </label>
+          </section>
+
+          <section aria-labelledby="privacy-title">
+            <h2 id="privacy-title" class="section-title">Privacy and Data</h2>
+            <div class="setting-list">
+              <button type="button" class="setting-row" data-soon="Export Farm Data">
+                <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-download"/></svg>
+                <span class="setting-row__text"><span class="setting-row__title">Export Farm Data</span><span class="setting-row__hint">Download as CSV or JSON</span></span>
+                <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+              </button>
+              <button type="button" class="setting-row" data-request-deletion>
+                <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-user-x"/></svg>
+                <span class="setting-row__text"><span class="setting-row__title">Request account deletion</span><span class="setting-row__hint" data-deletion-hint></span></span>
+                <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+              </button>
+              <a href="#/terms" class="setting-row">
+                <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-note"/></svg>
+                <span class="setting-row__text"><span class="setting-row__title">Terms &amp; Conditions</span></span>
+                <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+              </a>
+              <a href="#/privacy" class="setting-row">
+                <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-shield"/></svg>
+                <span class="setting-row__text"><span class="setting-row__title">Privacy Policy</span></span>
+                <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+              </a>
+            </div>
           </section>
 
           <section aria-labelledby="help-title">
@@ -1561,6 +1619,401 @@
             </div>
           </li>
         </template>
+      </section>
+      <!-- Edit Profile (GET and PATCH /users/me) -->
+      <section class="view view--app" data-view="edit-profile" aria-labelledby="edit-profile-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/profile" class="app-header__back" aria-label="Back to profile">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="edit-profile-title" class="app-header__title" tabindex="-1" data-route-focus>Edit Profile</h1>
+            </div>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="profile-photo">
+            <span class="profile-photo__avatar" aria-hidden="true" data-initials></span>
+            <button type="button" class="profile-photo__edit" data-soon="Profile photo" aria-label="Change profile photo">
+              <svg aria-hidden="true"><use href="#icon-pencil"/></svg>
+            </button>
+          </div>
+
+          <form id="edit-profile-form" class="form app-form" novalidate>
+            <h2 class="section-title section-title--flush">Personal Information</h2>
+
+            <div class="field">
+              <label for="edit-first-name" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-user"/></svg>First Name
+              </label>
+              <input id="edit-first-name" name="first_name" class="input" type="text" maxlength="60"
+                     autocomplete="given-name" autocapitalize="words" placeholder="Enter first name"
+                     aria-describedby="edit-first-name-error" required>
+              <p id="edit-first-name-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="edit-last-name" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-user"/></svg>Last Name
+              </label>
+              <input id="edit-last-name" name="last_name" class="input" type="text" maxlength="60"
+                     autocomplete="family-name" autocapitalize="words" placeholder="Enter last name"
+                     aria-describedby="edit-last-name-error" required>
+              <p id="edit-last-name-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="edit-email" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-mail"/></svg>Email Address
+              </label>
+              <input id="edit-email" name="email" class="input" type="email" inputmode="email"
+                     autocomplete="email" autocapitalize="off" spellcheck="false"
+                     placeholder="Enter email address (optional)" aria-describedby="edit-email-error">
+              <p id="edit-email-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="edit-mobile" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-phone"/></svg>Mobile Number
+              </label>
+              <input id="edit-mobile" name="mobile_no" class="input" type="tel" inputmode="tel"
+                     autocomplete="tel" placeholder="Enter phone number" aria-describedby="edit-mobile-error" required>
+              <p id="edit-mobile-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field" data-current-password hidden>
+              <label for="edit-current-password" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-shield"/></svg>Current Password
+              </label>
+              <div class="input-group">
+                <input id="edit-current-password" name="current_password" class="input" type="password"
+                       autocomplete="current-password" placeholder="Enter current password"
+                       aria-describedby="edit-current-password-hint edit-current-password-error">
+                <button type="button" class="input-group__toggle" data-toggle-password
+                        aria-controls="edit-current-password" aria-label="Show password" aria-pressed="false">
+                  <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
+                  <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
+                </button>
+              </div>
+              <p id="edit-current-password-hint" class="field__hint">Needed to change your mobile number or email.</p>
+              <p id="edit-current-password-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <h2 class="section-title section-title--flush">Security</h2>
+            <a href="#/change-password" class="setting-row">
+              <svg class="setting-row__icon setting-row__icon--green" aria-hidden="true"><use href="#icon-shield"/></svg>
+              <span class="setting-row__text"><span class="setting-row__label">Change Password</span><span class="setting-row__hint">Update your login credentials</span></span>
+              <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+            </a>
+
+            <p class="note-card" data-member-since hidden>
+              <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
+              <span>Member since <strong data-since></strong>. Your data is protected under ARISETO’s privacy guidelines for local farmers.</span>
+            </p>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+            <div class="form__end app-form__end">
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded">
+                <span class="btn__label">Update Changes</span>
+                <span class="spinner" aria-hidden="true"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+      <!-- Change Password (POST /users/me/password) -->
+      <section class="view view--app" data-view="change-password" aria-labelledby="change-password-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/profile" class="app-header__back" aria-label="Back to profile">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="change-password-title" class="app-header__title" tabindex="-1" data-route-focus>Change Password</h1>
+            </div>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <form id="change-password-form" class="form app-form" novalidate>
+            <h2 class="section-title section-title--flush">Keep your farm data secure with a strong password</h2>
+
+            <div class="field">
+              <label for="password-current" class="field__label">Current Password</label>
+              <div class="input-group">
+                <input id="password-current" name="current_password" class="input" type="password"
+                       autocomplete="current-password" placeholder="Enter current password"
+                       aria-describedby="password-current-error" required>
+                <button type="button" class="input-group__toggle" data-toggle-password
+                        aria-controls="password-current" aria-label="Show password" aria-pressed="false">
+                  <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
+                  <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
+                </button>
+              </div>
+              <p id="password-current-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <p class="form-divider">Set new Password</p>
+
+            <div class="field">
+              <label for="password-new" class="field__label">Password</label>
+              <div class="input-group">
+                <input id="password-new" name="new_password" class="input" type="password" maxlength="128"
+                       autocomplete="new-password" placeholder="Enter new password"
+                       aria-describedby="password-hint password-new-error" required>
+                <button type="button" class="input-group__toggle" data-toggle-password
+                        aria-controls="password-new" aria-label="Show password" aria-pressed="false">
+                  <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
+                  <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
+                </button>
+              </div>
+              <p id="password-new-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="password-confirm" class="field__label">Confirm New Password</label>
+              <div class="input-group">
+                <input id="password-confirm" name="confirm_password" class="input" type="password" maxlength="128"
+                       autocomplete="new-password" placeholder="Repeat new password"
+                       aria-describedby="password-hint password-confirm-error" required>
+                <button type="button" class="input-group__toggle" data-toggle-password
+                        aria-controls="password-confirm" aria-label="Show password" aria-pressed="false">
+                  <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
+                  <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
+                </button>
+              </div>
+              <p id="password-confirm-error" class="field__error" aria-live="polite"></p>
+              <p id="password-hint" class="field__hint">Use 8 to 128 characters.</p>
+            </div>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+            <div class="form__end app-form__end">
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded">
+                <span class="btn__label">Change Password</span>
+                <span class="spinner" aria-hidden="true"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+      <!-- Add Plot (POST /farms/{farm_id}/fields; farm owners only) -->
+      <section class="view view--app" data-view="add-plot" aria-labelledby="add-plot-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/profile" class="app-header__back" aria-label="Back to profile">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="add-plot-title" class="app-header__title" tabindex="-1" data-route-focus>Add Plot</h1>
+              <p class="app-header__subtitle" data-farm-name></p>
+            </div>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <form id="add-plot-form" class="form app-form" novalidate>
+            <div class="field">
+              <label for="plot-name" class="field__label">Field Name</label>
+              <input id="plot-name" name="field_name" class="input" type="text" maxlength="50"
+                     autocomplete="off" autocapitalize="words" placeholder="e.g. Field C"
+                     aria-describedby="plot-name-error" required>
+              <p id="plot-name-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="plot-crop" class="field__label">Crop</label>
+              <select id="plot-crop" name="crop" class="input select" aria-describedby="plot-crop-error" required>
+                <option value="">Choose a crop</option>
+              </select>
+              <p id="plot-crop-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="plot-variety" class="field__label">Variety</label>
+              <select id="plot-variety" name="variety_id" class="input select"
+                      aria-describedby="plot-variety-error" required disabled>
+                <option value="">Choose a crop first</option>
+              </select>
+              <p id="plot-variety-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="plot-size" class="field__label">Size (Ha)</label>
+              <input id="plot-size" name="area_ha" class="input" type="number" inputmode="decimal"
+                     min="0" step="any" placeholder="e.g. 1" aria-describedby="plot-size-error" required>
+              <p id="plot-size-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="plot-season" class="field__label">Season</label>
+              <select id="plot-season" name="season" class="input select" required></select>
+            </div>
+
+            <div class="field">
+              <label for="plot-planting-date" class="field__label">Sowing Date</label>
+              <input id="plot-planting-date" name="planting_date" class="input" type="date"
+                     aria-describedby="plot-planting-date-error" required>
+              <p id="plot-planting-date-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="plot-target" class="field__label">Target Yield (t/ha, optional)</label>
+              <input id="plot-target" name="target_yield_t_ha" class="input" type="number" inputmode="decimal"
+                     min="0" step="0.01" placeholder="e.g. 4.5" aria-describedby="plot-target-error">
+              <p id="plot-target-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+            <div class="form__end app-form__end">
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded">
+                <span class="btn__label">Add Plot</span>
+                <span class="spinner" aria-hidden="true"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+      <!-- Terms & Conditions (text from ariseto-terms-and-privacy.pdf, word for word) -->
+      <section class="view view--app" data-view="terms" aria-labelledby="terms-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/welcome" class="app-header__back" aria-label="Back" data-legal-back>
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 class="app-header__title">Terms and Conditions</h1>
+            </div>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <article class="card legal">
+            <h2 id="terms-title" class="legal__title" tabindex="-1" data-route-focus>Terms &amp; Conditions</h2>
+            <p class="legal__updated"><strong>Last Updated:</strong> October 28, 2026</p>
+            <p>Welcome to <strong>ARISETO</strong>, a Progressive Web Application (PWA) developed for small-scale farmers and farm owners of the Mindoro Progressive Multi-Purpose Cooperative (MPMPC) in Occidental Mindoro. By registering for or using ARISETO, you agree to these Terms &amp; Conditions.</p>
+
+            <h3>1. Account Creation &amp; Approval</h3>
+            <ul>
+              <li><strong>Registration Requirements:</strong> You must provide your first and last name, required mobile number, MPMPC member number, and municipality/barangay. Providing an email address is optional.</li>
+              <li><strong>Admin Approval:</strong> New accounts are set to a pending status upon registration. You can only access the app after an MPMPC Cooperative Administrator approves your account.</li>
+              <li><strong>Account Security:</strong> Passwords must be 8 to 128 characters. You are responsible for keeping your credentials safe; login details must not be shared.</li>
+            </ul>
+
+            <h3>2. User Roles &amp; Farm Management</h3>
+            <ul>
+              <li><strong>Account Types:</strong> There are two account types: <strong>Member</strong> (Farmer/Farm Owner) and <strong>Cooperative Administrator</strong>.</li>
+              <li><strong>Farm Ownership:</strong> Members can register farms and assign fields. The person who registers a farm becomes its Owner and can grant access to other farmers/workers.</li>
+            </ul>
+
+            <h3>3. Online &amp; Offline Capabilities</h3>
+            <ul>
+              <li><strong>Offline Features:</strong> The Crop Calendar (task schedule) and Expense Tracker are planned to work offline. Planned auto-sync features will transmit tasks or expenses logged offline once your device reconnects to the internet.</li>
+              <li><strong>Online Features:</strong> AI Leaf Disease Detection, Yield Estimation, Advisory Chatbot, and Weather Alerts require an active internet connection.</li>
+            </ul>
+
+            <h3>4. AI Features &amp; Advisory Disclaimer</h3>
+            <ul>
+              <li><strong>Crop Disease Detection &amp; Advisory Chatbot:</strong> Recommendations provided by the AI disease scanner and chatbot are based on standard agricultural guides (such as PhilRice and Department of Agriculture sources).</li>
+              <li><strong>No Guarantee of Results:</strong> AI analyses are automated guidance tools. Users should use their best judgment and consult cooperative agricultural technicians for severe crop issues.</li>
+            </ul>
+
+            <h3>5. Weather Information &amp; Notifications</h3>
+            <ul>
+              <li>Weather forecasts and push alerts rely on your selected barangay center coordinates rather than exact GPS tracking.</li>
+              <li>Planned push notifications pass through your browser's push service to alert you regarding weather-sensitive farming tasks (e.g., fertilization).</li>
+            </ul>
+
+            <h3>6. Account Deactivation &amp; Requests</h3>
+            <ul>
+              <li>MPMPC Administrators reserve the right to deactivate accounts that breach cooperative policies.</li>
+              <li>You may submit a request for account deletion at any time via your profile. Upon administrator processing, your personal details will be removed, while anonymized farm performance records are kept for cooperative reporting.</li>
+            </ul>
+
+            <div class="legal__actions" data-legal-actions hidden>
+              <button type="button" class="btn btn--gradient btn--block btn--rounded" data-legal-accept>Accept</button>
+              <button type="button" class="btn btn--outline btn--block btn--rounded" data-legal-decline>Decline</button>
+            </div>
+          </article>
+        </div>
+      </section>
+      <!-- Privacy Policy (text from ariseto-terms-and-privacy.pdf, word for word) -->
+      <section class="view view--app" data-view="privacy" aria-labelledby="privacy-policy-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/welcome" class="app-header__back" aria-label="Back" data-legal-back>
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 class="app-header__title">Privacy Policy</h1>
+            </div>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <article class="card legal">
+            <h2 id="privacy-policy-title" class="legal__title" tabindex="-1" data-route-focus>Privacy Policy</h2>
+            <p class="legal__updated"><strong>Last Updated:</strong> October 28, 2026</p>
+            <p>ARISETO respects your privacy and is committed to protecting your personal data in accordance with the <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong> of the Philippines.</p>
+
+            <h3>1. Information We Collect</h3>
+            <p>We collect the following information when you use ARISETO:</p>
+            <ul>
+              <li><strong>Personal &amp; Account Data:</strong> First and last name, required mobile number, optional email address, MPMPC member number, municipality, and barangay.</li>
+              <li><strong>Farm &amp; Crop Data:</strong> Farm names, field sizes, planted crops/varieties, sowing dates, recorded activities, and farm expenses/harvest income.</li>
+              <li><strong>Photos:</strong> Leaf images uploaded for crop disease diagnosis.</li>
+              <li><strong>Push Notification Subscriptions:</strong> Web push tokens used to route weather and task alerts through your browser's push service.</li>
+            </ul>
+
+            <h3>2. How We Use Your Information</h3>
+            <p>Your data is used to:</p>
+            <ul>
+              <li>Verify your identity and MPMPC membership.</li>
+              <li>Provide crop activity calendars, yield estimates, and financial expense tracking.</li>
+              <li>Process leaf photos for disease identification and display treatment steps.</li>
+              <li>Deliver weather forecasts and weather-sensitive task alerts tailored to your barangay.</li>
+              <li>Generate aggregated crop health and yield summary reports for MPMPC administrators.</li>
+            </ul>
+
+            <h3>3. Location Data Handling</h3>
+            <p>ARISETO <strong>does not</strong> track your real-time GPS location. The system uses only the center coordinates of your selected <strong>barangay</strong> to retrieve localized weather forecasts.</p>
+
+            <h3>4. Third-Party Data Sharing &amp; Data Security</h3>
+            <ul>
+              <li><strong>Third-Party Services:</strong> We do not sell your personal data to advertisers. External services receive data strictly to power application features:
+                <ul>
+                  <li><strong>OpenWeatherMap:</strong> Receives only your barangay's center coordinates to fetch weather reports.</li>
+                  <li><strong>Browser Push Service:</strong> Handles token transmission to deliver web push alerts to your device.</li>
+                </ul>
+              </li>
+              <li><strong>Cooperative Administration &amp; Reports:</strong> MPMPC Cooperative Administrators can see your name, mobile number, email address (if provided), member number, municipality, and barangay to approve and manage accounts. They also access farm yields and disease reports to track crop health across the cooperative.</li>
+              <li><strong>Data Security:</strong> Your password is stored only as a one-way Argon2id hash and is never saved in plain text. Uploaded photos are stored securely in dedicated file storage.</li>
+            </ul>
+
+            <h3>5. Data Retention</h3>
+            <p>Personal information is retained as long as your account remains active. When an account deletion request is processed by an MPMPC Administrator, personal identifying details are removed from the system, while anonymized farm performance and yield data are retained for historical cooperative reporting.</p>
+
+            <h3>6. Your Rights as a Data Subject</h3>
+            <p>Under the Data Privacy Act of 2012, you have the right to:</p>
+            <ul>
+              <li><strong>Access &amp; Correct:</strong> View and correct your personal details in the app; to correct farm records, contact the MPMPC administrator until field editing is available.</li>
+              <li><strong>Request Erasure:</strong> Submit a formal request for account deletion.</li>
+              <li><strong>Lodge Complaints:</strong> File a complaint with the <strong>National Privacy Commission (NPC)</strong> if you feel your data privacy rights have been violated.</li>
+            </ul>
+
+            <h3>7. Contact &amp; Privacy Inquiries</h3>
+            <p>For privacy concerns, data correction requests, or account deletion inquiries, please contact the MPMPC administrator handling privacy requests or visit the MPMPC Main Office, Occidental Mindoro.</p>
+
+            <div class="legal__actions" data-legal-actions hidden>
+              <button type="button" class="btn btn--gradient btn--block btn--rounded" data-legal-accept>Accept</button>
+              <button type="button" class="btn btn--outline btn--block btn--rounded" data-legal-decline>Decline</button>
+            </div>
+          </article>
+        </div>
       </section>
       <!-- Weather Tracker (GET /farms/{farm_id}/weather) -->
       <section class="view view--app view--weather" data-view="weather" aria-labelledby="weather-title" hidden>

@@ -99,13 +99,13 @@ function roundHectares(value) {
 }
 
 /** Hectares with 4 decimals; null when not a positive number. */
-function toHectares(raw) {
+export function toHectares(raw) {
   const value = Number(raw);
   if (!String(raw).trim() || !Number.isFinite(value) || value <= 0) return null;
   return roundHectares(value);
 }
 
-function formatHectares(value, { long = false } = {}) {
+export function formatHectares(value, { long = false } = {}) {
   const amount = roundHectares(value).toLocaleString('en-PH', { maximumFractionDigits: 4 });
   if (!long) return `${amount} ha`;
   return `${amount} ${value === 1 ? 'hectare' : 'hectares'}`;
@@ -123,7 +123,7 @@ function labelOf(options, value) {
   return options.find((option) => option.value === value)?.label ?? value;
 }
 
-function parseDate(value) {
+export function parseDate(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return null;
   const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
@@ -134,7 +134,7 @@ function formatDate(date) {
   return date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function toISODate(date) {
+export function toISODate(date) {
   const pad = (n) => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
@@ -147,7 +147,7 @@ function yearsFrom(day, years) {
 }
 
 /** First and last allowed sowing dates, matching the backend's planting window. */
-function plantingWindow(today = new Date()) {
+export function plantingWindow(today = new Date()) {
   const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   return [yearsFrom(start, -PLANTING_WINDOW_YEARS), yearsFrom(start, PLANTING_WINDOW_YEARS)];
 }
@@ -157,7 +157,7 @@ function plantingWindow(today = new Date()) {
  * A failed load is forgotten so the next call tries again.
  */
 let varietiesRequest = null;
-function loadVarieties() {
+export function loadVarieties() {
   varietiesRequest ??= crops.list().then((list) => {
     const byCrop = new Map();
     for (const crop of list ?? []) byCrop.set(String(crop.crop_name).toLowerCase(), crop.varieties ?? []);
@@ -169,7 +169,7 @@ function loadVarieties() {
   return varietiesRequest;
 }
 
-function forgetVarieties() {
+export function forgetVarieties() {
   varietiesRequest = null;
 }
 
