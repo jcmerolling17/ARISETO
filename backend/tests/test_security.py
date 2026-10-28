@@ -1,10 +1,20 @@
 import os
+from datetime import UTC, datetime, timedelta
 
+import jwt
 import pytest
 from argon2 import Type, extract_parameters
 from argon2.low_level import hash_secret
 
-from app.core.security import hash_password, password_needs_rehash, verify_password
+from app.core.config import get_settings
+from app.core.security import (
+    create_access_token,
+    decode_access_token,
+    hash_password,
+    now_ms,
+    password_needs_rehash,
+    verify_password,
+)
 
 PASSWORD = "secret123"
 
@@ -67,6 +77,45 @@ def test_older_parameters_hash_verifies_and_needs_rehash() -> None:
 
 def test_current_hash_does_not_need_rehash() -> None:
     assert not password_needs_rehash(hash_password(PASSWORD))
+
+
+def test_token_keeps_its_issue_time_to_the_millisecond() -> None:
+    issued_at = now_ms()
+
+    token = decode_access_token(create_access_token(7, "member", issued_at=issued_at))
+
+    assert token.user_id == 7
+    assert not token.predates(issued_at)
+    assert token.predates(issued_at + timedelta(milliseconds=1))
+    assert not token.predates(issued_at - timedelta(milliseconds=1))
+    assert not token.predates(None)
+
+
+def test_token_with_a_whole_second_iat_still_decodes() -> None:
+    """Tokens issued before Phase 6 carry iat in whole seconds."""
+    settings = get_settings()
+    issued_at = datetime(2026, 10, 20, 8, 0, tzinfo=UTC)
+    legacy = jwt.encode(
+        {"sub": "7", "role": "member", "iat": issued_at, "exp": datetime.now(UTC) + timedelta(1)},
+        settings.secret_key,
+        algorithm=settings.jwt_algorithm,
+    )
+
+    token = decode_access_token(legacy)
+
+    assert token.user_id == 7
+    assert token.predates(issued_at + timedelta(milliseconds=1))
+
+
+def test_token_without_iat_is_refused() -> None:
+    settings = get_settings()
+    no_iat = jwt.encode(
+        {"sub": "7", "exp": datetime.now(UTC) + timedelta(1)},
+        settings.secret_key,
+        algorithm=settings.jwt_algorithm,
+    )
+
+    assert decode_access_token(no_iat) is None
 
 
 @pytest.mark.parametrize("password_hash", [None, "", "not-a-hash", "$argon2id$v=19$broken"])

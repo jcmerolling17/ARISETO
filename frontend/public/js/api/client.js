@@ -161,9 +161,11 @@ export const auth = {
 
   /**
    * payload: { first_name, last_name, mobile_no, email (optional), password, member_no,
-   *            municipality, barangay_id (optional), preferred_language (optional) }
+   *            municipality, barangay_id (optional), preferred_language (optional),
+   *            accepted_terms (must be true) }
    * 201 { user_id, account_status: 'pending' }: the account awaits coop_admin approval.
-   * 409 mobile_taken | email_taken | member_no_taken
+   * 409 mobile_taken | email_taken | member_no_taken;
+   * 422 barangay_municipality_mismatch | terms_not_accepted
    */
   register(payload) {
     return request('/auth/register', { method: 'POST', body: payload, auth: false });
@@ -215,6 +217,18 @@ export const farms = {
   },
 
   /**
+   * The farm's fields in the order they were added (any member of the farm):
+   * 200 [{ field_id, field_name, area_ha,
+   *        current_cycle: { cycle_id, crop_name, variety_name, season, planting_date,
+   *                         expected_harvest_date, status } or null }]
+   * current_cycle is the latest planned or active cycle.
+   * 403 not_farm_member (also for a farm that does not exist)
+   */
+  fields(farmId) {
+    return request(`/farms/${encodeURIComponent(farmId)}/fields`);
+  },
+
+  /**
    * Weather for the farm, served from WEATHER_LOG (never fetched live per request):
    * 200 { current: { temp_c, feels_like_c, humidity_pct, wind_speed_mps, precip_probability_pct,
    *                  rain_mm, condition_code, fetched_at },
@@ -227,6 +241,48 @@ export const farms = {
    */
   weather(farmId) {
     return request(`/farms/${encodeURIComponent(farmId)}/weather`);
+  },
+};
+
+export const users = {
+  /**
+   * The signed-in account:
+   * 200 { user_id, first_name, last_name, mobile_no, email, member_no, municipality,
+   *       barangay_id, barangay_name, preferred_language, role, account_status, created_at,
+   *       deletion_requested_at }
+   */
+  me() {
+    return request('/users/me');
+  },
+
+  /**
+   * changes: any of { first_name, last_name, email (null clears it), mobile_no,
+   *                   preferred_language }, plus current_password when mobile_no or email changes.
+   * 200 the same body as me()
+   * 403 invalid_current_password; 409 mobile_taken | email_taken; 422 current_password_required
+   */
+  update(changes) {
+    return request('/users/me', { method: 'PATCH', body: changes });
+  },
+
+  /**
+   * body: { current_password, new_password (8 to 128 characters) }
+   * 200 { access_token, token_type: 'bearer' }; tokens issued earlier stop working, so the
+   * new one is saved at once.
+   * 403 invalid_current_password; 422 password_unchanged
+   */
+  async changePassword(body) {
+    const data = await request('/users/me/password', { method: 'POST', body });
+    if (data?.access_token) tokenStore.set(data.access_token);
+    return data;
+  },
+
+  /**
+   * Asks a coop_admin to delete the account; asking again keeps the first time.
+   * 200 { deletion_requested_at }
+   */
+  requestDeletion() {
+    return request('/users/me/deletion-request', { method: 'POST' });
   },
 };
 

@@ -1,4 +1,5 @@
-"""Migration 0003 round trip: upgrade, downgrade, and upgrade again on the test database."""
+"""Migration round trips (0003 and 0004): upgrade, downgrade, and upgrade again on the test
+database."""
 
 from datetime import date
 
@@ -7,7 +8,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import inspect, text
 
 from app.db.session import engine
-from tests.conftest import alembic_config, auth_header
+from tests.conftest import alembic_config, auth_header, member_payload
 
 
 def _columns(table: str) -> set[str]:
@@ -36,6 +37,39 @@ def _assert_head_schema() -> None:
     assert "farm_id" not in _columns("crop_cycle")
     assert _maturity_classes() == ["very_early", "early", "medium", "late"]
     assert not _has_planting_method_type()
+
+
+ACCOUNT_COLUMNS = {"terms_accepted_at", "deletion_requested_at", "password_changed_at"}
+
+
+def test_0004_upgrade_downgrade_upgrade_keeps_accounts(client: TestClient, db) -> None:
+    user_id = client.post("/api/v1/auth/register", json=member_payload()).json()["user_id"]
+    db.close()
+    config = alembic_config()
+    assert ACCOUNT_COLUMNS <= _columns("users")
+
+    command.downgrade(config, "0003")
+    try:
+        assert not ACCOUNT_COLUMNS & _columns("users")
+        with engine.connect() as connection:
+            kept = connection.execute(
+                text("SELECT user_id FROM users WHERE mobile_no = '+639171234567'")
+            ).scalar()
+        assert kept == user_id
+    finally:
+        command.upgrade(config, "head")
+
+    assert ACCOUNT_COLUMNS <= _columns("users")
+    with engine.connect() as connection:
+        values = connection.execute(
+            text(
+                "SELECT terms_accepted_at, deletion_requested_at, password_changed_at "
+                "FROM users WHERE user_id = :user_id"
+            ),
+            {"user_id": user_id},
+        ).one()
+    # Upgrading again adds the columns empty, as for accounts created before Phase 6.
+    assert tuple(values) == (None, None, None)
 
 
 def test_upgrade_downgrade_upgrade(db) -> None:

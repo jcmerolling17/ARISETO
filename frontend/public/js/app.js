@@ -9,6 +9,8 @@ import { mountCalendarPages } from './pages/calendar.js';
 import { mountExpensePages } from './pages/expenses.js';
 import { mountNotificationsPage } from './pages/notifications.js';
 import { mountProfilePage } from './pages/profile.js';
+import { mountAccountPages } from './pages/account.js';
+import { mountLegalPages } from './pages/legal.js';
 import { mountWeatherPage } from './pages/weather.js';
 import { mountDiseasePages } from './pages/disease.js';
 import { mountYieldPage } from './pages/yield.js';
@@ -23,6 +25,8 @@ function bootstrap() {
     routes: {
       welcome: { title: 'Welcome' },
       signup: { title: 'Sign Up' },
+      terms: { title: 'Terms and Conditions' },
+      privacy: { title: 'Privacy Policy' },
       login: { title: 'Login' },
       setup: { title: 'Set Up Your Farm' },
       'setup-farm': { title: 'Set up your farm' },
@@ -38,6 +42,9 @@ function bootstrap() {
       'expense-new': { title: 'Add Expense' },
       notifications: { title: 'Notifications' },
       profile: { title: 'Profile' },
+      'edit-profile': { title: 'Edit Profile' },
+      'change-password': { title: 'Change Password' },
+      'add-plot': { title: 'Add Plot' },
       weather: { title: 'Weather Tracker' },
       scan: { title: 'Disease Detection' },
       'scan-result': { title: 'Detection Results' },
@@ -60,6 +67,8 @@ function bootstrap() {
   mountExpensePages(router);
   mountNotificationsPage(router);
   mountProfilePage(router);
+  mountAccountPages(router);
+  mountLegalPages(router);
   mountWeatherPage(router);
   mountDiseasePages(router);
   mountYieldPage(router);

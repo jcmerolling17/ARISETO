@@ -18,10 +18,11 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: Session = Depends(get_db),
 ) -> User:
-    """The user behind a valid Bearer token; 401 not_authenticated otherwise."""
-    user_id = decode_access_token(credentials.credentials) if credentials else None
-    user = db.get(User, user_id) if user_id is not None else None
-    if user is None:
+    """The user behind a valid Bearer token; 401 not_authenticated otherwise, including a
+    token issued before the account's last password change."""
+    token = decode_access_token(credentials.credentials) if credentials else None
+    user = db.get(User, token.user_id) if token is not None else None
+    if user is None or token.predates(user.password_changed_at):
         raise AppError(401, "not_authenticated", headers=_NOT_AUTHENTICATED)
     return user
 
