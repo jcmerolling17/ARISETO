@@ -6,6 +6,7 @@ from pydantic import (
     ConfigDict,
     EmailStr,
     Field,
+    StrictBool,
     StringConstraints,
     model_validator,
 )
@@ -54,6 +55,8 @@ class RegisterRequest(BaseModel):
     municipality: Municipality
     barangay_id: int | None = None
     preferred_language: LanguageCode = LanguageCode.FIL
+    # Required JSON true/false; false is refused by the service with terms_not_accepted.
+    accepted_terms: StrictBool
 
 
 class RegisterResponse(BaseModel):

@@ -1,6 +1,6 @@
 """Registration, login, and admin-account creation (Section 4 USER rules, Section 6 auth)."""
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -28,20 +28,31 @@ _STATUS_ERRORS = {
 }
 
 
-def _ensure_unique(
-    db: Session, *, mobile_no: str, email: str | None, member_no: str | None
+def ensure_unique(
+    db: Session,
+    *,
+    mobile_no: str | None,
+    email: str | None,
+    member_no: str | None,
+    except_user_id: int | None = None,
 ) -> None:
+    """409 mobile_taken, email_taken, or member_no_taken when another account uses a value."""
     checks = (
         (User.mobile_no, mobile_no, "mobile_taken"),
         (User.email, email, "email_taken"),
         (User.member_no, member_no, "member_no_taken"),
     )
     for column, value, code in checks:
-        if value is not None and db.scalar(select(User.user_id).where(column == value)):
+        if value is None:
+            continue
+        query = select(User.user_id).where(column == value)
+        if except_user_id is not None:
+            query = query.where(User.user_id != except_user_id)
+        if db.scalar(query):
             raise AppError(409, code)
 
 
-def _save_user(db: Session, user: User) -> User:
+def save_user(db: Session, user: User) -> User:
     """Insert, turning a unique-constraint race into the matching 409 code."""
     db.add(user)
     try:
@@ -57,13 +68,19 @@ def _save_user(db: Session, user: User) -> User:
 
 
 def register_member(db: Session, data: RegisterRequest) -> User:
-    """Create a 'member' account in 'pending' status until a coop_admin approves it."""
+    """Create a 'member' account in 'pending' status until a coop_admin approves it.
+
+    Errors: 422 terms_not_accepted, barangay_municipality_mismatch; 409 mobile_taken,
+    email_taken, member_no_taken.
+    """
+    if not data.accepted_terms:
+        raise AppError(422, "terms_not_accepted")
     if data.barangay_id is not None:
         barangay = db.get(Barangay, data.barangay_id)
         if barangay is None or barangay.municipality != data.municipality:
             raise AppError(422, "barangay_municipality_mismatch")
 
-    _ensure_unique(db, mobile_no=data.mobile_no, email=data.email, member_no=data.member_no)
+    ensure_unique(db, mobile_no=data.mobile_no, email=data.email, member_no=data.member_no)
 
     user = User(
         member_no=data.member_no,
@@ -77,8 +94,9 @@ def register_member(db: Session, data: RegisterRequest) -> User:
         municipality=data.municipality,
         preferred_language=data.preferred_language,
         account_status=AccountStatus.PENDING,
+        terms_accepted_at=func.now(),
     )
-    return _save_user(db, user)
+    return save_user(db, user)
 
 
 def login(db: Session, data: LoginRequest) -> LoginResponse:
@@ -115,7 +133,7 @@ def create_admin(
     email: str | None = None,
 ) -> User:
     """Create an active coop_admin account (used by the create-admin command)."""
-    _ensure_unique(db, mobile_no=mobile_no, email=email, member_no=None)
+    ensure_unique(db, mobile_no=mobile_no, email=email, member_no=None)
     user = User(
         first_name=first_name,
         last_name=last_name,
@@ -127,4 +145,4 @@ def create_admin(
         preferred_language=LanguageCode.FIL,
         account_status=AccountStatus.ACTIVE,
     )
-    return _save_user(db, user)
+    return save_user(db, user)

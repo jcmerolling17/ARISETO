@@ -44,3 +44,10 @@ class User(Base):
         account_status, server_default=AccountStatus.PENDING.value
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # Set at sign-up when the Terms & Conditions and Privacy Policy (October 28, 2026) are
+    # accepted; NULL for accounts created before Phase 6 and for create-admin accounts.
+    terms_accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # First time the member asked for account deletion; asking again keeps it.
+    deletion_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Tokens issued before this are rejected, so a password change ends other sessions.
+    password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

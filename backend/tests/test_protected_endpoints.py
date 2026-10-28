@@ -3,6 +3,7 @@ not_authenticated without a valid token, and the account status is checked befor
 or farm check, so an inactive account's token gets 403 account_deactivated or account_pending."""
 
 import re
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -26,6 +27,10 @@ PROTECTED = {
     ("POST", "/api/v1/farms/{farm_id}/fields"),
     ("GET", "/api/v1/farms/{farm_id}/weather"),
     ("PATCH", "/api/v1/admin/users/{user_id}/status"),
+    ("GET", "/api/v1/users/me"),
+    ("PATCH", "/api/v1/users/me"),
+    ("POST", "/api/v1/users/me/password"),
+    ("POST", "/api/v1/users/me/deletion-request"),
 }
 
 
@@ -110,6 +115,21 @@ def test_inactive_member_token_is_refused(
 
     assert response.status_code == 403
     assert response.json() == {"detail": {"code": code}}
+
+
+@pytest.mark.parametrize(("method", "path"), sorted(PROTECTED))
+def test_token_issued_before_a_password_change_is_401(
+    client: TestClient, db, member_id_and_token: tuple[int, str], method: str, path: str
+) -> None:
+    user_id, token = member_id_and_token
+    user = db.get(User, user_id)
+    user.password_changed_at = datetime.now(UTC) + timedelta(seconds=1)
+    db.commit()
+
+    response = client.request(method, _url(path), json={}, headers=auth_header(token))
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": {"code": "not_authenticated"}}
 
 
 @pytest.mark.parametrize(("method", "path"), sorted(PROTECTED))

@@ -117,6 +117,7 @@ def member_payload(**overrides: object) -> dict:
         "municipality": "Sablayan",
         "barangay_id": None,
         "preferred_language": "fil",
+        "accepted_terms": True,
     }
     payload.update(overrides)
     return payload

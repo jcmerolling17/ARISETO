@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.core.security import verify_password
 from app.models import Barangay, User
@@ -112,6 +112,34 @@ def test_register_barangay_from_other_municipality_is_rejected(client: TestClien
     assert response.json() == {"detail": {"code": "barangay_municipality_mismatch"}}
 
 
+def test_register_records_when_the_terms_were_accepted(client: TestClient, db) -> None:
+    before = db.scalar(select(func.now()))
+
+    response = client.post(URL, json=member_payload())
+
+    user = db.get(User, response.json()["user_id"])
+    assert user.terms_accepted_at is not None
+    assert user.terms_accepted_at >= before
+    assert user.deletion_requested_at is None
+    assert user.password_changed_at is None
+
+
+def test_register_without_accepting_the_terms_is_refused(client: TestClient, db) -> None:
+    response = client.post(URL, json=member_payload(accepted_terms=False))
+
+    assert response.status_code == 422
+    assert response.json() == {"detail": {"code": "terms_not_accepted"}}
+    assert db.scalar(select(func.count()).select_from(User)) == 0
+
+
+def test_terms_are_checked_before_conflicts(client: TestClient) -> None:
+    client.post(URL, json=member_payload())
+
+    response = client.post(URL, json=member_payload(accepted_terms=False))
+
+    assert response.json() == {"detail": {"code": "terms_not_accepted"}}
+
+
 def test_register_unknown_barangay_is_rejected(client: TestClient) -> None:
     response = client.post(URL, json=member_payload(barangay_id=999))
 
@@ -136,6 +164,10 @@ def test_register_unknown_barangay_is_rejected(client: TestClient) -> None:
         {"preferred_language": "es"},
         {"role": "coop_admin"},
         {"account_status": "active"},
+        {"terms_accepted_at": "2026-10-28T00:00:00Z"},
+        {"accepted_terms": "true"},
+        {"accepted_terms": 1},
+        {"accepted_terms": None},
     ],
 )
 def test_register_invalid_fields_use_fastapi_422(client: TestClient, overrides: dict) -> None:
@@ -146,7 +178,16 @@ def test_register_invalid_fields_use_fastapi_422(client: TestClient, overrides: 
 
 
 @pytest.mark.parametrize(
-    "missing", ["first_name", "last_name", "mobile_no", "password", "member_no", "municipality"]
+    "missing",
+    [
+        "first_name",
+        "last_name",
+        "mobile_no",
+        "password",
+        "member_no",
+        "municipality",
+        "accepted_terms",
+    ],
 )
 def test_register_missing_required_field_is_422(client: TestClient, missing: str) -> None:
     payload = member_payload()

@@ -12,7 +12,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 def register(data: RegisterRequest, db: Session = Depends(get_db)) -> RegisterResponse:
     """Create a member account; it stays 'pending' until a coop_admin approves it.
 
-    Errors: 409 mobile_taken, email_taken, member_no_taken; 422 barangay_municipality_mismatch.
+    Errors: 409 mobile_taken, email_taken, member_no_taken; 422 barangay_municipality_mismatch,
+    terms_not_accepted.
     """
     user = auth_service.register_member(db, data)
     return RegisterResponse(user_id=user.user_id, account_status=user.account_status)
