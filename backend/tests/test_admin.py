@@ -361,3 +361,174 @@ def test_invalid_status_body_is_422(client: TestClient, admin_token: str, body: 
 
     assert response.status_code == 422
     assert isinstance(response.json()["detail"], list)
+
+
+# ---------- GET /admin/users ----------
+
+LIST_URL = "/api/v1/admin/users"
+# Older than the admin_token account, which is created "now".
+BASE_TIME = datetime(2026, 10, 1, 8, 0, tzinfo=UTC)
+
+
+def _add_members(db, count: int, start: int = 0, **fields) -> list[User]:
+    """Members inserted directly (no sign-up), each one minute older than the one before."""
+    users = [
+        User(
+            first_name=f"Member{i}",
+            last_name="Test",
+            mobile_no=f"+6392{i:08d}",
+            member_no=f"T-{i:04d}",
+            password_hash="not-a-real-hash",
+            municipality="San Jose",
+            created_at=BASE_TIME - timedelta(minutes=i),
+            **fields,
+        )
+        for i in range(start, start + count)
+    ]
+    db.add_all(users)
+    db.commit()
+    return users
+
+
+def _ids(response) -> list[int]:
+    return [item["user_id"] for item in response.json()]
+
+
+def test_list_users_newest_first_with_every_field(
+    client: TestClient, db, admin_token: str, barangay_id: int
+) -> None:
+    older, oldest = _add_members(
+        db, 2, account_status=AccountStatus.PENDING, barangay_id=barangay_id
+    )
+    admin = _admin(db)
+
+    response = client.get(LIST_URL, headers=auth_header(admin_token))
+
+    assert response.status_code == 200
+    assert _ids(response) == [admin.user_id, older.user_id, oldest.user_id]
+    item = response.json()[1]
+    assert item == {
+        "user_id": older.user_id,
+        "first_name": "Member0",
+        "last_name": "Test",
+        "mobile_no": "+639200000000",
+        "email": None,
+        "member_no": "T-0000",
+        "municipality": "San Jose",
+        "barangay_name": "Tangkalan",
+        "role": "member",
+        "account_status": "pending",
+        "created_at": item["created_at"],
+        "deletion_requested_at": None,
+    }
+    assert response.json()[0]["barangay_name"] is None
+    assert response.json()[0]["role"] == "coop_admin"
+
+
+def test_same_creation_time_lists_the_higher_user_id_first(
+    client: TestClient, db, admin_token: str
+) -> None:
+    first, second = _add_members(db, 2)
+    second.created_at = first.created_at
+    db.commit()
+
+    ids = _ids(client.get(LIST_URL, headers=auth_header(admin_token)))
+
+    assert ids[1:] == [second.user_id, first.user_id]
+
+
+@pytest.mark.parametrize("status", ["pending", "active", "deactivated"])
+def test_filter_by_status(client: TestClient, db, admin_token: str, status: str) -> None:
+    by_status = {
+        value: _add_members(db, 1, start=n, account_status=value)[0].user_id
+        for n, value in enumerate(AccountStatus)
+    }
+
+    response = client.get(LIST_URL, params={"status": status}, headers=auth_header(admin_token))
+
+    assert response.status_code == 200
+    expected = [by_status[AccountStatus(status)]]
+    if status == "active":
+        expected.insert(0, _admin(db).user_id)
+    assert _ids(response) == expected
+
+
+def test_filter_by_deletion_request(client: TestClient, db, admin_token: str) -> None:
+    (asked,) = _add_members(db, 1, deletion_requested_at=BASE_TIME)
+    (not_asked,) = _add_members(db, 1, start=1)
+    headers = auth_header(admin_token)
+
+    requested = client.get(LIST_URL, params={"deletion_requested": "true"}, headers=headers)
+    not_requested = client.get(LIST_URL, params={"deletion_requested": "false"}, headers=headers)
+
+    assert _ids(requested) == [asked.user_id]
+    assert requested.json()[0]["deletion_requested_at"] is not None
+    assert _ids(not_requested) == [_admin(db).user_id, not_asked.user_id]
+
+
+def test_filters_combine(client: TestClient, db, admin_token: str) -> None:
+    (wanted,) = _add_members(
+        db, 1, account_status=AccountStatus.ACTIVE, deletion_requested_at=BASE_TIME
+    )
+    _add_members(
+        db, 1, start=1, account_status=AccountStatus.PENDING, deletion_requested_at=BASE_TIME
+    )
+
+    response = client.get(
+        LIST_URL,
+        params={"status": "active", "deletion_requested": "true"},
+        headers=auth_header(admin_token),
+    )
+
+    assert _ids(response) == [wanted.user_id]
+
+
+def test_limit_defaults_to_50_and_offset_pages(client: TestClient, db, admin_token: str) -> None:
+    _add_members(db, 55)
+    headers = auth_header(admin_token)
+
+    default = client.get(LIST_URL, headers=headers)
+    everything = _ids(client.get(LIST_URL, params={"limit": 200}, headers=headers))
+    page = client.get(LIST_URL, params={"limit": 10, "offset": 50}, headers=headers)
+
+    assert len(default.json()) == 50
+    assert len(everything) == 56
+    assert _ids(default) == everything[:50]
+    assert _ids(page) == everything[50:]
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"status": "banned"},
+        {"deletion_requested": "maybe"},
+        {"limit": 0},
+        {"limit": 201},
+        {"offset": -1},
+        {"limit": "ten"},
+    ],
+)
+def test_list_users_invalid_query_uses_fastapi_422(
+    client: TestClient, admin_token: str, params: dict
+) -> None:
+    response = client.get(LIST_URL, params=params, headers=auth_header(admin_token))
+
+    assert response.status_code == 422
+    assert isinstance(response.json()["detail"], list)
+
+
+def test_member_cannot_list_users(client: TestClient, member_token: str) -> None:
+    response = client.get(LIST_URL, headers=auth_header(member_token))
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": {"code": "not_admin"}}
+
+
+def test_deactivated_admin_cannot_list_users(client: TestClient, db, admin_token: str) -> None:
+    _admin(db).account_status = AccountStatus.DEACTIVATED
+    db.commit()
+
+    response = client.get(LIST_URL, headers=auth_header(admin_token))
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": {"code": "account_deactivated"}}

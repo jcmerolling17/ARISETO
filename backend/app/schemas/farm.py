@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
 
-from app.models.enums import CropSeason, FarmRole
+from app.models.enums import CropSeason, CycleStatus, FarmRole
 
 
 def _collapse_spaces(value: str) -> str:
@@ -78,6 +78,28 @@ class FieldCreated(CreatedField):
     """POST /farms/{farm_id}/fields response, with the farm's new total area."""
 
     total_area_ha: float
+
+
+class CurrentCycle(BaseModel):
+    """A field's latest planned or active crop cycle."""
+
+    cycle_id: int
+    crop_name: str
+    variety_name: str
+    season: CropSeason
+    planting_date: date
+    expected_harvest_date: date
+    status: CycleStatus
+
+
+class FieldSummary(BaseModel):
+    """GET /farms/{farm_id}/fields item; current_cycle is null when no cycle is planned or
+    active."""
+
+    field_id: int
+    field_name: str
+    area_ha: float
+    current_cycle: CurrentCycle | None
 
 
 class FarmSummary(BaseModel):

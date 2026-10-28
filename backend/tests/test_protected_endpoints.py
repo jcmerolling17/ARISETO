@@ -26,6 +26,8 @@ PROTECTED = {
     ("POST", "/api/v1/farms"),
     ("POST", "/api/v1/farms/{farm_id}/fields"),
     ("GET", "/api/v1/farms/{farm_id}/weather"),
+    ("GET", "/api/v1/farms/{farm_id}/fields"),
+    ("GET", "/api/v1/admin/users"),
     ("PATCH", "/api/v1/admin/users/{user_id}/status"),
     ("GET", "/api/v1/users/me"),
     ("PATCH", "/api/v1/users/me"),

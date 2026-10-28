@@ -1,13 +1,33 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import require_admin
 from app.db.session import get_db
 from app.models import User
-from app.schemas.admin import UserStatusResponse, UserStatusUpdate
+from app.models.enums import AccountStatus
+from app.schemas.admin import AdminUserItem, UserStatusResponse, UserStatusUpdate
 from app.services import admin_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+@router.get("/users", response_model=list[AdminUserItem])
+def list_users(
+    status: AccountStatus | None = None,
+    deletion_requested: bool | None = None,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> list[AdminUserItem]:
+    """Accounts, newest first, optionally filtered by status and by deletion request.
+    Cooperative administrators only.
+
+    Errors: 401 not_authenticated; 403 account_deactivated, not_admin.
+    """
+    return admin_service.list_users(
+        db, status=status, deletion_requested=deletion_requested, limit=limit, offset=offset
+    )
 
 
 @router.patch("/users/{user_id}/status", response_model=UserStatusResponse)

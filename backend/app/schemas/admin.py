@@ -1,8 +1,9 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.enums import AccountStatus
+from app.models.enums import AccountStatus, UserRole
 from app.schemas.auth import Email, MobileNo, Municipality, Name, Password
 
 
@@ -28,3 +29,20 @@ class UserStatusUpdate(BaseModel):
 class UserStatusResponse(BaseModel):
     user_id: int
     account_status: AccountStatus
+
+
+class AdminUserItem(BaseModel):
+    """GET /admin/users item (Section 6)."""
+
+    user_id: int
+    first_name: str
+    last_name: str
+    mobile_no: str
+    email: str | None
+    member_no: str | None
+    municipality: str
+    barangay_name: str | None
+    role: UserRole
+    account_status: AccountStatus
+    created_at: datetime
+    deletion_requested_at: datetime | None

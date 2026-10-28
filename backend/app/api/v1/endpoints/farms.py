@@ -4,7 +4,14 @@ from sqlalchemy.orm import Session
 from app.api.deps import require_active_user
 from app.db.session import get_db
 from app.models import User
-from app.schemas.farm import FarmCreate, FarmCreated, FarmSummary, FieldCreate, FieldCreated
+from app.schemas.farm import (
+    FarmCreate,
+    FarmCreated,
+    FarmSummary,
+    FieldCreate,
+    FieldCreated,
+    FieldSummary,
+)
 from app.schemas.weather import FarmWeather
 from app.services import farm_service, weather_fetch_service, weather_service
 
@@ -57,6 +64,19 @@ def add_field(
     422 planting_date_out_of_range | variety_not_found.
     """
     return farm_service.add_field(db, user, farm_id, data)
+
+
+@router.get("/{farm_id}/fields", response_model=list[FieldSummary])
+def list_fields(
+    farm_id: int,
+    user: User = Depends(require_active_user),
+    db: Session = Depends(get_db),
+) -> list[FieldSummary]:
+    """The farm's fields, each with its latest planned or active crop cycle. Farm members only.
+
+    Errors: 401 not_authenticated; 403 account_pending | account_deactivated | not_farm_member.
+    """
+    return farm_service.list_fields(db, user, farm_id)
 
 
 @router.get("/{farm_id}/weather", response_model=FarmWeather)

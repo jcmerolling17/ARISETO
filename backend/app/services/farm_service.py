@@ -13,6 +13,7 @@ from app.core.errors import AppError
 from app.models import (
     Barangay,
     CalendarTemplateTask,
+    Crop,
     CropActivity,
     CropCycle,
     CropVariety,
@@ -24,11 +25,13 @@ from app.models import (
 from app.models.enums import CropSeason, CycleStatus, FarmRole
 from app.schemas.farm import (
     CreatedField,
+    CurrentCycle,
     FarmCreate,
     FarmCreated,
     FarmSummary,
     FieldCreate,
     FieldCreated,
+    FieldSummary,
 )
 
 _FIELD_NAME_INDEX = "uq_field_farm_id_lower_field_name"
@@ -202,6 +205,60 @@ def add_field(db: Session, user: User, farm_id: int, data: FieldCreate) -> Field
         expected_harvest_date=cycle.expected_harvest_date,
         total_area_ha=farm.total_area_ha,
     )
+
+
+def list_fields(db: Session, user: User, farm_id: int) -> list[FieldSummary]:
+    """A farm's fields in the order they were added, each with its current cycle: the
+    planned or active cycle with the newest sowing date (then the newest cycle). An unknown
+    farm is also 403 not_farm_member, so the endpoint never reveals which farm IDs exist.
+
+    Errors: 403 not_farm_member.
+    """
+    is_member = db.scalar(
+        select(FarmAssignment.assignment_id).where(
+            FarmAssignment.farm_id == farm_id, FarmAssignment.user_id == user.user_id
+        )
+    )
+    if is_member is None:
+        raise AppError(403, "not_farm_member")
+
+    fields = db.scalars(
+        select(FarmField).where(FarmField.farm_id == farm_id).order_by(FarmField.field_id)
+    ).all()
+    cycles = db.execute(
+        select(CropCycle, CropVariety.variety_name, Crop.crop_name)
+        .join(FarmField, FarmField.field_id == CropCycle.field_id)
+        .join(CropVariety, CropVariety.variety_id == CropCycle.variety_id)
+        .join(Crop, Crop.crop_id == CropVariety.crop_id)
+        .where(
+            FarmField.farm_id == farm_id,
+            CropCycle.status.in_([CycleStatus.PLANNED, CycleStatus.ACTIVE]),
+        )
+        .order_by(CropCycle.planting_date.desc(), CropCycle.cycle_id.desc())
+    )
+    current: dict[int, CurrentCycle] = {}
+    for cycle, variety_name, crop_name in cycles:
+        current.setdefault(
+            cycle.field_id,
+            CurrentCycle(
+                cycle_id=cycle.cycle_id,
+                crop_name=crop_name,
+                variety_name=variety_name,
+                season=cycle.season,
+                planting_date=cycle.planting_date,
+                expected_harvest_date=cycle.expected_harvest_date,
+                status=cycle.status,
+            ),
+        )
+    return [
+        FieldSummary(
+            field_id=field.field_id,
+            field_name=field.field_name,
+            area_ha=field.area_ha,
+            current_cycle=current.get(field.field_id),
+        )
+        for field in fields
+    ]
 
 
 def list_farms(db: Session, user: User) -> list[FarmSummary]:
