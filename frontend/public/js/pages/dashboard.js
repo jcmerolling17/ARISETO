@@ -1,9 +1,8 @@
 // frontend/public/js/pages/dashboard.js
 
 import { getFarmWeather, formatClock } from '../api/weather.js';
-import { ApiError } from '../api/client.js';
+import { ApiError, notifications } from '../api/client.js';
 import { loadJSON } from '../utils/store.js';
-import { unreadCount } from './notifications.js';
 
 const WEATHER_MESSAGES = {
   noFarm: 'Set up your farm to see the weather there.',
@@ -83,16 +82,41 @@ function renderAvatar(view) {
   iconEl.style.display = initial ? 'none' : '';
 }
 
+/** The bell's unread badge from GET /notifications: a number, "9+" above 9, hidden at 0.
+ *  A failed request leaves the badge as it was. */
+function mountBell(view) {
+  const bell = view.querySelector('[data-bell]');
+  const badge = view.querySelector('[data-bell-badge]');
+  let requestId = 0;
+
+  function show(unread) {
+    badge.textContent = unread > 9 ? '9+' : String(unread);
+    badge.hidden = unread === 0;
+    bell.setAttribute('aria-label', unread ? `Notifications, ${unread} unread` : 'Notifications');
+  }
+
+  return {
+    async refresh() {
+      const id = ++requestId;
+      try {
+        const { unread_count: unread } = await notifications.list({ limit: 1 });
+        if (id === requestId) show(unread);
+      } catch {
+        // Offline or signed out: keep the last count; the session handler shows Login.
+      }
+    },
+  };
+}
+
 export function mountDashboardPage(router) {
   const view = document.querySelector('[data-view="home"]');
   const weather = mountWeather(view);
+  const bell = mountBell(view);
 
   router.route('home', {
     onEnter() {
       renderAvatar(view);
-      const unread = unreadCount();
-      view.querySelector('[data-bell-dot]').hidden = unread === 0;
-      view.querySelector('[data-bell]').setAttribute('aria-label', unread ? `Notifications, ${unread} unread` : 'Notifications');
+      bell.refresh();
       weather.refresh();
     },
   });

@@ -9,8 +9,14 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
 from app.core.seasons import PHILIPPINE_TIME
-from app.models import FarmAssignment, User, WeatherLog
-from app.schemas.weather import DailyRange, FarmWeather, ForecastSlot, WeatherReading
+from app.models import AlertRule, FarmAssignment, User, WeatherAlert, WeatherLog
+from app.schemas.weather import (
+    DailyRange,
+    FarmAlert,
+    FarmWeather,
+    ForecastSlot,
+    WeatherReading,
+)
 
 
 def daily_ranges(db: Session, farm_id: int, now: datetime) -> list[DailyRange]:
@@ -48,8 +54,8 @@ def farm_weather(db: Session, user: User, farm_id: int, now: datetime | None = N
     farm the caller owns or works on. An unknown farm is also 403 not_farm_member, since the
     caller can't be a member of it.
 
-    Each fetch replaces the future slots, so every slot is stored once. Alerts stay empty
-    until alert rules have a source."""
+    Each fetch replaces the future slots, so every slot is stored once. alerts lists the
+    farm's alerts issued in the last 24 hours, newest first."""
     now = now or datetime.now(UTC)
     is_member = db.scalar(
         select(FarmAssignment.assignment_id).where(
@@ -78,5 +84,28 @@ def farm_weather(db: Session, user: User, farm_id: int, now: datetime | None = N
         current=WeatherReading.model_validate(current) if current else None,
         forecast=[ForecastSlot.model_validate(slot) for slot in slots],
         daily=daily_ranges(db, farm_id, now),
-        alerts=[],
+        alerts=recent_alerts(db, farm_id, now),
     )
+
+
+def recent_alerts(db: Session, farm_id: int, now: datetime) -> list[FarmAlert]:
+    """The farm's alerts issued in the last 24 hours, newest first (then the highest ID)."""
+    rows = db.execute(
+        select(WeatherAlert, AlertRule.rule_name)
+        .join(AlertRule, AlertRule.rule_id == WeatherAlert.rule_id)
+        .where(
+            WeatherAlert.farm_id == farm_id,
+            WeatherAlert.issued_at > now - timedelta(hours=24),
+        )
+        .order_by(WeatherAlert.issued_at.desc(), WeatherAlert.alert_id.desc())
+    )
+    return [
+        FarmAlert(
+            alert_id=alert.alert_id,
+            rule_name=rule_name,
+            message=alert.message,
+            severity=alert.severity,
+            issued_at=alert.issued_at,
+        )
+        for alert, rule_name in rows
+    ]

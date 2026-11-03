@@ -6,7 +6,8 @@ from app.db.session import get_db
 from app.models import User
 from app.models.enums import AccountStatus
 from app.schemas.admin import AdminUserItem, UserStatusResponse, UserStatusUpdate
-from app.services import admin_service
+from app.schemas.alert_rule import AlertRuleItem, AlertRuleUpdate
+from app.services import admin_service, alert_rule_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -44,3 +45,30 @@ def update_user_status(
     """
     user = admin_service.set_account_status(db, admin, user_id, data.account_status)
     return UserStatusResponse(user_id=user.user_id, account_status=user.account_status)
+
+
+@router.get("/alert-rules", response_model=list[AlertRuleItem])
+def list_alert_rules(
+    _admin: User = Depends(require_admin), db: Session = Depends(get_db)
+) -> list[AlertRuleItem]:
+    """The weather alert rules in rule_id order. Cooperative administrators only.
+
+    Errors: 401 not_authenticated; 403 account_deactivated, not_admin.
+    """
+    return alert_rule_service.list_rules(db)
+
+
+@router.patch("/alert-rules/{rule_id}", response_model=AlertRuleItem)
+def update_alert_rule(
+    rule_id: int,
+    data: AlertRuleUpdate,
+    _admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> AlertRuleItem:
+    """Change a rule's is_active, threshold or message_template ({value} and {hours} only).
+    Applies from the next evaluation. Cooperative administrators only.
+
+    Errors: 401 not_authenticated; 403 account_deactivated, not_admin; 404 rule_not_found;
+    422 invalid_template.
+    """
+    return alert_rule_service.update_rule(db, rule_id, data)

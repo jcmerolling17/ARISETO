@@ -1289,15 +1289,53 @@
   position: relative;
 }
 
-.home-icon-btn__dot {
+/* Unread count on the Home bell: a number, "9+" above 9, hidden at 0. */
+.home-icon-btn__badge {
   position: absolute;
-  top: 8px;
-  right: 9px;
-  width: 9px;
-  height: 9px;
+  top: 2px;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
   border: 2px solid var(--surface);
-  border-radius: 50%;
+  border-radius: 9px;
   background: var(--danger);
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  color: #fff;
+}
+
+.home-icon-btn__badge[hidden] {
+  display: none;
+}
+
+.notice-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.notice-toolbar .chip-row {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 2px 0;
+}
+
+.notice-toolbar__read-all {
+  flex-shrink: 0;
+  margin: 0;
+  color: var(--primary-green);
+}
+
+.notice-more {
+  width: 100%;
+  margin-top: var(--space-3);
 }
 
 .chip__count {
@@ -1341,6 +1379,15 @@
   border-color: rgba(45, 138, 62, 0.35);
   background: #fbfefb;
 }
+
+/* Severity edge in PAGASA's colour order: info yellow, warning orange, critical red. */
+.notice[data-severity] {
+  border-left-width: 5px;
+}
+
+.notice[data-severity="info"] { border-left-color: #f2c200; }
+.notice[data-severity="warning"] { border-left-color: #ef8a17; }
+.notice[data-severity="critical"] { border-left-color: #d93025; }
 
 .notice__icon {
   display: grid;

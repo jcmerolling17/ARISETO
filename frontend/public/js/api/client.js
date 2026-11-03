@@ -317,6 +317,29 @@ export const harvests = {
   },
 };
 
+export const notifications = {
+  /**
+   * filters: { unread_only (true or false), type (e.g. 'weather_alert'), limit (default 20,
+   *            at most 100), offset }
+   * 200 { unread_count, items: [{ notification_id, type, title, body, severity, farm_id,
+   *       created_at, read_at }] }: the caller's own, newest first. unread_count counts all
+   * of the caller's unread notifications, whatever the filters.
+   */
+  list(filters) {
+    return request(`/notifications${queryString(filters)}`);
+  },
+
+  /** 200 { notification_id, read_at }; marking again keeps the first read_at. 404 notification_not_found */
+  markRead(notificationId) {
+    return request(`/notifications/${encodeURIComponent(notificationId)}/read`, { method: 'PATCH' });
+  },
+
+  /** 200 { updated }: how many unread notifications were marked read. */
+  markAllRead() {
+    return request('/notifications/read-all', { method: 'POST' });
+  },
+};
+
 export const users = {
   /**
    * The signed-in account:

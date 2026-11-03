@@ -51,17 +51,29 @@ def migrated_database() -> Iterator[None]:
 
 
 # Reference rows seeded by the migrations; kept between tests.
-SEEDED_TABLES = {"crop", "expense_category"}
+SEEDED_TABLES = {"crop", "expense_category", "alert_rule"}
 
 
 @pytest.fixture(autouse=True)
 def clean_tables() -> Iterator[None]:
+    """Empty every table but the seeded ones after each test, and put back any alert rule
+    a test changed."""
+    with engine.connect() as connection:
+        rules = connection.execute(text("SELECT * FROM alert_rule")).mappings().all()
     yield
     tables = ", ".join(
         table.name for table in Base.metadata.sorted_tables if table.name not in SEEDED_TABLES
     )
     with engine.begin() as connection:
         connection.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
+        for rule in rules:
+            connection.execute(
+                text(
+                    "UPDATE alert_rule SET is_active = :is_active, threshold = :threshold, "
+                    "message_template = :message_template WHERE rule_id = :rule_id"
+                ),
+                dict(rule),
+            )
 
 
 @pytest.fixture(autouse=True)

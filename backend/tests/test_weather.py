@@ -269,3 +269,98 @@ def test_daily_is_in_the_response(client: TestClient, db, member_token: str, far
 
     today = now.astimezone(weather_service.PHILIPPINE_TIME).date().isoformat()
     assert {"date": today, "temp_min_c": 27.0, "temp_max_c": 29.5} in body["daily"]
+
+
+def _alert(db, farm_id: int, rule_id: int, issued_at: datetime, message: str):
+    from app.models import WeatherAlert
+
+    slot = _reading(farm_id, issued_at, issued_at, is_forecast=True)
+    db.add(slot)
+    db.flush()
+    alert = WeatherAlert(
+        rule_id=rule_id,
+        farm_id=farm_id,
+        weather_id=slot.weather_id,
+        message=message,
+        severity="info",
+        issued_at=issued_at,
+    )
+    db.add(alert)
+    db.commit()
+    return alert.alert_id
+
+
+def test_alerts_are_the_last_24_hours_newest_first(
+    client: TestClient, db, member_token: str, farm_id: int
+) -> None:
+    now = datetime.now(UTC)
+    older = _alert(db, farm_id, 1, now - timedelta(hours=20), "Yellow")
+    newer = _alert(db, farm_id, 7, now - timedelta(hours=1), "Wind")
+    _alert(db, farm_id, 2, now - timedelta(hours=25), "Too old")
+
+    alerts = client.get(_url(farm_id), headers=auth_header(member_token)).json()["alerts"]
+
+    assert [alert["alert_id"] for alert in alerts] == [newer, older]
+    assert alerts[0] == {
+        "alert_id": newer,
+        "rule_name": "Strong wind",
+        "message": "Wind",
+        "severity": "info",
+        "issued_at": alerts[0]["issued_at"],
+    }
+    assert alerts[1]["rule_name"] == "Heavy rain: PAGASA yellow level"
+
+
+def test_alerts_of_other_farms_are_left_out(
+    client: TestClient, db, member_token: str, farm_id: int, other_farm
+) -> None:
+    _alert(db, other_farm.farm_id, 1, datetime.now(UTC) - timedelta(hours=1), "Other farm")
+    assert client.get(_url(farm_id), headers=auth_header(member_token)).json()["alerts"] == []
+
+
+def test_a_new_fetch_after_days_without_one_replaces_current_forecast_and_daily(
+    client: TestClient, db, member_token: str, farm_id: int
+) -> None:
+    """The local case of Nov 3: the last fetch was 6 days ago, so its slots are all in the
+    past. After a new fetch, current, forecast and daily all come from the new data."""
+    from app.services import weather_fetch_service
+    from app.services.openweathermap_service import FetchedWeather
+
+    def fetched(at: datetime, slots: list[datetime], temp: str) -> FetchedWeather:
+        def row(when: datetime, is_forecast: bool) -> dict:
+            return {
+                "forecast_for": when,
+                "temp_c": Decimal(temp),
+                "feels_like_c": None,
+                "humidity_pct": 70,
+                "rain_mm": Decimal("0"),
+                "precip_probability_pct": 10,
+                "wind_speed_mps": Decimal("2"),
+                "condition_code": 800,
+                "is_forecast": is_forecast,
+                "fetched_at": at,
+            }
+
+        return FetchedWeather(current=row(at, False), forecast=[row(when, True) for when in slots])
+
+    now = datetime.now(UTC)
+    old = now - timedelta(days=6)
+    weather_fetch_service.save_fetch(
+        db, farm_id, fetched(old, [old + timedelta(hours=3 * i) for i in range(1, 41)], "22")
+    )
+    db.commit()
+    new = now - timedelta(minutes=10)
+    new_slots = [new + timedelta(hours=3 * i) for i in range(1, 9)]
+    weather_fetch_service.save_fetch(db, farm_id, fetched(new, new_slots, "27"))
+    db.commit()
+
+    body = client.get(_url(farm_id), headers=auth_header(member_token)).json()
+
+    assert body["current"]["fetched_at"] == _iso(new)
+    assert body["current"]["temp_c"] == 27
+    assert [slot["forecast_for"] for slot in body["forecast"]] == [_iso(s) for s in new_slots]
+    assert {slot["fetched_at"] for slot in body["forecast"]} == {_iso(new)}
+    today = now.astimezone(weather_service.PHILIPPINE_TIME).date()
+    days = {day["date"]: day for day in body["daily"]}
+    assert days[today.isoformat()]["temp_max_c"] == 27
+    assert (today - timedelta(days=1)).isoformat() not in days  # no reading yesterday

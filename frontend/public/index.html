@@ -814,7 +814,7 @@
             <div class="home-header__actions">
               <a href="#/notifications" class="home-icon-btn" aria-label="Notifications" data-bell>
                 <svg aria-hidden="true"><use href="#icon-bell"/></svg>
-                <span class="home-icon-btn__dot" data-bell-dot hidden></span>
+                <span class="home-icon-btn__badge" data-bell-badge aria-hidden="true" hidden></span>
               </a>
               <a href="#/profile" class="avatar" aria-label="Profile">
                 <span class="avatar__initial" data-avatar-initial hidden></span>
@@ -1441,7 +1441,6 @@
 
         <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses"></nav>
       </section>
-      <!-- Notifications (sample data: js/data/sample-notifications.js) -->
       <!-- Harvest Entry (POST /cycles/{cycle_id}/harvests; farm owners only) -->
       <section class="view view--app" data-view="harvest-new" aria-labelledby="harvest-new-title" hidden>
         <header class="app-header">
@@ -1526,6 +1525,7 @@
           </form>
         </div>
       </section>
+      <!-- Notifications (GET /notifications, PATCH /notifications/{id}/read, POST /notifications/read-all) -->
       <section class="view view--app" data-view="notifications" aria-labelledby="notifications-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
@@ -1535,18 +1535,24 @@
             <div class="app-header__text">
               <h1 id="notifications-title" class="app-header__title" tabindex="-1" data-route-focus>Notifications</h1>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
         </header>
 
         <div class="app-body">
-          <div class="chip-row" role="group" aria-label="Show">
-            <button type="button" class="chip" aria-pressed="true" data-tab="all">All</button>
-            <button type="button" class="chip" aria-pressed="false" data-tab="unread">Unread <span class="chip__count" data-unread-count></span></button>
-            <button type="button" class="chip" aria-pressed="false" data-tab="alerts">Farm Alerts</button>
+          <div class="notice-toolbar">
+            <div class="chip-row" role="group" aria-label="Show">
+              <button type="button" class="chip" aria-pressed="true" data-tab="all">All</button>
+              <button type="button" class="chip" aria-pressed="false" data-tab="unread">Unread <span class="chip__count" data-unread-count></span></button>
+              <button type="button" class="chip" aria-pressed="false" data-tab="alerts">Farm Alerts</button>
+            </div>
+            <button type="button" class="section-link section-link--button notice-toolbar__read-all" data-read-all hidden>Mark all as read</button>
           </div>
 
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
           <ul class="notice-list" data-notice-list aria-live="polite"></ul>
+
+          <button type="button" class="btn btn--outline notice-more" data-more hidden>Show more</button>
 
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-bell"/></svg>

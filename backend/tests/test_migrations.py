@@ -188,3 +188,110 @@ def test_downgrade_copies_each_fields_first_cycle_back(
         command.upgrade(config, "head")
 
     _assert_head_schema()
+
+
+ALERT_TABLES = {"alert_rule", "weather_alert", "notification"}
+ALERT_TYPES = (
+    "alert_parameter",
+    "alert_operator",
+    "alert_severity",
+    "alert_aggregation",
+    "notification_type",
+)
+
+
+def _existing_types(names: tuple[str, ...]) -> set[str]:
+    with engine.connect() as connection:
+        return set(
+            connection.execute(
+                text("SELECT typname FROM pg_type WHERE typname = ANY(:names)"),
+                {"names": list(names)},
+            ).scalars()
+        )
+
+
+def _rules() -> list[tuple]:
+    with engine.connect() as connection:
+        return [
+            tuple(row)
+            for row in connection.execute(
+                text(
+                    "SELECT rule_name, parameter::text, aggregation::text, operator::text, "
+                    "threshold, lookahead_hours, severity::text, is_active "
+                    "FROM alert_rule ORDER BY rule_id"
+                )
+            )
+        ]
+
+
+def test_0006_upgrade_downgrade_upgrade_seeds_the_seven_rules(db) -> None:
+    from decimal import Decimal
+
+    db.close()
+    config = alembic_config()
+    assert ALERT_TABLES <= _tables()
+
+    command.downgrade(config, "0005")
+    try:
+        assert not ALERT_TABLES & _tables()
+        assert _existing_types(ALERT_TYPES) == set()
+        assert MONEY_TABLES <= _tables()
+    finally:
+        command.upgrade(config, "head")
+
+    assert ALERT_TABLES <= _tables()
+    assert _existing_types(ALERT_TYPES) == set(ALERT_TYPES)
+    assert _rules() == [
+        (
+            "Heavy rain: PAGASA yellow level",
+            "rain_mm",
+            "sum",
+            ">=",
+            Decimal("50.00"),
+            24,
+            "info",
+            True,
+        ),
+        (
+            "Heavy rain: PAGASA orange level",
+            "rain_mm",
+            "sum",
+            ">=",
+            Decimal("100.00"),
+            24,
+            "warning",
+            True,
+        ),
+        (
+            "Heavy rain: PAGASA red level",
+            "rain_mm",
+            "sum",
+            ">",
+            Decimal("200.00"),
+            24,
+            "critical",
+            True,
+        ),
+        (
+            "Heat index: Extreme Caution",
+            "heat_index_c",
+            "max",
+            ">=",
+            Decimal("33.00"),
+            24,
+            "info",
+            False,
+        ),
+        ("Heat index: Danger", "heat_index_c", "max", ">=", Decimal("42.00"), 24, "warning", True),
+        (
+            "Heat index: Extreme Danger",
+            "heat_index_c",
+            "max",
+            ">=",
+            Decimal("52.00"),
+            24,
+            "critical",
+            True,
+        ),
+        ("Strong wind", "wind_speed_mps", "max", ">=", Decimal("10.83"), 24, "warning", True),
+    ]
