@@ -1803,6 +1803,52 @@
   margin-top: 1px;
 }
 
+/* ---------- Farm Expenses: delete and whole-farm line ---------- */
+.tx-row__delete {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.tx-row__delete:hover {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+.tx-row__delete[hidden] {
+  display: none;
+}
+
+.tx-row__delete svg {
+  width: 18px;
+  height: 18px;
+}
+
+.whole-farm-line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: var(--fs-sm);
+  color: var(--text-strong);
+}
+
+.whole-farm-line[hidden] {
+  display: none;
+}
+
 a.avatar {
   text-decoration: none;
 }

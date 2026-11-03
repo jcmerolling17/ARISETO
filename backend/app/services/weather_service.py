@@ -1,18 +1,16 @@
 """Farm weather served from WEATHER_LOG; the provider is never called per request."""
 
 from collections import defaultdict
-from datetime import UTC, date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
+from app.core.seasons import PHILIPPINE_TIME
 from app.models import FarmAssignment, User, WeatherLog
 from app.schemas.weather import DailyRange, FarmWeather, ForecastSlot, WeatherReading
-
-# Philippine time is UTC+8 all year (no daylight saving), so a fixed offset is exact.
-PHILIPPINE_TIME = timezone(timedelta(hours=8), "PHT")
 
 
 def daily_ranges(db: Session, farm_id: int, now: datetime) -> list[DailyRange]:

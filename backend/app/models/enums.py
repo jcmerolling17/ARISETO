@@ -65,6 +65,16 @@ class ActivityStatus(enum.StrEnum):
     RESCHEDULED = "rescheduled"
 
 
+class QuantityUnit(enum.StrEnum):
+    """EXPENSE.unit: required when a quantity is given."""
+
+    KG = "kg"
+    SACK = "sack"
+    LITER = "liter"
+    BAG = "bag"
+    HOUR = "hour"
+
+
 def pg_enum(enum_cls: type[enum.Enum], name: str) -> Enum:
     """A named PostgreSQL enum storing the members' lowercase values."""
     return Enum(
@@ -84,3 +94,4 @@ crop_season = pg_enum(CropSeason, "crop_season")
 cycle_status = pg_enum(CycleStatus, "cycle_status")
 task_type = pg_enum(TaskType, "task_type")
 activity_status = pg_enum(ActivityStatus, "activity_status")
+quantity_unit = pg_enum(QuantityUnit, "quantity_unit")

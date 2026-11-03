@@ -151,6 +151,24 @@ def create_farm(db: Session, user: User, data: FarmCreate) -> FarmCreated:
     return FarmCreated(farm_id=farm.farm_id, total_area_ha=farm.total_area_ha, fields=created)
 
 
+def farm_role_of(db: Session, user: User, farm_id: int) -> FarmRole | None:
+    """The caller's role on a farm, or None when they are not a member (or it doesn't exist)."""
+    return db.scalar(
+        select(FarmAssignment.role_on_farm).where(
+            FarmAssignment.farm_id == farm_id, FarmAssignment.user_id == user.user_id
+        )
+    )
+
+
+def require_farm_member(db: Session, user: User, farm_id: int) -> FarmRole:
+    """The caller's role on the farm; 403 not_farm_member otherwise, also for a farm that does
+    not exist, so the answer never reveals which farm IDs exist."""
+    role = farm_role_of(db, user, farm_id)
+    if role is None:
+        raise AppError(403, "not_farm_member")
+    return role
+
+
 def add_field(db: Session, user: User, farm_id: int, data: FieldCreate) -> FieldCreated:
     """Add a field to a farm the caller owns, open its first crop cycle, and update the
     farm's total area. The farm row is locked so two requests can't both pass the name
@@ -214,13 +232,7 @@ def list_fields(db: Session, user: User, farm_id: int) -> list[FieldSummary]:
 
     Errors: 403 not_farm_member.
     """
-    is_member = db.scalar(
-        select(FarmAssignment.assignment_id).where(
-            FarmAssignment.farm_id == farm_id, FarmAssignment.user_id == user.user_id
-        )
-    )
-    if is_member is None:
-        raise AppError(403, "not_farm_member")
+    require_farm_member(db, user, farm_id)
 
     fields = db.scalars(
         select(FarmField).where(FarmField.farm_id == farm_id).order_by(FarmField.field_id)
