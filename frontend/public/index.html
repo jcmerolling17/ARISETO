@@ -1208,7 +1208,7 @@
 
         <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
       </section>
-      <!-- Farm Expenses (sample data: js/data/sample-expenses.js) -->
+      <!-- Farm Expenses (GET /farms/{farm_id}/summary and /expenses) -->
       <section class="view view--app" data-view="expenses" aria-labelledby="expenses-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
@@ -1219,7 +1219,6 @@
               <h1 id="expenses-title" class="app-header__title" tabindex="-1" data-route-focus>Farm Expense Tracker</h1>
               <p class="app-header__subtitle">Monitor your farm’s budget and spending.</p>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
           <div class="picker-row">
             <label class="field-picker">
@@ -1240,6 +1239,8 @@
             <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
           </div>
 
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
           <div class="app-stack" data-content>
             <div class="money-grid">
               <div class="money-card">
@@ -1258,10 +1259,15 @@
             </div>
 
             <a href="#/expense-new" class="btn btn--gradient btn--block btn--rounded">Add Expense</a>
+            <a href="#/harvest-new" class="btn btn--outline btn--block btn--rounded" data-record-harvest hidden>Record Harvest</a>
 
             <section aria-labelledby="breakdown-title">
               <h2 id="breakdown-title" class="section-title">Category Breakdown</h2>
               <ul class="category-list" data-category-list></ul>
+              <p class="whole-farm-line" data-whole-farm hidden>
+                <span>Whole-farm expenses</span>
+                <strong data-whole-farm-amount></strong>
+              </p>
             </section>
 
             <section class="card" aria-labelledby="spend-title">
@@ -1327,6 +1333,9 @@
               </p>
             </div>
             <span class="tx-row__amount" data-amount></span>
+            <button type="button" class="tx-row__delete" data-delete hidden>
+              <svg aria-hidden="true"><use href="#icon-trash"/></svg>
+            </button>
           </li>
         </template>
       </section>
@@ -1342,7 +1351,6 @@
               <h1 id="expense-new-title" class="app-header__title" tabindex="-1" data-route-focus>Add Expenses</h1>
               <p class="app-header__subtitle">Log a new farm expense.</p>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
         </header>
 
@@ -1410,8 +1418,22 @@
               <p id="expense-plot-error" class="field__error" aria-live="polite"></p>
             </div>
 
+            <div class="field" data-season-field hidden>
+              <label for="expense-season" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Season
+              </label>
+              <select id="expense-season" name="season_key" class="input select" aria-describedby="expense-season-hint expense-season-error"></select>
+              <p id="expense-season-hint" class="field__hint">Suggested from the date. Whole-farm expenses count in this season.</p>
+              <p id="expense-season-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
             <div class="form__end app-form__end">
-              <button type="submit" class="btn btn--gradient btn--block btn--rounded">Save Expense</button>
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded">
+                <span class="btn__label">Save Expense</span>
+                <span class="spinner" aria-hidden="true"></span>
+              </button>
               <button type="button" class="link-plain" data-cancel>Cancel and go back</button>
             </div>
           </form>
@@ -1420,6 +1442,90 @@
         <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses"></nav>
       </section>
       <!-- Notifications (sample data: js/data/sample-notifications.js) -->
+      <!-- Harvest Entry (POST /cycles/{cycle_id}/harvests; farm owners only) -->
+      <section class="view view--app" data-view="harvest-new" aria-labelledby="harvest-new-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/expenses" class="app-header__back" aria-label="Back to farm expenses">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="harvest-new-title" class="app-header__title" tabindex="-1" data-route-focus>Harvest Entry</h1>
+              <p class="app-header__subtitle">Record yield details for your active crop cycle.</p>
+            </div>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-seeds"/></svg>
+            <p data-empty-text></p>
+          </div>
+
+          <p class="form__status" role="status" aria-live="polite" data-load-status></p>
+
+          <form id="harvest-form" class="form app-form" novalidate hidden>
+            <div class="field">
+              <label for="harvest-cycle" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-seeds"/></svg>Crop Cycle
+              </label>
+              <select id="harvest-cycle" name="cycle_id" class="input select" aria-describedby="harvest-cycle-error" required></select>
+              <p id="harvest-cycle-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="harvest-date" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Harvest Date
+              </label>
+              <input id="harvest-date" name="harvest_date" class="input" type="date" aria-describedby="harvest-date-error" required>
+              <p id="harvest-date-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="harvest-quantity" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-chart"/></svg>Quantity (kg)
+                </label>
+                <input id="harvest-quantity" name="quantity_kg" class="input" type="text" inputmode="decimal"
+                       autocomplete="off" placeholder="kg" aria-describedby="harvest-quantity-error" required>
+                <p id="harvest-quantity-error" class="field__error" aria-live="polite"></p>
+              </div>
+              <div class="field">
+                <label for="harvest-price" class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-wallet"/></svg>Price / kg (₱)
+                </label>
+                <input id="harvest-price" name="unit_price_php" class="input" type="text" inputmode="decimal"
+                       autocomplete="off" placeholder="₱" aria-describedby="harvest-price-error" required>
+                <p id="harvest-price-error" class="field__error" aria-live="polite"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="harvest-gross" class="field__label field__label--icon">
+                <svg aria-hidden="true"><use href="#icon-note"/></svg>Calculated Gross Income
+              </label>
+              <input id="harvest-gross" class="input" type="text" readonly tabindex="-1" placeholder="₱" data-gross>
+            </div>
+
+            <div class="field">
+              <label class="agree" for="harvest-final">
+                <input id="harvest-final" name="final_harvest" type="checkbox" class="check">
+                <span>Final harvest? This closes the crop cycle, so no more harvests can be added to it.</span>
+              </label>
+            </div>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+            <div class="form__end app-form__end">
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded">
+                <span class="btn__label">Save Harvest</span>
+                <span class="spinner" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="link-plain" data-clear>Cancel and clear form</button>
+            </div>
+          </form>
+        </div>
+      </section>
       <section class="view view--app" data-view="notifications" aria-labelledby="notifications-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
@@ -1464,7 +1570,7 @@
           </li>
         </template>
       </section>
-      <!-- Profile (sample data: js/data/sample-profile.js and sample-farm.js) -->
+      <!-- Profile (GET /users/me, GET /farms, GET /farms/{farm_id}/fields) -->
       <section class="view view--app" data-view="profile" aria-labelledby="profile-title" hidden>
         <header class="app-header">
           <div class="app-header__row">

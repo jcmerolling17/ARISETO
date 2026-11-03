@@ -7,6 +7,7 @@ import { mountSetupPages } from './pages/setup.js';
 import { mountDashboardPage } from './pages/dashboard.js';
 import { mountCalendarPages } from './pages/calendar.js';
 import { mountExpensePages } from './pages/expenses.js';
+import { mountHarvestPage } from './pages/harvest.js';
 import { mountNotificationsPage } from './pages/notifications.js';
 import { mountProfilePage } from './pages/profile.js';
 import { mountAccountPages } from './pages/account.js';
@@ -40,6 +41,7 @@ function bootstrap() {
       'task-new': { title: 'New Farm Task' },
       expenses: { title: 'Farm Expenses' },
       'expense-new': { title: 'Add Expense' },
+      'harvest-new': { title: 'Harvest Entry' },
       notifications: { title: 'Notifications' },
       profile: { title: 'Profile' },
       'edit-profile': { title: 'Edit Profile' },
@@ -65,6 +67,7 @@ function bootstrap() {
   mountDashboardPage(router);
   mountCalendarPages(router);
   mountExpensePages(router);
+  mountHarvestPage(router);
   mountNotificationsPage(router);
   mountProfilePage(router);
   mountAccountPages(router);

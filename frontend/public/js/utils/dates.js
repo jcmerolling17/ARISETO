@@ -2,6 +2,12 @@
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/** Today's calendar date in the Philippines (fixed UTC+8), whatever the phone's time zone. */
+export function philippineToday(now = new Date()) {
+  const manila = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  return new Date(manila.getUTCFullYear(), manila.getUTCMonth(), manila.getUTCDate());
+}
+
 /** Local calendar date with the time cleared. */
 export function startOfDay(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());

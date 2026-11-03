@@ -40,6 +40,54 @@ def _assert_head_schema() -> None:
 
 
 ACCOUNT_COLUMNS = {"terms_accepted_at", "deletion_requested_at", "password_changed_at"}
+MONEY_TABLES = {"expense_category", "expense", "harvest_record"}
+
+
+def _tables() -> set[str]:
+    return set(inspect(engine).get_table_names())
+
+
+def _category_names() -> list[str]:
+    with engine.connect() as connection:
+        return (
+            connection.execute(
+                text("SELECT category_name FROM expense_category ORDER BY category_id")
+            )
+            .scalars()
+            .all()
+        )
+
+
+def _has_quantity_unit_type() -> bool:
+    with engine.connect() as connection:
+        return connection.execute(
+            text("SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'quantity_unit')")
+        ).scalar()
+
+
+def test_0005_upgrade_downgrade_upgrade_seeds_the_seven_categories(db) -> None:
+    db.close()
+    config = alembic_config()
+    assert MONEY_TABLES <= _tables()
+
+    command.downgrade(config, "0004")
+    try:
+        assert not MONEY_TABLES & _tables()
+        assert not _has_quantity_unit_type()
+    finally:
+        command.upgrade(config, "head")
+
+    assert MONEY_TABLES <= _tables()
+    assert _has_quantity_unit_type()
+    assert _category_names() == [
+        "Seeds",
+        "Fertilizer",
+        "Chemicals",
+        "Labor",
+        "Equipment",
+        "Fuel",
+        "Others",
+    ]
 
 
 def test_0004_upgrade_downgrade_upgrade_keeps_accounts(client: TestClient, db) -> None:

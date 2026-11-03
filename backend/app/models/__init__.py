@@ -3,6 +3,7 @@
 from app.models.barangay import Barangay
 from app.models.crop import Crop, CropCycle, CropVariety
 from app.models.crop_calendar import CalendarTemplateTask, CropActivity
+from app.models.expense import Expense, ExpenseCategory, HarvestRecord
 from app.models.farm import Farm, FarmAssignment
 from app.models.field import FarmField
 from app.models.user import User
@@ -15,9 +16,12 @@ __all__ = [
     "CropActivity",
     "CropCycle",
     "CropVariety",
+    "Expense",
+    "ExpenseCategory",
     "Farm",
     "FarmAssignment",
     "FarmField",
+    "HarvestRecord",
     "User",
     "WeatherLog",
 ]

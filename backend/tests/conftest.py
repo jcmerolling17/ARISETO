@@ -2,6 +2,7 @@
 
 import os
 from collections.abc import Iterator
+from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 
@@ -50,7 +51,7 @@ def migrated_database() -> Iterator[None]:
 
 
 # Reference rows seeded by the migrations; kept between tests.
-SEEDED_TABLES = {"crop"}
+SEEDED_TABLES = {"crop", "expense_category"}
 
 
 @pytest.fixture(autouse=True)
@@ -216,3 +217,93 @@ def variety_ids(db) -> dict[str, int]:
     db.add_all(rows)
     db.commit()
     return {row.variety_name: row.variety_id for row in rows}
+
+
+# ---------- Farms for the expense, harvest, and summary tests ----------
+
+WORKER_MOBILE = "+639171111111"
+OUTSIDER_MOBILE = "+639172222222"
+
+
+@dataclass
+class FarmSetup:
+    """A farm owned by the member behind member_token, with Field A (corn) and Field B
+    (rice), each with one active cycle sown on SOWN."""
+
+    farm_id: int
+    field_ids: dict[str, int]
+    cycle_ids: dict[str, int]
+
+
+def create_farm(client: TestClient, token: str, barangay_id: int, variety_ids, sown) -> FarmSetup:
+    body = {
+        "farm_name": "MPMPC Farm",
+        "barangay_id": barangay_id,
+        "season": "wet",
+        "fields": [
+            {
+                "field_name": name,
+                "area_ha": 1.25,
+                "variety_id": variety_ids[variety],
+                "planting_date": sown.isoformat(),
+            }
+            for name, variety in (("Field A", "NK6410"), ("Field B", "RC-402"))
+        ],
+    }
+    created = client.post("/api/v1/farms", json=body, headers=auth_header(token)).json()
+    names = ("Field A", "Field B")
+    return FarmSetup(
+        farm_id=created["farm_id"],
+        field_ids={n: f["field_id"] for n, f in zip(names, created["fields"], strict=True)},
+        cycle_ids={n: f["cycle_id"] for n, f in zip(names, created["fields"], strict=True)},
+    )
+
+
+@pytest.fixture
+def farm(client: TestClient, member_token: str, barangay_id: int, variety_ids) -> FarmSetup:
+    """The owner's farm, sown 30 days ago so harvests can be dated up to today."""
+    from datetime import timedelta
+
+    from app.core.seasons import philippine_today
+
+    return create_farm(
+        client, member_token, barangay_id, variety_ids, philippine_today() - timedelta(days=30)
+    )
+
+
+@pytest.fixture
+def worker_token(client: TestClient, db, farm: FarmSetup) -> str:
+    """An active member who works on the owner's farm (role 'worker')."""
+    from app.models import FarmAssignment
+    from app.models.enums import FarmRole
+
+    worker = create_active_member(
+        db,
+        first_name="Pedro",
+        last_name="Reyes",
+        mobile_no=WORKER_MOBILE,
+        email="worker@example.com",
+        member_no="MPMPC-0043",
+    )
+    db.add(
+        FarmAssignment(farm_id=farm.farm_id, user_id=worker.user_id, role_on_farm=FarmRole.WORKER)
+    )
+    db.commit()
+    return login_token(client, WORKER_MOBILE, MEMBER_PASSWORD)
+
+
+@pytest.fixture
+def outsider_token(client: TestClient, db) -> str:
+    """An active member who is not on the owner's farm."""
+    create_active_member(
+        db, mobile_no=OUTSIDER_MOBILE, email="outsider@example.com", member_no="MPMPC-0044"
+    )
+    return login_token(client, OUTSIDER_MOBILE, MEMBER_PASSWORD)
+
+
+@pytest.fixture
+def other_farm(client: TestClient, outsider_token: str, barangay_id: int, variety_ids) -> FarmSetup:
+    """A farm owned by the outsider."""
+    from app.core.seasons import philippine_today
+
+    return create_farm(client, outsider_token, barangay_id, variety_ids, philippine_today())

@@ -244,6 +244,79 @@ export const farms = {
   },
 };
 
+/** '?a=1&b=2' from the set (non-null, non-empty) values; '' when there are none. */
+function queryString(params = {}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== null && value !== undefined && value !== '') query.set(key, String(value));
+  }
+  const text = query.toString();
+  return text ? `?${text}` : '';
+}
+
+export const expenses = {
+  /** 200 [{ category_id, category_name }]: the seven categories in their documented order. */
+  categories() {
+    return request('/expense-categories');
+  },
+
+  /**
+   * filters: { season, season_year (sent together; default the current season), field_id }
+   * 200 [{ expense_id, category_id, category_name, amount_php, expense_date, description,
+   *        quantity, unit, cycle_id, field_name (null for whole farm), season, season_year,
+   *        recorded_by_name, can_delete }], newest expense_date first
+   * 403 not_farm_member; 422 season_incomplete | field_not_in_farm
+   */
+  list(farmId, filters) {
+    return request(`/farms/${encodeURIComponent(farmId)}/expenses${queryString(filters)}`);
+  },
+
+  /**
+   * payload: { category_id, amount_php, expense_date, description, cycle_id (left out for a
+   *            whole-farm expense, which then needs season and season_year), quantity, unit,
+   *            client_uuid }
+   * 201 { expense_id, season, season_year }; 200 with the same body when client_uuid was
+   * already saved by this member on this farm (a retry)
+   * 403 not_farm_member; 409 client_uuid_taken; 422 category_not_found | cycle_not_in_farm |
+   * season_required | season_mismatch | unit_required | quantity_required |
+   * expense_date_in_future
+   */
+  create(farmId, payload) {
+    return request(`/farms/${encodeURIComponent(farmId)}/expenses`, { method: 'POST', body: payload });
+  },
+
+  /** 204; allowed for the member who recorded it and the farm owner. 403 not_allowed; 404 expense_not_found */
+  remove(expenseId) {
+    return request(`/expenses/${encodeURIComponent(expenseId)}`, { method: 'DELETE' });
+  },
+
+  /**
+   * Same filters as list().
+   * 200 { season, season_year, total_expenses_php, whole_farm_expenses_php,
+   *       by_category: [{ category_name, amount_php }], gross_income_php, net_profit_php }
+   * With field_id, whole-farm expenses are left out.
+   */
+  summary(farmId, filters) {
+    return request(`/farms/${encodeURIComponent(farmId)}/summary${queryString(filters)}`);
+  },
+};
+
+export const harvests = {
+  /**
+   * payload: { harvest_date, quantity_kg, unit_price_php, final_harvest (true or false) }
+   * 201 { harvest_id, gross_income_php, cycle_status }; a final harvest closes the cycle.
+   * 403 not_farm_owner; 404 cycle_not_found; 409 cycle_closed; 422 harvest_date_out_of_range
+   */
+  record(cycleId, payload) {
+    return request(`/cycles/${encodeURIComponent(cycleId)}/harvests`, { method: 'POST', body: payload });
+  },
+
+  /** Same filters as expenses.list(); 200 [{ harvest_id, cycle_id, field_name, crop_name, ... }] */
+  list(farmId, filters) {
+    return request(`/farms/${encodeURIComponent(farmId)}/harvests${queryString(filters)}`);
+  },
+};
+
 export const users = {
   /**
    * The signed-in account:
