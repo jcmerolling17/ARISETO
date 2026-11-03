@@ -75,6 +75,51 @@ class QuantityUnit(enum.StrEnum):
     HOUR = "hour"
 
 
+class AlertParameter(enum.StrEnum):
+    """ALERT_RULE.parameter: the WEATHER_LOG reading a rule checks; heat_index_c is
+    computed for each slot from temp_c and humidity_pct."""
+
+    TEMP_C = "temp_c"
+    FEELS_LIKE_C = "feels_like_c"
+    HUMIDITY_PCT = "humidity_pct"
+    RAIN_MM = "rain_mm"
+    PRECIP_PROBABILITY_PCT = "precip_probability_pct"
+    WIND_SPEED_MPS = "wind_speed_mps"
+    HEAT_INDEX_C = "heat_index_c"
+
+
+class AlertOperator(enum.StrEnum):
+    GT = ">"
+    GE = ">="
+    LT = "<"
+    LE = "<="
+
+
+class AlertSeverity(enum.StrEnum):
+    """Shared by ALERT_RULE, WEATHER_ALERT and NOTIFICATION."""
+
+    INFO = "info"
+    WARNING = "warning"
+    CRITICAL = "critical"
+
+
+class AlertAggregation(enum.StrEnum):
+    """How the forecast slots in a rule's window are combined."""
+
+    SUM = "sum"
+    MAX = "max"
+
+
+class NotificationType(enum.StrEnum):
+    """NOTIFICATION.type (Prototype Review decision 21); Phase 8 creates only weather_alert."""
+
+    WEATHER_ALERT = "weather_alert"
+    TASK_REMINDER = "task_reminder"
+    GROWTH_STAGE = "growth_stage"
+    YIELD_UPDATE = "yield_update"
+    DISEASE_DETECTED = "disease_detected"
+
+
 def pg_enum(enum_cls: type[enum.Enum], name: str) -> Enum:
     """A named PostgreSQL enum storing the members' lowercase values."""
     return Enum(
@@ -95,3 +140,8 @@ cycle_status = pg_enum(CycleStatus, "cycle_status")
 task_type = pg_enum(TaskType, "task_type")
 activity_status = pg_enum(ActivityStatus, "activity_status")
 quantity_unit = pg_enum(QuantityUnit, "quantity_unit")
+alert_parameter = pg_enum(AlertParameter, "alert_parameter")
+alert_operator = pg_enum(AlertOperator, "alert_operator")
+alert_severity = pg_enum(AlertSeverity, "alert_severity")
+alert_aggregation = pg_enum(AlertAggregation, "alert_aggregation")
+notification_type = pg_enum(NotificationType, "notification_type")

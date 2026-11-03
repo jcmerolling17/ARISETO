@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict
 
+from app.models.enums import AlertSeverity
+
 
 class WeatherReading(BaseModel):
     """One WEATHER_LOG row as GET /farms/{farm_id}/weather returns it. Numbers are JSON
@@ -31,10 +33,20 @@ class DailyRange(BaseModel):
     temp_max_c: float
 
 
+class FarmAlert(BaseModel):
+    """An alert issued for the farm in the last 24 hours."""
+
+    alert_id: int
+    rule_name: str
+    message: str
+    severity: AlertSeverity
+    issued_at: datetime
+
+
 class FarmWeather(BaseModel):
     """current is null and the lists are empty until the farm's weather has been fetched."""
 
     current: WeatherReading | None
     forecast: list[ForecastSlot]
     daily: list[DailyRange]
-    alerts: list[dict]
+    alerts: list[FarmAlert]

@@ -269,3 +269,50 @@ def test_daily_is_in_the_response(client: TestClient, db, member_token: str, far
 
     today = now.astimezone(weather_service.PHILIPPINE_TIME).date().isoformat()
     assert {"date": today, "temp_min_c": 27.0, "temp_max_c": 29.5} in body["daily"]
+
+
+def _alert(db, farm_id: int, rule_id: int, issued_at: datetime, message: str):
+    from app.models import WeatherAlert
+
+    slot = _reading(farm_id, issued_at, issued_at, is_forecast=True)
+    db.add(slot)
+    db.flush()
+    alert = WeatherAlert(
+        rule_id=rule_id,
+        farm_id=farm_id,
+        weather_id=slot.weather_id,
+        message=message,
+        severity="info",
+        issued_at=issued_at,
+    )
+    db.add(alert)
+    db.commit()
+    return alert.alert_id
+
+
+def test_alerts_are_the_last_24_hours_newest_first(
+    client: TestClient, db, member_token: str, farm_id: int
+) -> None:
+    now = datetime.now(UTC)
+    older = _alert(db, farm_id, 1, now - timedelta(hours=20), "Yellow")
+    newer = _alert(db, farm_id, 7, now - timedelta(hours=1), "Wind")
+    _alert(db, farm_id, 2, now - timedelta(hours=25), "Too old")
+
+    alerts = client.get(_url(farm_id), headers=auth_header(member_token)).json()["alerts"]
+
+    assert [alert["alert_id"] for alert in alerts] == [newer, older]
+    assert alerts[0] == {
+        "alert_id": newer,
+        "rule_name": "Strong wind",
+        "message": "Wind",
+        "severity": "info",
+        "issued_at": alerts[0]["issued_at"],
+    }
+    assert alerts[1]["rule_name"] == "Heavy rain: PAGASA yellow level"
+
+
+def test_alerts_of_other_farms_are_left_out(
+    client: TestClient, db, member_token: str, farm_id: int, other_farm
+) -> None:
+    _alert(db, other_farm.farm_id, 1, datetime.now(UTC) - timedelta(hours=1), "Other farm")
+    assert client.get(_url(farm_id), headers=auth_header(member_token)).json()["alerts"] == []

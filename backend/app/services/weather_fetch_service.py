@@ -2,7 +2,8 @@
 
 Used by `python -m app.cli fetch-weather`, the weather scheduler, and the one-off fetch
 after farm setup. A farm that fails is logged by reason (never with the key) and skipped;
-it never stops the other farms."""
+it never stops the other farms. After each farm is saved, its alert rules are evaluated
+(alert_service); a failed evaluation is logged and never changes the fetch result."""
 
 import logging
 from collections.abc import Callable, Iterable
@@ -14,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
 from app.models import Farm, WeatherLog
+from app.services import alert_service
 from app.services import openweathermap_service as owm
 from app.services.openweathermap_service import FetchedWeather, WeatherFetchError
 
@@ -90,6 +92,8 @@ def fetch_farms(
                 )
             else:
                 summary.succeeded.append(farm.farm_id)
+                # Logs and swallows its own errors, so a fetch never fails because of alerts.
+                alert_service.evaluate_after_fetch(farm.farm_id, session_factory)
     finally:
         if own_client:
             client.close()

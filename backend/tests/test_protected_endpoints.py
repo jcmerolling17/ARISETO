@@ -40,6 +40,11 @@ PROTECTED = {
     ("PATCH", "/api/v1/users/me"),
     ("POST", "/api/v1/users/me/password"),
     ("POST", "/api/v1/users/me/deletion-request"),
+    ("GET", "/api/v1/notifications"),
+    ("PATCH", "/api/v1/notifications/{notification_id}/read"),
+    ("POST", "/api/v1/notifications/read-all"),
+    ("GET", "/api/v1/admin/alert-rules"),
+    ("PATCH", "/api/v1/admin/alert-rules/{rule_id}"),
 }
 
 

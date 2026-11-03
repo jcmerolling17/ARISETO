@@ -355,3 +355,57 @@ def test_cli_without_a_key(two_farms, capsys) -> None:
     out = capsys.readouterr()
     assert "OPENWEATHERMAP_API_KEY is not set" in out.err
     assert "0 farms succeeded, 2 failed" in out.out
+
+
+# ---------- Alert rules after each fetch ----------
+
+
+def _rainy_client(now: datetime) -> httpx2.Client:
+    """The made-up answers, but with 20 mm in each of the three slots (60 mm in 24 hours)."""
+    base = _owm_handler(now)
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        response = base(request)
+        if request.url.path.endswith("/forecast"):
+            body = response.json()
+            for slot in body["list"]:
+                slot["rain"] = {"3h": 20}
+            return httpx2.Response(200, json=body)
+        return response
+
+    return httpx2.Client(transport=httpx2.MockTransport(handler))
+
+
+def test_a_fetch_evaluates_the_alert_rules(db, two_farms, fake_key) -> None:
+    from app.models import Notification, WeatherAlert
+
+    summary = weather_fetch_service.fetch_farms(client=_rainy_client(datetime.now(UTC)))
+
+    assert summary.succeeded == two_farms
+    alerts = db.scalars(select(WeatherAlert).order_by(WeatherAlert.farm_id)).all()
+    assert [(alert.farm_id, alert.rule_id) for alert in alerts] == [
+        (two_farms[0], 1),
+        (two_farms[1], 1),
+    ]
+    assert "about 60 mm" in alerts[0].message
+    # Both farms belong to the one member, who gets one notification per alert.
+    assert db.scalar(select(func.count()).select_from(Notification)) == 2
+
+
+def test_a_failed_evaluation_never_breaks_the_fetch(
+    db, two_farms, fake_key, monkeypatch: pytest.MonkeyPatch, capsys, caplog
+) -> None:
+    from app.services import alert_service
+
+    def broken(*_args, **_kwargs):
+        raise RuntimeError("must not be logged")
+
+    monkeypatch.setattr(alert_service, "evaluate_farm", broken)
+    _patch_cli_client(monkeypatch)
+
+    assert cli.main(["fetch-weather"]) == 0
+
+    assert "Weather fetched: 2 farms succeeded, 0 failed." in capsys.readouterr().out
+    assert len(_rows(db, two_farms[0], True)) == 3
+    assert f"Alert evaluation failed for farm {two_farms[0]}: RuntimeError" in caplog.text
+    assert "must not be logged" not in caplog.text

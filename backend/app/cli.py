@@ -19,6 +19,10 @@ Run the weather scheduler as its own process: every farm now, then every 3 hours
 Ctrl+C. Never start it inside the API server.
 
     python -m app.cli weather-scheduler
+
+Run the weather alert rules on the stored forecast, without fetching (every farm, or one):
+
+    python -m app.cli evaluate-alerts [--farm-id 3]
 """
 
 import argparse
@@ -31,7 +35,13 @@ from pydantic import ValidationError
 from app.core.errors import AppError
 from app.db.session import SessionLocal
 from app.schemas.admin import AdminCreate
-from app.services import auth_service, seed_service, weather_fetch_service, weather_scheduler
+from app.services import (
+    alert_service,
+    auth_service,
+    seed_service,
+    weather_fetch_service,
+    weather_scheduler,
+)
 
 LOG_FORMAT = "%(asctime)s %(levelname)s %(message)s"
 
@@ -114,6 +124,21 @@ def _weather_scheduler(_args: argparse.Namespace) -> int:
     return 0
 
 
+def _evaluate_alerts(args: argparse.Namespace) -> int:
+    logging.basicConfig(level=logging.WARNING, format=LOG_FORMAT)
+    farm_ids = None if args.farm_id is None else [args.farm_id]
+    summary = alert_service.evaluate_farms(farm_ids)
+
+    if args.farm_id is not None and not summary.issued and not summary.failed:
+        print(f"Farm {args.farm_id} not found.", file=sys.stderr)
+        return 1
+    print(
+        f"Alerts issued: {sum(summary.issued.values())} for {len(summary.issued)} farms "
+        f"evaluated, {len(summary.failed)} failed."
+    )
+    return 1 if summary.failed else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -139,6 +164,12 @@ def main(argv: list[str] | None = None) -> int:
         "weather-scheduler", help="Fetch every farm now and then every 3 hours (own process)"
     )
     scheduler.set_defaults(handler=_weather_scheduler)
+
+    evaluate_alerts = commands.add_parser(
+        "evaluate-alerts", help="Run the weather alert rules on the stored forecast"
+    )
+    evaluate_alerts.add_argument("--farm-id", type=int, help="Only this farm (default: all)")
+    evaluate_alerts.set_defaults(handler=_evaluate_alerts)
 
     args = parser.parse_args(argv)
     return args.handler(args)
