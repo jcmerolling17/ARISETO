@@ -3,6 +3,7 @@
 import { getFarmWeather, formatClock } from '../api/weather.js';
 import { ApiError, notifications } from '../api/client.js';
 import { loadJSON } from '../utils/store.js';
+import { isSavedFarm, savedFarm } from '../utils/saved-farm.js';
 
 const WEATHER_MESSAGES = {
   noFarm: 'Set up your farm to see the weather there.',
@@ -29,13 +30,22 @@ function mountWeather(view) {
   }
 
   async function refresh() {
-    const farm = loadJSON('farm');
     const id = (requestId += 1);
+    // Only a real saved farm is asked for; a missing or invalid one is looked up again.
+    let farm = loadJSON('farm');
+    if (!isSavedFarm(farm)) {
+      try {
+        farm = await savedFarm();
+      } catch {
+        farm = null;
+      }
+      if (id !== requestId) return;
+    }
     field('place').textContent = farm?.farm_name
       ? [farm.farm_name, farm.municipality].filter(Boolean).join(' · ')
       : '';
 
-    if (farm?.farm_id == null) {
+    if (!isSavedFarm(farm)) {
       showMessage(WEATHER_MESSAGES.noFarm, 'empty');
       return;
     }
@@ -67,6 +77,10 @@ function mountWeather(view) {
 
   window.addEventListener('online', () => {
     if (!view.hidden) refresh();
+  });
+  // A tab left open shows fresh weather when the member comes back to it.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !view.hidden) refresh();
   });
 
   return { refresh };

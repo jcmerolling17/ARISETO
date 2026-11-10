@@ -1,17 +1,22 @@
 // frontend/public/js/pages/calendar.js
 
-import { sampleFarm, emptyFarm } from '../data/sample-farm.js';
-import { sampleCalendar, emptyCalendar } from '../data/sample-calendar.js';
-import { sampleYield, emptyYield } from '../data/sample-yield.js';
-import { CROPS, GROWTH_STAGES, REMINDER_OPTIONS, SEASONS } from '../data/farm-options.js';
-import { pickDemo } from '../utils/demo.js';
-import { currentCycle, fieldLabel, formatPesoShort, latestEstimate } from '../utils/farm.js';
+/**
+ * Crop Calendar, Manage All Tasks, and New / Edit Farm Task on the real API:
+ * GET /farms/{farm_id}/fields (each field's current cycle), GET /cycles/{cycle_id}/activities,
+ * GET /farms/{farm_id}/activities, POST /cycles/{cycle_id}/activities, PATCH and DELETE
+ * /activities/{activity_id}. Weeks count from the sowing date: week 1 is the sowing day to
+ * day 6. Completion is (done + skipped) ÷ all tasks. Dates are Philippine dates.
+ */
+import { activities as api, ApiError } from '../api/client.js';
+import { CROPS, GROWTH_STAGES, SEASONS } from '../data/farm-options.js';
 import { showToast } from '../utils/toast.js';
 import {
   setFieldError,
   clearFieldErrors,
   focusFirstInvalid,
   bindLiveErrorClearing,
+  setStatus,
+  setBusy,
 } from '../utils/form.js';
 import {
   addDays,
@@ -21,97 +26,131 @@ import {
   formatRange,
   formatShortDate,
   parseISODate,
-  startOfDay,
-  startOfWeek,
+  philippineToday,
   toISODate,
 } from '../utils/dates.js';
+import { loadFirstFarm, newClientUuid } from './expenses.js';
 
-/** Finished tasks count toward a week's completion. */
 const FINISHED = new Set(['done', 'skipped']);
-const TIMED_REMINDERS = new Set(['at_start', '30_min', '1_hour']);
+const PAGE_SIZE = 200; // GET /farms/{farm_id}/activities allows at most 200 per page
+const NEARBY_WEEKS = 3;
 
 const MESSAGES = {
   noFarm: 'No fields yet. Set up your farm to get a crop calendar.',
   noCycle: 'Nothing is planted on this field yet.',
   noTasks: 'No tasks match.',
   noCompleted: 'No completed tasks yet.',
+  noTaskFields: 'No crop is planted yet. Set up your farm or add a plot before adding tasks.',
+  loadFailed: 'Your tasks could not be loaded. Check your connection and try again.',
+  saveFailed: 'The task could not be saved. Check your connection and try again.',
   titleRequired: 'Enter a task name.',
   fieldRequired: 'Choose the field for this task.',
-  stageRequired: 'Choose the crop stage.',
   dateRequired: 'Enter the date.',
-  timeForReminder: 'Set a start time for this reminder.',
   saved: 'Task saved.',
+  done: 'Task marked as done.',
+  undone: 'Task marked as not done.',
   skipped: 'Task skipped.',
   deleted: 'Task deleted.',
+  chatbotSoon: 'Coming soon: ask the chatbot about your calendar.',
   deleteConfirm: (title) => `Delete "${title}"?`,
-  moved: (date) => `Task moved to ${formatShortDate(date)}.`,
+  // Error codes of the activity endpoints, as short plain messages.
+  cycle_not_found: 'This crop cycle could not be found. Go back and try again.',
+  activity_not_found: 'This task could not be found. It may have been deleted.',
+  cycle_closed: 'This crop cycle is closed, so its tasks can no longer change.',
+  client_uuid_taken: 'This task could not be saved. Try again.',
+  date_out_of_range: 'Choose a date within 2 years of today.',
+  not_editable: 'Only tasks you added can be renamed or moved to another stage.',
+  generated_task: 'Tasks from the crop guide can be skipped, not deleted.',
+  field_not_in_farm: 'This field is not on your farm.',
 };
 
-/**
- * The calendar screens read and change the sample data in memory (check, skip, reschedule,
- * add, edit, delete); changes last until the page reloads. The chosen field is shared.
- */
+/** The field chosen on the Crop Calendar, shared with the task form. */
 const shared = { fieldId: null };
 
-function data() {
-  return { farm: pickDemo(sampleFarm, emptyFarm), calendar: pickDemo(sampleCalendar, emptyCalendar) };
+function isSessionEnd(err) {
+  return err instanceof ApiError && err.sessionEnded;
 }
 
-function cycleForField(farm, fieldId) {
-  return currentCycle(farm, fieldId);
+function errorMessage(err, fallback) {
+  return (err instanceof ApiError && MESSAGES[err.code]) || fallback;
 }
 
 function labelOf(options, value) {
-  return options.find((option) => option.value === value)?.label ?? value;
+  return options.find((option) => option.value === value)?.label ?? value ?? '';
 }
 
 function cropIcon(cropName) {
-  const crop = CROPS.find((c) => c.label === cropName);
+  const crop = CROPS.find((c) => c.label.toLowerCase() === String(cropName).toLowerCase());
   return `#${crop?.icon ?? 'icon-crop-rice'}`;
 }
 
-/** Tasks of one cycle, by date then start time. */
-function tasksOf(calendar, cycleId) {
-  return calendar.activities
-    .filter((activity) => activity.cycle_id === cycleId)
-    .sort(byDateTime);
+/** 'HH:MM' from the API's 'HH:MM:SS'; '' when there is no time. */
+function hhmm(time) {
+  return time ? time.slice(0, 5) : '';
 }
 
-function byDateTime(a, b) {
-  return a.scheduled_date.localeCompare(b.scheduled_date) || (a.start_time ?? '').localeCompare(b.start_time ?? '');
+/** The last day of a task: end_date for a range, otherwise its date. */
+function lastDay(task) {
+  return task.end_date ?? task.scheduled_date;
 }
 
-/** CALENDAR_TEMPLATE_TASK.week_no: week relative to planting; negative before it. */
-function weekNo(activity, cycle) {
-  return Math.floor(daysBetween(parseISODate(cycle.planting_date), parseISODate(activity.scheduled_date)) / 7);
+/** Week of the season, counted from sowing: week 1 is the sowing day to day 6. */
+function weekOf(dateISO, sowingISO) {
+  return Math.floor(daysBetween(parseISODate(sowingISO), parseISODate(dateISO)) / 7) + 1;
 }
 
-function setDone(activity, done) {
-  activity.status = done ? 'done' : 'pending';
-  activity.completed_at = done ? new Date().toISOString() : null;
+function weekStart(no, sowingISO) {
+  return addDays(parseISODate(sowingISO), (no - 1) * 7);
 }
 
-/** Wires a task checkbox: ticks the task, redraws, and keeps focus on the same task's checkbox. */
-function bindCheck(check, task, scope, render) {
-  check.dataset.activity = String(task.activity_id);
-  check.checked = task.status === 'done';
-  check.addEventListener('change', () => {
-    setDone(task, check.checked);
-    render();
-    scope.querySelector(`[data-check][data-activity="${task.activity_id}"]`)?.focus();
-  });
+function weekLabel(no) {
+  return no >= 1 ? `Week ${no}` : 'Before sowing';
 }
 
-function syncFieldSelection(farm) {
-  if (!farm.fields.some((field) => field.field_id === shared.fieldId)) {
-    shared.fieldId = farm.fields[0]?.field_id ?? null;
+function fieldOption(field) {
+  const crop = field.current_cycle?.crop_name;
+  return new Option(crop ? `${field.field_name} · ${crop}` : field.field_name, String(field.field_id));
+}
+
+function syncFieldSelection(fields) {
+  if (!fields.some((field) => field.field_id === shared.fieldId)) {
+    const planted = fields.find((field) => field.current_cycle) ?? fields[0];
+    shared.fieldId = planted?.field_id ?? null;
   }
 }
 
 function showEmpty(view, message, { setup = false } = {}) {
   view.querySelector('[data-empty]').hidden = false;
   view.querySelector('[data-empty-text]').textContent = message;
-  view.querySelector('[data-empty-setup]').hidden = !setup;
+  const setupLink = view.querySelector('[data-empty-setup]');
+  if (setupLink) setupLink.hidden = !setup;
+}
+
+/** Marks a task done or not done from its checkbox, then reloads the screen. */
+function bindCheck(check, task, reload, view) {
+  check.dataset.activity = String(task.activity_id);
+  check.checked = task.status === 'done';
+  check.addEventListener('change', async () => {
+    check.disabled = true;
+    setStatus(view, '');
+    try {
+      await api.update(task.activity_id, { status: check.checked ? 'done' : 'pending' });
+      await reload();
+      view.querySelector(`[data-check][data-activity="${task.activity_id}"]`)?.focus();
+    } catch (err) {
+      if (isSessionEnd(err)) return;
+      check.checked = !check.checked;
+      check.disabled = false;
+      setStatus(view, errorMessage(err, MESSAGES.saveFailed), 'error');
+    }
+  });
+}
+
+/** Reloads a screen when its tab becomes visible again, so a tab left open isn't stale. */
+function reloadWhenVisible(view, reload) {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !view.hidden) reload();
+  });
 }
 
 /* ---------- Crop Calendar ---------- */
@@ -123,37 +162,39 @@ function mountCalendar() {
   const month = view.querySelector('[data-month]');
   const strip = view.querySelector('[data-day-strip]');
   const dayList = view.querySelector('[data-day-list]');
+  const ongoingTitle = view.querySelector('[data-ongoing-title]');
+  const ongoingList = view.querySelector('[data-ongoing-list]');
   const dayEmpty = view.querySelector('[data-day-empty]');
   const weekList = view.querySelector('[data-week-list]');
   const weekEmpty = view.querySelector('[data-week-empty]');
   const weekMore = view.querySelector('[data-week-more]');
   const tpl = (name) => view.querySelector(`template[data-${name}-tpl]`).content.firstElementChild;
   const openWeeks = new Set();
-  const NEARBY_WEEKS = 3;
-  let selectedDay = startOfDay();
+  let fields = [];
+  let calendar = null; // { cycle, items } from GET /cycles/{cycle_id}/activities
+  let selectedDay = philippineToday();
   let showAllWeeks = false;
+  let requestId = 0;
 
   function renderSummary(cycle) {
-    const planted = parseISODate(cycle.planting_date);
-    const harvest = parseISODate(cycle.expected_harvest_date);
-    const seasonDays = Math.max(1, daysBetween(planted, harvest));
-    const completion = Math.min(100, Math.max(0, Math.round((daysBetween(planted, new Date()) / seasonDays) * 100)));
-    const value = latestEstimate(pickDemo(sampleYield, emptyYield), cycle)?.expected_value_php ?? null;
     const stat = (name) => view.querySelector(`[data-stat="${name}"]`);
-
     view.querySelector('[data-crop-icon]').setAttribute('href', cropIcon(cycle.crop_name));
     view.querySelector('[data-schedule-title]').textContent = `${cycle.crop_name} Crop Schedule`;
     view.querySelector('[data-schedule-season]').textContent = `Season: ${labelOf(SEASONS, cycle.season)}`;
-    stat('completion').textContent = `${completion}%`;
-    stat('value').textContent = value == null ? '—' : formatPesoShort(value);
-    stat('planted').textContent = formatNumericDate(planted);
-    stat('harvest').textContent = `~${Math.round(seasonDays / 30)} months`;
+    stat('completion').textContent = `${cycle.completion_pct}%`;
+    stat('value').textContent = 'Coming soon'; // needs yield estimation
+    stat('planted').textContent = formatNumericDate(parseISODate(cycle.planting_date));
+    stat('harvest').textContent = formatNumericDate(parseISODate(cycle.expected_harvest_date));
   }
 
   function renderMonths(tasks, cycle) {
-    const dates = [parseISODate(cycle.planting_date), ...tasks.map((t) => parseISODate(t.scheduled_date))];
+    const dates = [
+      parseISODate(cycle.planting_date),
+      selectedDay,
+      ...tasks.flatMap((t) => [parseISODate(t.scheduled_date), parseISODate(lastDay(t))]),
+    ];
     const first = new Date(Math.min(...dates));
-    const last = new Date(Math.max(...dates, selectedDay));
+    const last = new Date(Math.max(...dates));
     const options = [];
     for (let d = new Date(first.getFullYear(), first.getMonth(), 1); d <= last; d.setMonth(d.getMonth() + 1)) {
       options.push(new Option(d.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' }), toISODate(d).slice(0, 7)));
@@ -162,56 +203,78 @@ function mountCalendar() {
     month.value = toISODate(selectedDay).slice(0, 7);
   }
 
+  function dayTask(task, { ongoing = false } = {}) {
+    const item = tpl('day-task').cloneNode(true);
+    const check = item.querySelector('[data-check]');
+    const time = ongoing ? `Until ${formatShortDate(parseISODate(lastDay(task)))}` : formatClock(hhmm(task.scheduled_time));
+    item.querySelector('[data-time]').textContent = time || 'Any time';
+    item.querySelector('[data-title]').textContent = task.title;
+    item.classList.toggle('is-done', FINISHED.has(task.status));
+    bindCheck(check, task, reload, view);
+    return item;
+  }
+
   function renderDays(tasks) {
-    const taskDays = new Set(tasks.map((t) => t.scheduled_date));
-    const weekStart = startOfWeek(selectedDay);
-    const today = toISODate(startOfDay());
+    const day = toISODate(selectedDay);
+    const starts = new Set(tasks.map((t) => t.scheduled_date));
+    // The week strip follows the season's weeks, so it lines up with the timeline below.
+    const sowing = calendar.cycle.planting_date;
+    const first = weekStart(weekOf(day, sowing), sowing);
+    const today = toISODate(philippineToday());
     const chips = [];
     for (let i = 0; i < 7; i += 1) {
-      const day = addDays(weekStart, i);
-      const iso = toISODate(day);
+      const date = addDays(first, i);
+      const iso = toISODate(date);
       const chip = tpl('day').cloneNode(true);
-      chip.querySelector('[data-dow]').textContent = day.toLocaleDateString('en-PH', { weekday: 'short' });
-      chip.querySelector('[data-date]').textContent = String(day.getDate());
-      chip.querySelector('[data-dot]').hidden = !taskDays.has(iso);
-      chip.setAttribute('aria-pressed', String(iso === toISODate(selectedDay)));
-      chip.setAttribute('aria-label', day.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' }));
+      chip.querySelector('[data-dow]').textContent = date.toLocaleDateString('en-PH', { weekday: 'short' });
+      chip.querySelector('[data-date]').textContent = String(date.getDate());
+      chip.querySelector('[data-dot]').hidden = !starts.has(iso);
+      chip.setAttribute('aria-pressed', String(iso === day));
+      chip.setAttribute('aria-label', date.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' }));
       chip.classList.toggle('is-today', iso === today);
       chip.addEventListener('click', () => {
-        selectedDay = day;
+        selectedDay = date;
         render();
       });
       chips.push(chip);
     }
     strip.replaceChildren(...chips);
 
-    const dayTasks = tasks.filter((t) => t.scheduled_date === toISODate(selectedDay));
-    dayList.replaceChildren(...dayTasks.map((task) => {
-      const item = tpl('day-task').cloneNode(true);
-      const check = item.querySelector('[data-check]');
-      item.querySelector('[data-time]').textContent = formatClock(task.start_time) || 'Any time';
-      item.querySelector('[data-title]').textContent = task.title;
-      item.classList.toggle('is-done', FINISHED.has(task.status));
-      bindCheck(check, task, dayList, render);
-      return item;
-    }));
-    dayEmpty.hidden = dayTasks.length > 0;
+    // A task with a range is listed on its start date; on its later days it shows under Ongoing.
+    const startingToday = tasks.filter((t) => t.scheduled_date === day);
+    const ongoing = tasks.filter((t) => t.scheduled_date < day && lastDay(t) >= day);
+    dayList.replaceChildren(...startingToday.map((task) => dayTask(task)));
+    ongoingList.replaceChildren(...ongoing.map((task) => dayTask(task, { ongoing: true })));
+    ongoingTitle.hidden = ongoing.length === 0;
+    dayEmpty.hidden = startingToday.length + ongoing.length > 0;
+  }
+
+  function checkRow(task) {
+    const row = tpl('check').cloneNode(true);
+    const check = row.querySelector('[data-check]');
+    const tag = row.querySelector('[data-tag]');
+    row.querySelector('[data-title]').textContent = task.title;
+    row.classList.toggle('is-done', FINISHED.has(task.status));
+    tag.hidden = task.status !== 'skipped';
+    tag.textContent = 'Skipped';
+    bindCheck(check, task, reload, view);
+    return row;
   }
 
   function renderWeeks(tasks, cycle) {
+    const sowing = cycle.planting_date;
     const groups = new Map();
     for (const task of tasks) {
-      const no = weekNo(task, cycle);
+      const no = weekOf(task.scheduled_date, sowing);
       if (!groups.has(no)) groups.set(no, []);
       groups.get(no).push(task);
     }
     const weeks = [...groups.keys()].sort((a, b) => a - b);
-    const planted = parseISODate(cycle.planting_date);
-    const currentWeek = Math.floor(daysBetween(planted, new Date()) / 7);
+    const currentWeek = weekOf(toISODate(philippineToday()), sowing);
     const key = (no) => `${cycle.cycle_id}:${no}`;
     if (![...openWeeks].some((k) => k.startsWith(`${cycle.cycle_id}:`))) openWeeks.add(key(currentWeek));
 
-    // By default show last week, this week and next week (or the nearest weeks that have tasks).
+    // By default show last week, this week and next week (or the nearest weeks with tasks).
     const firstNearby = weeks.findIndex((no) => no >= currentWeek - 1);
     const startAt = Math.max(0, Math.min(firstNearby === -1 ? weeks.length : firstNearby, weeks.length - NEARBY_WEEKS));
     const shown = showAllWeeks ? weeks : weeks.slice(startAt, startAt + NEARBY_WEEKS);
@@ -223,15 +286,14 @@ function mountCalendar() {
       const items = groups.get(no);
       const finished = items.filter((t) => FINISHED.has(t.status)).length;
       const pct = Math.round((finished / items.length) * 100);
-      const start = addDays(planted, no * 7);
+      const start = weekStart(no, sowing);
       const card = tpl('week').cloneNode(true);
       const toggle = card.querySelector('[data-toggle]');
       const list = card.querySelector('[data-tasks]');
       const open = openWeeks.has(key(no));
 
-      // Weeks are counted from the first week of the schedule, so weeks without tasks keep their number.
-      card.querySelector('[data-no]').textContent = `Week ${no - weeks[0] + 1}`;
-      card.querySelector('[data-stage]').textContent = labelOf(GROWTH_STAGES, items[0].growth_stage);
+      card.querySelector('[data-no]').textContent = weekLabel(no);
+      card.querySelector('[data-stage]').textContent = labelOf(GROWTH_STAGES, items.find((t) => t.growth_stage)?.growth_stage);
       card.querySelector('[data-range]').textContent = formatRange(start, addDays(start, 6));
       card.querySelector('[data-pct]').textContent = `${pct}%`;
       card.querySelector('[data-bar]').style.width = `${pct}%`;
@@ -251,52 +313,62 @@ function mountCalendar() {
     weekEmpty.hidden = tasks.length > 0;
   }
 
-  function checkRow(task) {
-    const row = tpl('check').cloneNode(true);
-    const check = row.querySelector('[data-check]');
-    const tag = row.querySelector('[data-tag]');
-    row.querySelector('[data-title]').textContent = task.title;
-    row.classList.toggle('is-done', FINISHED.has(task.status));
-    tag.hidden = task.status !== 'skipped';
-    tag.textContent = 'Skipped';
-    bindCheck(check, task, weekList, render);
-    return row;
+  function render() {
+    if (!calendar) return;
+    content.hidden = false;
+    renderSummary(calendar.cycle);
+    renderMonths(calendar.items, calendar.cycle);
+    renderDays(calendar.items);
+    renderWeeks(calendar.items, calendar.cycle);
   }
 
-  function render() {
-    const { farm, calendar } = data();
-    view.querySelector('[data-empty]').hidden = true;
-    syncFieldSelection(farm);
-    picker.replaceChildren(...farm.fields.map((field) => new Option(fieldLabel(farm, field), String(field.field_id))));
-    picker.value = String(shared.fieldId);
-    picker.disabled = farm.fields.length === 0;
-    picker.closest('.field-picker').hidden = farm.fields.length === 0;
+  function renderPicker() {
+    picker.replaceChildren(...fields.map(fieldOption));
+    picker.value = shared.fieldId == null ? '' : String(shared.fieldId);
+    picker.closest('.field-picker').hidden = fields.length === 0;
+  }
 
-    if (!farm.fields.length) {
-      content.hidden = true;
-      showEmpty(view, MESSAGES.noFarm, { setup: true });
-      return;
+  /** Loads the farm's fields and the chosen field's calendar. */
+  async function reload({ keepFields = false } = {}) {
+    const id = ++requestId;
+    setStatus(view, '');
+    try {
+      if (!keepFields) {
+        const loaded = await loadFirstFarm();
+        if (id !== requestId) return;
+        fields = loaded.farm ? loaded.fields : [];
+      }
+      view.querySelector('[data-empty]').hidden = true;
+      syncFieldSelection(fields);
+      renderPicker();
+      if (!fields.length) {
+        calendar = null;
+        content.hidden = true;
+        showEmpty(view, MESSAGES.noFarm, { setup: true });
+        return;
+      }
+      const cycle = fields.find((f) => f.field_id === shared.fieldId)?.current_cycle;
+      if (!cycle) {
+        calendar = null;
+        content.hidden = true;
+        showEmpty(view, MESSAGES.noCycle);
+        return;
+      }
+      const loaded = await api.forCycle(cycle.cycle_id);
+      if (id !== requestId) return;
+      calendar = loaded;
+      render();
+    } catch (err) {
+      if (id !== requestId || isSessionEnd(err)) return;
+      setStatus(view, errorMessage(err, MESSAGES.loadFailed), 'error');
     }
-    const cycle = cycleForField(farm, shared.fieldId);
-    if (!cycle) {
-      content.hidden = true;
-      showEmpty(view, MESSAGES.noCycle);
-      return;
-    }
-
-    const tasks = tasksOf(calendar, cycle.cycle_id);
-    content.hidden = false;
-    renderSummary(cycle);
-    renderMonths(tasks, cycle);
-    renderDays(tasks);
-    renderWeeks(tasks, cycle);
   }
 
   picker.addEventListener('change', () => {
     shared.fieldId = Number(picker.value);
-    selectedDay = startOfDay();
+    selectedDay = philippineToday();
     showAllWeeks = false;
-    render();
+    reload({ keepFields: true });
   });
 
   weekMore.addEventListener('click', () => {
@@ -306,17 +378,22 @@ function mountCalendar() {
 
   month.addEventListener('change', () => {
     const [year, mon] = month.value.split('-').map(Number);
-    const { farm, calendar } = data();
-    const cycle = cycleForField(farm, shared.fieldId);
-    const first = tasksOf(calendar, cycle.cycle_id).find((t) => t.scheduled_date.startsWith(month.value));
+    const first = calendar?.items.find((t) => t.scheduled_date.startsWith(month.value));
     selectedDay = first ? parseISODate(first.scheduled_date) : new Date(year, mon - 1, 1);
     render();
   });
 
+  view.querySelector('[data-chat-soon]').addEventListener('click', (event) => {
+    event.preventDefault();
+    showToast(MESSAGES.chatbotSoon);
+  });
+
+  reloadWhenVisible(view, () => reload());
+
   return {
     enter() {
-      selectedDay = startOfDay();
-      render();
+      selectedDay = philippineToday();
+      reload();
     },
   };
 }
@@ -331,10 +408,18 @@ function mountTasks(router) {
   const chipCompleted = view.querySelector('[data-chip-completed]');
   const groupsEl = view.querySelector('[data-task-groups]');
   const addTask = view.querySelector('[data-add-task]');
-  const reschedule = view.querySelector('[data-reschedule]');
   const tpl = (name) => view.querySelector(`template[data-${name}-tpl]`).content.firstElementChild;
   const filters = { query: '', fieldId: null, completed: false };
-  let rescheduling = null;
+  let fields = [];
+  let tasks = [];
+  let loaded = false;
+  let requestId = 0;
+
+  /** field_id -> its current cycle, with the field name. */
+  function cycleOf(task) {
+    const field = fields.find((f) => f.current_cycle?.cycle_id === task.cycle_id);
+    return field ? { ...field.current_cycle, field_name: field.field_name } : null;
+  }
 
   function closeMenus(except) {
     view.querySelectorAll('[data-menu]').forEach((menu) => {
@@ -344,28 +429,46 @@ function mountTasks(router) {
     });
   }
 
-  function taskCard(entry, showField) {
-    const { task, field, cycle } = entry;
+  function taskCard(task, { showField, overdue }) {
+    const cycle = cycleOf(task);
     const card = tpl('task').cloneNode(true);
     const check = card.querySelector('[data-check]');
     const tag = card.querySelector('[data-tag]');
     const menuBtn = card.querySelector('[data-menu-btn]');
     const menu = card.querySelector('[data-menu]');
-    const date = parseISODate(task.scheduled_date);
-    const meta = [showField ? `${field.field_name} · ${cycle.crop_name}` : null, formatClock(task.start_time)];
+    const start = parseISODate(task.scheduled_date);
+    const end = task.end_date ? parseISODate(task.end_date) : null;
+    const week = cycle ? weekLabel(weekOf(task.scheduled_date, cycle.planting_date)) : null;
+    const meta = [
+      showField && cycle ? `${cycle.field_name} · ${cycle.crop_name}` : null,
+      week,
+      formatClock(hhmm(task.scheduled_time)),
+      task.reminder ? 'Reminder on' : null,
+    ];
+    const details = [task.description, task.notes].filter(Boolean).join(' · ');
 
     card.querySelector('[data-title]').textContent = task.title;
-    card.querySelector('[data-date]').textContent = formatShortDate(date).toUpperCase();
-    card.querySelector('[data-desc]').textContent = task.description ?? '';
-    card.querySelector('[data-desc]').hidden = !task.description;
+    card.querySelector('[data-date]').textContent = (end ? formatRange(start, end) : formatShortDate(start)).toUpperCase();
+    card.querySelector('[data-desc]').textContent = details;
+    card.querySelector('[data-desc]').hidden = !details;
     card.querySelector('[data-meta]').textContent = meta.filter(Boolean).join(' · ');
     card.querySelector('[data-check-label]').textContent = `Mark "${task.title}" as done`;
     card.classList.toggle('is-done', FINISHED.has(task.status));
-    bindCheck(check, task, groupsEl, render);
-    tag.hidden = task.status !== 'skipped' && task.status !== 'rescheduled';
-    tag.textContent = task.status === 'skipped' ? 'Skipped' : 'Rescheduled';
+    bindCheck(check, task, reload, view);
+    let label = '';
+    if (overdue) label = 'Overdue';
+    else if (task.status === 'skipped') label = 'Skipped';
+    else if (task.status === 'rescheduled') label = 'Rescheduled';
+    tag.hidden = !label;
+    tag.textContent = label;
+    tag.classList.toggle('status-tag--overdue', overdue);
     menuBtn.setAttribute('aria-label', `More actions for "${task.title}"`);
-    card.querySelector('[data-action="skip"]').hidden = task.status === 'skipped';
+
+    const finished = FINISHED.has(task.status);
+    card.querySelector('[data-action="done"]').hidden = task.status === 'done';
+    card.querySelector('[data-action="undo"]').hidden = !finished;
+    card.querySelector('[data-action="skip"]').hidden = finished;
+    card.querySelector('[data-action="delete"]').hidden = !task.is_custom;
 
     menuBtn.addEventListener('click', (event) => {
       event.stopPropagation();
@@ -384,127 +487,123 @@ function mountTasks(router) {
     return card;
   }
 
-  function runAction(action, task) {
-    const { calendar } = data();
-    if (action === 'skip') {
-      task.status = 'skipped';
-      task.completed_at = null;
-      showToast(MESSAGES.skipped);
-      render();
-    } else if (action === 'reschedule') {
-      rescheduling = task;
-      reschedule.value = task.scheduled_date;
-      if (typeof reschedule.showPicker === 'function') {
-        try {
-          reschedule.showPicker();
-          return;
-        } catch {
-          /* picker blocked; fall through to the edit form */
-        }
-      }
-      router.navigate('task-new', { state: { activityId: task.activity_id } });
-    } else if (action === 'edit') {
-      router.navigate('task-new', { state: { activityId: task.activity_id } });
-    } else if (action === 'delete' && window.confirm(MESSAGES.deleteConfirm(task.title))) {
-      calendar.activities.splice(calendar.activities.indexOf(task), 1);
-      showToast(MESSAGES.deleted);
-      render();
+  async function change(task, payload, message) {
+    setStatus(view, '');
+    try {
+      await api.update(task.activity_id, payload);
+      showToast(message);
+      await reload();
+    } catch (err) {
+      if (!isSessionEnd(err)) setStatus(view, errorMessage(err, MESSAGES.saveFailed), 'error');
     }
   }
 
-  reschedule.addEventListener('change', () => {
-    const date = parseISODate(reschedule.value);
-    if (!rescheduling || !date) return;
-    rescheduling.scheduled_date = reschedule.value;
-    rescheduling.status = 'rescheduled';
-    rescheduling.completed_at = null;
-    rescheduling = null;
-    showToast(MESSAGES.moved(date));
-    render();
-  });
+  async function runAction(action, task) {
+    if (action === 'done') await change(task, { status: 'done' }, MESSAGES.done);
+    else if (action === 'undo') await change(task, { status: 'pending' }, MESSAGES.undone);
+    else if (action === 'skip') await change(task, { status: 'skipped' }, MESSAGES.skipped);
+    else if (action === 'reschedule') router.navigate('task-new', { state: { task, mode: 'reschedule' } });
+    else if (action === 'edit') router.navigate('task-new', { state: { task, mode: 'edit' } });
+    else if (action === 'delete' && window.confirm(MESSAGES.deleteConfirm(task.title))) {
+      setStatus(view, '');
+      try {
+        await api.remove(task.activity_id);
+        showToast(MESSAGES.deleted);
+        await reload();
+      } catch (err) {
+        if (!isSessionEnd(err)) setStatus(view, errorMessage(err, MESSAGES.saveFailed), 'error');
+      }
+    }
+  }
 
-  /** Groups of { title, week, entries } in the order they are shown. */
-  function groupTasks(entries) {
+  /**
+   * Groups of { title, week, entries: [{ task, overdue }] } in display order. Current Tasks
+   * holds this season week's open tasks plus overdue ones (marked "Overdue"); Upcoming Tasks
+   * follows by season week (per field when all plots are shown).
+   */
+  function groupTasks(list) {
+    const byDate = (a, b) => a.scheduled_date.localeCompare(b.scheduled_date)
+      || (hhmm(a.scheduled_time) || '~').localeCompare(hhmm(b.scheduled_time) || '~')
+      || a.activity_id - b.activity_id;
     if (filters.completed) {
-      const done = entries.filter((e) => FINISHED.has(e.task.status)).sort((a, b) => byDateTime(b.task, a.task));
-      return done.length ? [{ title: 'Completed Tasks', week: '', entries: done }] : [];
+      const done = list.filter((t) => FINISHED.has(t.status)).sort((a, b) => byDate(b, a));
+      return done.length ? [{ title: 'Completed Tasks', week: '', entries: done.map((task) => ({ task })) }] : [];
     }
 
-    const open = entries.filter((e) => !FINISHED.has(e.task.status)).sort((a, b) => byDateTime(a.task, b.task));
-    const today = startOfDay();
-    // One field: weeks of its season, counted from planting (like the weekly timeline).
-    // All plots: calendar weeks from Sunday, since each field was planted on a different day.
-    const seasonCycle = filters.fieldId != null ? entries[0]?.cycle : null;
-    const planted = seasonCycle ? parseISODate(seasonCycle.planting_date) : null;
-    const seasonWeekStart = (date) => addDays(planted, Math.floor(daysBetween(planted, date) / 7) * 7);
-    const weekStartOf = (e) => (seasonCycle
-      ? seasonWeekStart(parseISODate(e.task.scheduled_date))
-      : startOfWeek(parseISODate(e.task.scheduled_date)));
-    const currentStart = seasonCycle ? seasonWeekStart(today) : startOfWeek(today);
-    const firstWeek = seasonCycle ? Math.min(...entries.map((e) => weekNo(e.task, e.cycle))) : 0;
+    const today = toISODate(philippineToday());
+    const allPlots = filters.fieldId == null;
+    const current = [];
+    const upcoming = new Map();
+    for (const task of list.filter((t) => !FINISHED.has(t.status)).sort(byDate)) {
+      const cycle = cycleOf(task);
+      if (!cycle) continue;
+      const thisWeek = weekOf(today, cycle.planting_date);
+      const weekEnd = toISODate(addDays(weekStart(thisWeek, cycle.planting_date), 6));
+      if (lastDay(task) < today) current.push({ task, overdue: true });
+      else if (task.scheduled_date <= weekEnd) current.push({ task, overdue: false });
+      else {
+        const no = weekOf(task.scheduled_date, cycle.planting_date);
+        const key = `${allPlots ? cycle.field_name : ''}|${no}`;
+        if (!upcoming.has(key)) {
+          const start = weekStart(no, cycle.planting_date);
+          const range = formatRange(start, addDays(start, 6));
+          upcoming.set(key, {
+            start,
+            week: `${allPlots ? `${cycle.field_name} · ` : ''}${weekLabel(no)} · ${range}`,
+            entries: [],
+          });
+        }
+        upcoming.get(key).entries.push({ task, overdue: false });
+      }
+    }
 
     const groups = [];
-    const overdue = open.filter((e) => weekStartOf(e) < currentStart);
-    if (overdue.length) groups.push({ title: 'Overdue', week: '', entries: overdue });
-
-    let upcomingTitled = false;
-    for (const entry of open.filter((e) => weekStartOf(e) >= currentStart)) {
-      const start = weekStartOf(entry);
-      const last = groups[groups.length - 1];
-      if (last?.start?.getTime() === start.getTime()) {
-        last.entries.push(entry);
-        continue;
+    if (current.length) {
+      current.sort((a, b) => Number(b.overdue) - Number(a.overdue) || byDate(a.task, b.task));
+      let week = '';
+      if (!allPlots) {
+        const cycle = fields.find((f) => f.field_id === filters.fieldId)?.current_cycle;
+        if (cycle) {
+          const no = weekOf(today, cycle.planting_date);
+          const start = weekStart(no, cycle.planting_date);
+          week = `${weekLabel(no)} · ${formatRange(start, addDays(start, 6))}`;
+        }
       }
-      const isCurrent = start.getTime() === currentStart.getTime();
-      const range = formatRange(start, addDays(start, 6));
-      let week;
-      if (seasonCycle) week = `Week ${weekNo(entry.task, entry.cycle) - firstWeek + 1} · ${range}`;
-      else if (isCurrent) week = `This week · ${range}`;
-      else if (daysBetween(currentStart, start) === 7) week = `Next week · ${range}`;
-      else week = range;
-      let title = '';
-      if (isCurrent) title = 'Current Tasks';
-      else if (!upcomingTitled) title = 'Upcoming Tasks';
-      if (!isCurrent) upcomingTitled = true;
-      groups.push({ title, week, start, entries: [entry] });
+      groups.push({ title: 'Current Tasks', week, entries: current });
     }
+    [...upcoming.values()]
+      .sort((a, b) => a.start - b.start)
+      .forEach((group, index) => groups.push({ ...group, title: index === 0 ? 'Upcoming Tasks' : '' }));
     return groups;
   }
 
   function render() {
-    const { farm, calendar } = data();
     const empty = view.querySelector('[data-empty]');
     empty.hidden = true;
+    const planted = fields.filter((field) => field.current_cycle);
 
-    chipField.replaceChildren(
-      new Option('Field', ''),
-      ...farm.fields.map((field) => new Option(fieldLabel(farm, field), String(field.field_id))),
-    );
-    if (!farm.fields.some((f) => f.field_id === filters.fieldId)) filters.fieldId = null;
+    chipField.replaceChildren(new Option('Field', ''), ...planted.map(fieldOption));
+    if (!planted.some((f) => f.field_id === filters.fieldId)) filters.fieldId = null;
     chipField.value = filters.fieldId == null ? '' : String(filters.fieldId);
     chipAll.setAttribute('aria-pressed', String(filters.fieldId == null));
     chipField.closest('.chip').classList.toggle('is-active', filters.fieldId != null);
     chipCompleted.setAttribute('aria-pressed', String(filters.completed));
-    addTask.hidden = farm.fields.length === 0;
+    addTask.hidden = planted.length === 0;
+    if (!loaded) return;
 
-    if (!farm.fields.length) {
+    if (!planted.length) {
       groupsEl.replaceChildren();
-      showEmpty(view, MESSAGES.noFarm, { setup: true });
+      showEmpty(view, fields.length ? MESSAGES.noCycle : MESSAGES.noFarm, { setup: !fields.length });
       return;
     }
 
     const query = filters.query.trim().toLowerCase();
-    const entries = calendar.activities
-      .map((task) => {
-        const cycle = farm.cycles.find((c) => c.cycle_id === task.cycle_id);
-        const field = cycle && farm.fields.find((f) => f.field_id === cycle.field_id);
-        return field ? { task, cycle, field } : null;
-      })
-      .filter(Boolean)
-      .filter((e) => filters.fieldId == null || e.field.field_id === filters.fieldId)
-      .filter((e) => !query || `${e.task.title} ${e.task.description ?? ''}`.toLowerCase().includes(query));
+    const fieldCycle = planted.find((f) => f.field_id === filters.fieldId)?.current_cycle;
+    const list = tasks
+      .filter((t) => !fieldCycle || t.cycle_id === fieldCycle.cycle_id)
+      .filter((t) => !query || `${t.title} ${t.description ?? ''} ${t.notes ?? ''}`.toLowerCase().includes(query));
 
-    const groups = groupTasks(entries);
+    const groups = groupTasks(list);
     groupsEl.replaceChildren(...groups.map((group) => {
       const el = tpl('group').cloneNode(true);
       const title = el.querySelector('[data-group-title]');
@@ -514,11 +613,36 @@ function mountTasks(router) {
       week.textContent = group.week;
       week.hidden = !group.week;
       el.querySelector('[data-group-list]').replaceChildren(
-        ...group.entries.map((entry) => taskCard(entry, filters.fieldId == null)),
+        ...group.entries.map(({ task, overdue }) => taskCard(task, { showField: filters.fieldId == null, overdue })),
       );
       return el;
     }));
     if (!groups.length) showEmpty(view, filters.completed ? MESSAGES.noCompleted : MESSAGES.noTasks);
+  }
+
+  /** The farm's fields and every task of their current cycles, page by page. */
+  async function reload() {
+    const id = ++requestId;
+    setStatus(view, '');
+    try {
+      const { farm, fields: farmFields } = await loadFirstFarm();
+      const all = [];
+      if (farm) {
+        for (let offset = 0; ; offset += PAGE_SIZE) {
+          const page = await api.forFarm(farm.farm_id, { limit: PAGE_SIZE, offset });
+          all.push(...page.items);
+          if (page.items.length < PAGE_SIZE) break;
+        }
+      }
+      if (id !== requestId) return;
+      fields = farm ? farmFields : [];
+      tasks = all;
+      loaded = true;
+      render();
+    } catch (err) {
+      if (id !== requestId || isSessionEnd(err)) return;
+      setStatus(view, errorMessage(err, MESSAGES.loadFailed), 'error');
+    }
   }
 
   search.addEventListener('input', () => {
@@ -544,6 +668,7 @@ function mountTasks(router) {
   view.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeMenus();
   });
+  reloadWhenVisible(view, reload);
 
   return {
     enter({ from, state } = {}) {
@@ -551,7 +676,10 @@ function mountTasks(router) {
       // After saving, show the saved task even if another field was filtered.
       if (state?.savedFieldId != null && filters.fieldId != null) filters.fieldId = state.savedFieldId;
       if (state?.savedFieldId != null) filters.completed = false;
+      loaded = false;
+      groupsEl.replaceChildren();
       render();
+      reload();
       // The router focuses the heading after onEnter, so focus the search box afterwards.
       if (state?.focusSearch) requestAnimationFrame(() => search.focus());
     },
@@ -567,106 +695,153 @@ function mountTaskForm(router) {
   const view = document.querySelector('[data-view="task-new"]');
   const form = document.getElementById('task-form');
   const heading = view.querySelector('[data-form-title]');
+  const subtitle = view.querySelector('[data-form-sub]');
   const saveButton = view.querySelector('[data-save-label]');
   const {
     title,
     field_id: fieldSelect,
     growth_stage: stage,
     scheduled_date: date,
-    start_time: time,
+    scheduled_time: time,
     reminder,
-    description,
+    notes,
   } = form.elements;
-  let editing = null;
+  let editing = null; // the task being edited or rescheduled
+  let fields = [];
+  let clientUuid = newClientUuid(); // kept for retries of the same new task
 
   for (const option of GROWTH_STAGES) stage.add(new Option(option.label, option.value));
-  for (const option of REMINDER_OPTIONS) reminder.add(new Option(option.label, option.value));
   bindLiveErrorClearing(form);
 
-  function validate(farm) {
+  function cycleFor(fieldId) {
+    return fields.find((f) => f.field_id === fieldId)?.current_cycle ?? null;
+  }
+
+  function validate() {
     const name = title.value.trim().replace(/\s+/g, ' ');
-    const fieldId = Number(fieldSelect.value);
-    const cycle = cycleForField(farm, fieldId);
-
     if (!name) setFieldError(title, MESSAGES.titleRequired);
-    if (!fieldSelect.value || !cycle) setFieldError(fieldSelect, MESSAGES.fieldRequired);
-    if (!stage.value) setFieldError(stage, MESSAGES.stageRequired);
+    if (!editing && !cycleFor(Number(fieldSelect.value))) setFieldError(fieldSelect, MESSAGES.fieldRequired);
     if (!parseISODate(date.value)) setFieldError(date, MESSAGES.dateRequired);
-    if (TIMED_REMINDERS.has(reminder.value) && !time.value) setFieldError(reminder, MESSAGES.timeForReminder);
-
     if (form.querySelector('[aria-invalid="true"]')) return null;
     return {
-      cycle_id: cycle.cycle_id,
       title: name,
-      description: description.value.trim() || null,
-      growth_stage: stage.value,
       scheduled_date: date.value,
-      start_time: time.value || null,
-      reminder: reminder.value,
+      scheduled_time: time.value || null,
+      reminder: reminder.checked,
+      notes: notes.value.trim() || null,
+      growth_stage: stage.value || null,
     };
   }
 
-  form.addEventListener('submit', (event) => {
+  /** Only what changed; title and stage only on custom tasks. */
+  function changes(values) {
+    const patch = {};
+    if (values.scheduled_date !== editing.scheduled_date) patch.scheduled_date = values.scheduled_date;
+    if ((values.scheduled_time ?? '') !== hhmm(editing.scheduled_time)) patch.scheduled_time = values.scheduled_time;
+    if (values.reminder !== editing.reminder) patch.reminder = values.reminder;
+    if (values.notes !== (editing.notes ?? null)) patch.notes = values.notes;
+    if (editing.is_custom) {
+      if (values.title !== editing.title) patch.title = values.title;
+      if (values.growth_stage !== (editing.growth_stage ?? null)) patch.growth_stage = values.growth_stage;
+    }
+    return patch;
+  }
+
+  function showError(err) {
+    const code = err instanceof ApiError ? err.code : null;
+    if (code === 'date_out_of_range') {
+      setFieldError(date, MESSAGES[code]);
+      focusFirstInvalid(form);
+    } else {
+      setStatus(view, errorMessage(err, MESSAGES.saveFailed), 'error');
+    }
+    if (code === 'client_uuid_taken') clientUuid = newClientUuid();
+  }
+
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (form.getAttribute('aria-busy') === 'true') return;
     clearFieldErrors(form);
-    const { farm, calendar } = data();
-    const values = validate(farm);
+    setStatus(view, '');
+    const values = validate();
     if (!values) {
       focusFirstInvalid(form);
       return;
     }
 
-    if (editing) {
-      Object.assign(editing, values);
-    } else {
-      const nextId = Math.max(0, ...calendar.activities.map((a) => a.activity_id)) + 1;
-      calendar.activities.push({
-        activity_id: nextId,
-        template_task_id: null,
-        status: 'pending',
-        completed_at: null,
-        ...values,
-      });
+    const fieldId = editing ? fields.find((f) => f.current_cycle?.cycle_id === editing.cycle_id)?.field_id : Number(fieldSelect.value);
+    setBusy(form, true);
+    try {
+      if (editing) {
+        const patch = changes(values);
+        if (Object.keys(patch).length) await api.update(editing.activity_id, patch);
+      } else {
+        await api.create(cycleFor(fieldId).cycle_id, { ...values, client_uuid: clientUuid });
+        clientUuid = newClientUuid();
+      }
+      if (fieldId != null) shared.fieldId = fieldId;
+      showToast(MESSAGES.saved);
+      router.navigate('tasks', { replace: true, state: { savedFieldId: shared.fieldId } });
+    } catch (err) {
+      if (!isSessionEnd(err)) showError(err);
+    } finally {
+      setBusy(form, false);
     }
-    shared.fieldId = Number(fieldSelect.value);
-    showToast(MESSAGES.saved);
-    router.navigate('tasks', { replace: true, state: { savedFieldId: shared.fieldId } });
   });
 
   view.querySelector('[data-cancel]').addEventListener('click', () => router.back('tasks'));
 
+  function fill(task, mode) {
+    editing = task;
+    const generated = task && !task.is_custom;
+    const titles = { reschedule: 'Reschedule Task', edit: 'Edit Farm Task' };
+    heading.textContent = task ? titles[mode] ?? titles.edit : 'New Farm Task';
+    subtitle.textContent = task ? 'Change the date, time, reminder, or notes.' : 'Schedule a new activity for your crop calendar.';
+    saveButton.textContent = task ? 'Save Changes' : 'Save Task';
+    title.disabled = Boolean(generated);
+    stage.disabled = Boolean(generated);
+    fieldSelect.disabled = Boolean(task);
+    if (task) {
+      const field = fields.find((f) => f.current_cycle?.cycle_id === task.cycle_id);
+      title.value = task.title;
+      fieldSelect.value = field ? String(field.field_id) : '';
+      stage.value = task.growth_stage ?? '';
+      date.value = task.scheduled_date;
+      time.value = hhmm(task.scheduled_time);
+      reminder.checked = task.reminder;
+      notes.value = task.notes ?? '';
+      if (mode === 'reschedule') requestAnimationFrame(() => date.focus());
+    } else {
+      fieldSelect.value = cycleFor(shared.fieldId) ? String(shared.fieldId) : '';
+      date.value = toISODate(philippineToday());
+      reminder.checked = false;
+    }
+  }
+
   router.route('task-new', {
-    onEnter({ state } = {}) {
-      const { farm, calendar } = data();
-      // Without a planted field a task has nowhere to go, so show the set-up message instead.
-      const hasFields = farm.fields.some((f) => cycleForField(farm, f.field_id));
-      view.querySelector('[data-empty]').hidden = hasFields;
-      form.hidden = !hasFields;
-      editing = calendar.activities.find((a) => a.activity_id === state?.activityId) ?? null;
+    async onEnter({ state } = {}) {
       form.reset();
       clearFieldErrors(form);
-      syncFieldSelection(farm);
-      fieldSelect.replaceChildren(
-        new Option('Select field', ''),
-        ...farm.fields.map((field) => new Option(fieldLabel(farm, field), String(field.field_id))),
-      );
-
-      heading.textContent = editing ? 'Edit Farm Task' : 'New Farm Task';
-      saveButton.textContent = editing ? 'Save Changes' : 'Save Task';
-      if (editing) {
-        const cycle = farm.cycles.find((c) => c.cycle_id === editing.cycle_id);
-        title.value = editing.title;
-        fieldSelect.value = String(cycle?.field_id ?? '');
-        stage.value = editing.growth_stage;
-        date.value = editing.scheduled_date;
-        time.value = editing.start_time ?? '';
-        reminder.value = editing.reminder ?? 'none';
-        description.value = editing.description ?? '';
-      } else {
-        fieldSelect.value = shared.fieldId == null ? '' : String(shared.fieldId);
-        date.value = toISODate(startOfDay());
-        reminder.value = 'none';
+      setStatus(view, '');
+      const empty = view.querySelector('[data-empty]');
+      empty.hidden = true;
+      form.hidden = true;
+      try {
+        const loaded = await loadFirstFarm();
+        fields = loaded.farm ? loaded.fields : [];
+      } catch (err) {
+        if (isSessionEnd(err)) return;
+        showEmpty(view, MESSAGES.loadFailed);
+        return;
       }
+      const planted = fields.filter((f) => f.current_cycle);
+      if (!planted.length) {
+        showEmpty(view, MESSAGES.noTaskFields);
+        return;
+      }
+      fieldSelect.replaceChildren(new Option('Select field', ''), ...planted.map(fieldOption));
+      form.hidden = false;
+      fill(state?.task ?? null, state?.mode);
     },
   });
 }

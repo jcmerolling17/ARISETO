@@ -906,7 +906,7 @@
         <nav class="bottom-nav" aria-label="Main" data-bottom-nav="home"></nav>
       </section>
 
-      <!-- Crop Calendar (sample data: js/data/sample-calendar.js) -->
+      <!-- Crop Calendar (GET /farms/{farm_id}/fields, GET /cycles/{cycle_id}/activities) -->
       <section class="view view--app" data-view="calendar" aria-labelledby="calendar-title" hidden>
         <header class="app-header app-header--photo">
           <div class="app-header__row">
@@ -917,7 +917,6 @@
               <h1 id="calendar-title" class="app-header__title" tabindex="-1" data-route-focus>Crop Calendar</h1>
               <p class="app-header__subtitle">Manage your farm tasks and timelines.</p>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
           <label class="field-picker">
             <span class="field-picker__label">Field</span>
@@ -926,13 +925,14 @@
         </header>
 
         <div class="app-body">
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
             <p data-empty-text></p>
             <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
           </div>
 
-          <div class="app-stack" data-content>
+          <div class="app-stack" data-content hidden>
             <section class="summary-card" aria-labelledby="schedule-title">
               <div class="summary-card__head">
                 <span class="summary-card__icon"><svg aria-hidden="true"><use data-crop-icon href=""/></svg></span>
@@ -944,8 +944,8 @@
               <dl class="stat-grid">
                 <div class="stat"><dt>Season completion</dt><dd data-stat="completion"></dd></div>
                 <div class="stat"><dt>Expected value</dt><dd data-stat="value"></dd></div>
-                <div class="stat"><dt>Planting date</dt><dd data-stat="planted"></dd></div>
-                <div class="stat"><dt>Harvest time</dt><dd data-stat="harvest"></dd></div>
+                <div class="stat"><dt>Sowing date</dt><dd data-stat="planted"></dd></div>
+                <div class="stat"><dt>Expected harvest</dt><dd data-stat="harvest"></dd></div>
               </dl>
             </section>
 
@@ -961,6 +961,8 @@
                 </div>
                 <div class="day-strip" data-day-strip aria-label="Days of the week"></div>
                 <ol class="day-list" data-day-list aria-live="polite"></ol>
+                <p class="day-ongoing__title" data-ongoing-title hidden>Ongoing</p>
+                <ol class="day-list day-list--ongoing" data-ongoing-list></ol>
                 <p class="muted-note" data-day-empty hidden>No tasks on this day.</p>
               </div>
             </section>
@@ -977,7 +979,7 @@
               <p class="muted-note" data-week-empty hidden>No tasks for this field yet. Add one from Manage All Tasks.</p>
             </section>
 
-            <a href="#/chatbot" class="chat-link">
+            <a href="#/chatbot" class="chat-link" data-chat-soon>
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
               <span>Ask the chatbot about this</span>
             </a>
@@ -1032,7 +1034,7 @@
         </template>
       </section>
 
-      <!-- Manage All Tasks -->
+      <!-- Manage All Tasks (GET /farms/{farm_id}/activities, PATCH and DELETE /activities/{id}) -->
       <section class="view view--app" data-view="tasks" aria-labelledby="tasks-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
@@ -1042,7 +1044,6 @@
             <div class="app-header__text">
               <h1 id="tasks-title" class="app-header__title" tabindex="-1" data-route-focus>Manage All Tasks</h1>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
         </header>
 
@@ -1062,6 +1063,7 @@
             <button type="button" class="chip" aria-pressed="false" data-chip-completed>Completed</button>
           </div>
 
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
           <div class="task-groups" data-task-groups aria-live="polite"></div>
 
           <div class="app-empty" data-empty hidden>
@@ -1074,8 +1076,6 @@
         </div>
 
         <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
-
-        <input type="date" class="visually-hidden-input" tabindex="-1" aria-hidden="true" data-reschedule>
 
         <template data-group-tpl>
           <section class="task-group">
@@ -1106,6 +1106,8 @@
                 <svg aria-hidden="true"><use href="#icon-more"/></svg>
               </button>
               <ul class="task-menu__list" role="menu" data-menu hidden>
+                <li role="none"><button type="button" role="menuitem" data-action="done">Mark as done</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="undo">Mark as not done</button></li>
                 <li role="none"><button type="button" role="menuitem" data-action="skip">Skip</button></li>
                 <li role="none"><button type="button" role="menuitem" data-action="reschedule">Reschedule</button></li>
                 <li role="none"><button type="button" role="menuitem" data-action="edit">Edit</button></li>
@@ -1116,7 +1118,7 @@
         </template>
       </section>
 
-      <!-- New / edit farm task -->
+      <!-- New / edit farm task (POST /cycles/{cycle_id}/activities, PATCH /activities/{id}) -->
       <section class="view view--app" data-view="task-new" aria-labelledby="task-new-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
@@ -1125,16 +1127,15 @@
             </a>
             <div class="app-header__text">
               <h1 id="task-new-title" class="app-header__title" tabindex="-1" data-route-focus data-form-title>New Farm Task</h1>
-              <p class="app-header__subtitle">Schedule a new activity for your crop calendar.</p>
+              <p class="app-header__subtitle" data-form-sub>Schedule a new activity for your crop calendar.</p>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
         </header>
 
         <div class="app-body">
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
-            <p>No fields yet. Set up your farm before adding tasks.</p>
+            <p data-empty-text>No fields yet. Set up your farm before adding tasks.</p>
             <a href="#/setup" class="link">Set up your farm</a>
           </div>
 
@@ -1160,7 +1161,7 @@
               <label for="task-stage" class="field__label field__label--icon">
                 <svg aria-hidden="true"><use href="#icon-tag"/></svg>Crop Stage
               </label>
-              <select id="task-stage" name="growth_stage" class="input select" aria-describedby="task-stage-error" required>
+              <select id="task-stage" name="growth_stage" class="input select" aria-describedby="task-stage-error">
                 <option value="">Select growth stage</option>
               </select>
               <p id="task-stage-error" class="field__error" aria-live="polite"></p>
@@ -1178,27 +1179,31 @@
                 <label for="task-time" class="field__label field__label--icon">
                   <svg aria-hidden="true"><use href="#icon-clock"/></svg>Start Time
                 </label>
-                <input id="task-time" name="start_time" class="input" type="time" aria-describedby="task-time-error">
+                <input id="task-time" name="scheduled_time" class="input" type="time" aria-describedby="task-time-error">
                 <p id="task-time-error" class="field__error" aria-live="polite"></p>
               </div>
             </div>
 
             <div class="field">
-              <label for="task-reminder" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-bell"/></svg>Reminder
+              <label for="task-reminder" class="task-reminder">
+                <span class="field__label field__label--icon">
+                  <svg aria-hidden="true"><use href="#icon-bell"/></svg>Remind me
+                </span>
+                <input id="task-reminder" name="reminder" type="checkbox" class="switch" role="switch"
+                       aria-describedby="task-reminder-hint">
               </label>
-              <select id="task-reminder" name="reminder" class="input select" aria-describedby="task-reminder-error"></select>
-              <p id="task-reminder-error" class="field__error" aria-live="polite"></p>
+              <p id="task-reminder-hint" class="field__hint">A notification on the task&rsquo;s date, at its start time or at 6:00 AM.</p>
             </div>
 
             <div class="field">
               <label for="task-notes" class="field__label field__label--icon">
                 <svg aria-hidden="true"><use href="#icon-note"/></svg>Additional Notes
               </label>
-              <textarea id="task-notes" name="description" class="input input--textarea" rows="4" maxlength="500"
+              <textarea id="task-notes" name="notes" class="input input--textarea" rows="4" maxlength="500"
                         placeholder="Add any specific observations or details here…"></textarea>
             </div>
 
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
             <div class="form__end app-form__end">
               <button type="submit" class="btn btn--gradient btn--block btn--rounded" data-save-label>Save Task</button>
               <button type="button" class="link-plain" data-cancel>Cancel and go back</button>

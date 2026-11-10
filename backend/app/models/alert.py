@@ -79,13 +79,17 @@ class WeatherAlert(Base):
 
 
 class Notification(Base):
-    """NOTIFICATION (Table 24): one in-app notification for one member."""
+    """NOTIFICATION (Table 24): one in-app notification for one member. alert_id is set
+    exactly for a weather_alert, activity_id exactly for a task_reminder."""
 
     __tablename__ = "notification"
     __table_args__ = (
         UniqueConstraint("user_id", "alert_id"),
         CheckConstraint(
             "(type = 'weather_alert') = (alert_id IS NOT NULL)", name="alert_id_with_type"
+        ),
+        CheckConstraint(
+            "(type = 'task_reminder') = (activity_id IS NOT NULL)", name="activity_id_with_type"
         ),
         Index("ix_notification_user_id_created_at", "user_id", "created_at"),
     )
@@ -96,6 +100,8 @@ class Notification(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"))
     farm_id: Mapped[int | None] = mapped_column(ForeignKey("farm.farm_id"))
     alert_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("weather_alert.alert_id"))
+    # The task a task_reminder is about (Phase 7).
+    activity_id: Mapped[int | None] = mapped_column(ForeignKey("crop_activity.activity_id"))
     type: Mapped[NotificationType] = mapped_column(notification_type)
     title: Mapped[str] = mapped_column(String(100))
     body: Mapped[str] = mapped_column(Text)

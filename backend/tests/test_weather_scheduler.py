@@ -12,12 +12,11 @@ from app.services import weather_scheduler
 from app.services.weather_fetch_service import FetchSummary
 
 
-def test_one_job_now_and_then_every_3_hours_without_overlap() -> None:
+def test_weather_job_now_and_then_every_3_hours_without_overlap() -> None:
     start = datetime(2026, 10, 14, 1, 0, tzinfo=UTC)
     scheduler = weather_scheduler.build_scheduler(now=start)
 
-    (job,) = scheduler.get_jobs()
-    assert job.id == "fetch-weather"
+    job = scheduler.get_job("fetch-weather")
     assert job.func is weather_scheduler.run_once
     assert job.next_run_time == start  # the first run is at start
     assert job.trigger.interval == timedelta(hours=3)
@@ -26,6 +25,22 @@ def test_one_job_now_and_then_every_3_hours_without_overlap() -> None:
     assert job.misfire_grace_time is None  # a late run still happens
     assert job.trigger.get_next_fire_time(start, start) == start + timedelta(hours=3)
     assert not scheduler.running
+
+
+def test_reminder_job_now_and_then_every_15_minutes_without_overlap() -> None:
+    from app.services import reminder_service
+
+    start = datetime(2026, 10, 14, 1, 0, tzinfo=UTC)
+    scheduler = weather_scheduler.build_scheduler(now=start)
+
+    assert [job.id for job in scheduler.get_jobs()] == ["fetch-weather", "send-reminders"]
+    job = scheduler.get_job("send-reminders")
+    assert job.func is reminder_service.run_once
+    assert job.next_run_time == start
+    assert job.trigger.interval == timedelta(minutes=15)
+    assert job.max_instances == 1
+    assert job.coalesce is True
+    assert job.misfire_grace_time is None
 
 
 def _clock(*ticks: float):
@@ -74,6 +89,7 @@ def test_starting_runs_the_job_right_away(monkeypatch: pytest.MonkeyPatch) -> No
         scheduler.shutdown(wait=False)
 
     monkeypatch.setattr(weather_scheduler, "run_once", fake_run)
+    monkeypatch.setattr(weather_scheduler.reminder_service, "run_once", lambda: None)
     scheduler = weather_scheduler.build_scheduler()
     thread = threading.Thread(target=weather_scheduler.run_forever, args=(scheduler,))
     thread.start()

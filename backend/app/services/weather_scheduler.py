@@ -1,4 +1,5 @@
-"""Weather scheduler (Section 5): fetches every farm at start and then every 3 hours.
+"""Weather scheduler (Section 5): fetches every farm at start and then every 3 hours, and
+checks task reminders at start and then every 15 minutes (Phase 7).
 
 It runs as its own process (`python -m app.cli weather-scheduler`), never inside the API
 server, so uvicorn reloads and extra workers never start a second copy. Within the process,
@@ -13,11 +14,13 @@ from datetime import UTC, datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-from app.services import weather_fetch_service
+from app.services import reminder_service, weather_fetch_service
 from app.services.weather_fetch_service import FetchSummary
 
 INTERVAL_HOURS = 3
 JOB_ID = "fetch-weather"
+REMINDER_MINUTES = 15
+REMINDER_JOB_ID = "send-reminders"
 
 logger = logging.getLogger("app.weather")
 
@@ -45,24 +48,39 @@ def run_once(
 
 
 def build_scheduler(now: datetime | None = None) -> BlockingScheduler:
-    """A scheduler with one job: run_once now, then every INTERVAL_HOURS hours."""
+    """A scheduler with two jobs, both run now: the weather fetch every INTERVAL_HOURS hours
+    and the reminder check every REMINDER_MINUTES minutes."""
+    start = now or datetime.now(UTC)
     scheduler = BlockingScheduler(timezone=UTC)
-    scheduler.add_job(
-        run_once,
-        IntervalTrigger(hours=INTERVAL_HOURS, timezone=UTC),
-        id=JOB_ID,
-        next_run_time=now or datetime.now(UTC),
-        max_instances=1,
-        coalesce=True,
-        misfire_grace_time=None,
-    )
+    for job, trigger, job_id in (
+        (run_once, IntervalTrigger(hours=INTERVAL_HOURS, timezone=UTC), JOB_ID),
+        (
+            reminder_service.run_once,
+            IntervalTrigger(minutes=REMINDER_MINUTES, timezone=UTC),
+            REMINDER_JOB_ID,
+        ),
+    ):
+        scheduler.add_job(
+            job,
+            trigger,
+            id=job_id,
+            next_run_time=start,
+            max_instances=1,
+            coalesce=True,
+            misfire_grace_time=None,
+        )
     return scheduler
 
 
 def run_forever(scheduler: BlockingScheduler | None = None) -> None:
     """Start the scheduler and block until Ctrl+C, then shut it down cleanly."""
     scheduler = scheduler or build_scheduler()
-    logger.info("Weather scheduler started: every %d hours, first run now", INTERVAL_HOURS)
+    logger.info(
+        "Weather scheduler started: weather every %d hours, reminders every %d minutes, "
+        "first runs now",
+        INTERVAL_HOURS,
+        REMINDER_MINUTES,
+    )
     try:
         scheduler.start()
     except (KeyboardInterrupt, SystemExit):

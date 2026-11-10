@@ -65,6 +65,25 @@ class ActivityStatus(enum.StrEnum):
     RESCHEDULED = "rescheduled"
 
 
+class CalendarAnchor(enum.StrEnum):
+    """The date a template task's day_offset counts from: the cycle's planting_date
+    ('sowing') or expected_harvest_date ('harvest')."""
+
+    SOWING = "sowing"
+    HARVEST = "harvest"
+
+
+class GrowthStage(enum.StrEnum):
+    """The five crop stages the calendar screens use (Prototype Review decision 19), in
+    season order; shown as the weekly headings."""
+
+    LAND_PREPARATION = "land_preparation"
+    SEED_SOWING = "seed_sowing"
+    VEGETATIVE = "vegetative"
+    REPRODUCTIVE = "reproductive"
+    HARVEST = "harvest"
+
+
 class QuantityUnit(enum.StrEnum):
     """EXPENSE.unit: required when a quantity is given."""
 
@@ -140,6 +159,8 @@ cycle_status = pg_enum(CycleStatus, "cycle_status")
 task_type = pg_enum(TaskType, "task_type")
 activity_status = pg_enum(ActivityStatus, "activity_status")
 quantity_unit = pg_enum(QuantityUnit, "quantity_unit")
+calendar_anchor = pg_enum(CalendarAnchor, "calendar_anchor")
+growth_stage = pg_enum(GrowthStage, "growth_stage")
 alert_parameter = pg_enum(AlertParameter, "alert_parameter")
 alert_operator = pg_enum(AlertOperator, "alert_operator")
 alert_severity = pg_enum(AlertSeverity, "alert_severity")

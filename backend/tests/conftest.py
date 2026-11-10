@@ -70,7 +70,8 @@ def clean_tables() -> Iterator[None]:
             connection.execute(
                 text(
                     "UPDATE alert_rule SET is_active = :is_active, threshold = :threshold, "
-                    "message_template = :message_template WHERE rule_id = :rule_id"
+                    "message_template = :message_template, "
+                    "affected_task_type = :affected_task_type WHERE rule_id = :rule_id"
                 ),
                 dict(rule),
             )
@@ -319,3 +320,38 @@ def other_farm(client: TestClient, outsider_token: str, barangay_id: int, variet
     from app.core.seasons import philippine_today
 
     return create_farm(client, outsider_token, barangay_id, variety_ids, philippine_today())
+
+
+# ---------- Crop calendar ----------
+
+
+@pytest.fixture
+def seeded_varieties(db) -> dict[str, int]:
+    """Every variety in varieties.csv and the calendar templates from calendar_templates.csv,
+    loaded by the real seed functions; variety_name -> variety_id."""
+    from sqlalchemy import select
+
+    from app.models import CropVariety
+    from app.services import seed_service
+
+    seed_service.seed_varieties(db)
+    seed_service.seed_calendar_templates(db)
+    db.commit()
+    return {v.variety_name: v.variety_id for v in db.scalars(select(CropVariety))}
+
+
+@pytest.fixture
+def calendar_farm(client: TestClient, member_token: str, barangay_id: int, seeded_varieties):
+    """The owner's farm with seeded calendars: Field A corn (NK6410, 90 days) and Field B
+    rice (RC-402, 110 days), both sown 30 days ago (Philippine date)."""
+    from datetime import timedelta
+
+    from app.core.seasons import philippine_today
+
+    return create_farm(
+        client,
+        member_token,
+        barangay_id,
+        seeded_varieties,
+        philippine_today() - timedelta(days=30),
+    )

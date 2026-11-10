@@ -1,0 +1,30 @@
+crop,anchor,day_offset,day_offset_end,repeat_every_days,repeat_until_anchor,repeat_until_offset,growth_stage,task_type,is_weather_sensitive,task_name,description,source_reference
+rice,sowing,0,,,,,seed_sowing,planting,false,Sowing,,the field's sowing date
+rice,sowing,7,10,,,,vegetative,fertilization,true,Basal fertilizer,,PhilRice PalayCheck System 2022
+rice,sowing,0,14,,,,seed_sowing,irrigation,false,No irrigation after sowing,,PhilRice PalayCheck System 2022
+rice,sowing,0,25,,,,seed_sowing,pest_control,false,Keep the field saturated (snail control),,PhilRice PalayCheck System 2022
+rice,sowing,21,,,,,vegetative,fertilization,false,"Start leaf color chart checks for nitrogen, until early flowering",,PhilRice PalayCheck System 2022
+rice,sowing,0,45,,,,vegetative,weeding,false,Weed control,,PhilRice PalayCheck System 2022
+rice,harvest,-14,-7,,,,reproductive,irrigation,false,Drain the field,,PhilRice PalayCheck System 2022
+rice,harvest,0,,,,,harvest,harvest,true,Harvest at grain maturity,,PhilRice PalayCheck System 2022
+corn,sowing,0,,,,,seed_sowing,planting,false,Sowing,,the field's sowing date
+corn,sowing,0,30,,,,vegetative,weeding,false,Keep the field weed-free,,DA RFO 02 Corn Technoguide (2012)
+corn,sowing,15,20,,,,vegetative,weeding,false,Off-barring (first cultivation),,DA RFO 02 Corn Technoguide (2012)
+corn,sowing,21,30,,,,vegetative,fertilization,true,Hilling-up with the second nitrogen side-dressing,,DA RFO 02 Corn Technoguide (2012)
+corn,sowing,28,30,,,,vegetative,pest_control,true,"Trichogramma release for corn borer, first",,DA RFO 02 Corn Technoguide (2012)
+corn,sowing,35,37,,,,vegetative,pest_control,true,"Trichogramma release, second",,DA RFO 02 Corn Technoguide (2012)
+corn,harvest,0,,,,,harvest,harvest,true,Harvest,,DA RFO 02 Corn Technoguide (2012)
+onion,sowing,0,,,,,land_preparation,land_prep,false,Before sowing: land preparation,"Weedicide on ""mutha"" if present, 2 plowings and 2 harrowings, raised beds 75 cm wide and 10 to 15 cm high","DA RFO 02 Onion Production Guide (2012), pp. 3 to 4"
+onion,sowing,0,,,,,land_preparation,fertilization,true,Before sowing: basal fertilizer,100 bags/ha chicken dung or compost with 3 bags 14-14-14 or 2 bags 16-20-0,"DA RFO 02 Onion Production Guide (2012), pp. 4 to 5"
+onion,sowing,0,,,,,seed_sowing,planting,false,Sowing,,"DA RFO 02 Onion Production Guide (2012), p. 3"
+onion,sowing,7,10,,,,seed_sowing,other,false,Check germination,,"DA RFO 02 Onion Production Guide (2012), p. 3"
+onion,sowing,12,,,,,vegetative,pest_control,true,"Start fungicide spraying, as needed",,"DA RFO 02 Onion Production Guide (2012), p. 7"
+onion,sowing,20,30,,,,vegetative,fertilization,true,2nd fertilizer,"Nitrogen with phosphorus (P2O5), band 5 cm from the plant and 8 cm deep","DA RFO 02 Onion Production Guide (2012), p. 5"
+onion,sowing,30,40,,,,vegetative,fertilization,true,3rd fertilizer,Nitrogen and potassium; no phosphorus after day 30,"DA RFO 02 Onion Production Guide (2012), p. 5"
+onion,sowing,45,50,,,,vegetative,fertilization,true,4th fertilizer,Nitrogen and potassium; no fertilizer after day 50,"DA RFO 02 Onion Production Guide (2012), p. 5"
+onion,sowing,55,,,,,reproductive,fertilization,true,Foliar fertilizer at bulb formation,Early morning or late afternoon,"DA RFO 02 Onion Production Guide (2012), p. 5"
+onion,sowing,70,,,,,reproductive,fertilization,true,Repeat foliar fertilizer,,"DA RFO 02 Onion Production Guide (2012), p. 5"
+onion,sowing,0,,7,harvest,-5,vegetative,irrigation,false,Irrigate,,"DA RFO 02 Onion Production Guide (2012), p. 5"
+onion,harvest,-5,-3,,,,harvest,irrigation,false,Stop irrigating,,"DA RFO 02 Onion Production Guide (2012), p. 5"
+onion,harvest,0,,,,,harvest,harvest,true,Harvest when 75% of the tops have fallen over,,"DA RFO 02 Onion Production Guide (2012), p. 7"
+onion,harvest,0,,,,,harvest,other,false,"Cure the bulbs in a sunny, well-ventilated area for 10 to 14 days",,"DA RFO 02 Onion Production Guide (2012), p. 9"

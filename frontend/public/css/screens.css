@@ -2704,3 +2704,36 @@ a.setting-row {
     font-size: var(--fs-md);
   }
 }
+
+/* ---------- Crop calendar (Phase 7) ---------- */
+/* Later days of a ranged task, under the day's schedule. */
+.day-ongoing__title {
+  margin: var(--space-3) 0 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.day-list--ongoing {
+  margin-top: var(--space-2);
+}
+
+.status-tag--overdue {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+/* "Remind me" on the task form: the label on the left, the switch on the right. */
+.task-reminder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.task-reminder .field__label {
+  margin: 0;
+}
