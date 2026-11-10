@@ -199,7 +199,7 @@
   height: 44px;
   border-radius: 50%;
   color: var(--text-on-dark);
-  background: rgba(13, 30, 18, 0.72); /* dark backing: the button sits on the photo */
+  background: rgba(255, 255, 255, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.35);
   -webkit-backdrop-filter: var(--blur);
   backdrop-filter: var(--blur);
@@ -207,7 +207,7 @@
 }
 
 .icon-btn:hover {
-  background: rgba(13, 30, 18, 0.85);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .icon-btn svg {
@@ -1230,15 +1230,8 @@
 }
 
 /* Weather */
-/* The temperature and summary sit on a card, never on the photo itself. */
 .weather {
-  display: block;
   margin-top: var(--space-2);
-  padding: var(--space-3) var(--space-3) var(--space-3);
-  border-radius: var(--radius-lg);
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--blur);
-  backdrop-filter: var(--blur);
   text-align: center;
 }
 
