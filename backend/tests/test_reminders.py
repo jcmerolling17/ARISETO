@@ -180,3 +180,73 @@ def test_cli_send_reminders(db, calendar_farm, capsys) -> None:
     _task(db, calendar_farm, scheduled_date=philippine_today(), scheduled_time=time(0, 0))
     assert cli.main(["send-reminders"]) == 0
     assert "Reminders sent: 1 tasks, 1 notifications." in capsys.readouterr().out
+
+
+# ---------- Closed cycles ----------
+
+
+def _due_task(db, calendar_farm, cycle_status: str) -> CropActivity:
+    """Basal fertilizer on Field B, due now (today, untimed, reminder on), on a cycle with
+    the given status."""
+    from app.core.seasons import philippine_today
+    from app.models import CropCycle
+
+    task = _task(db, calendar_farm, scheduled_date=philippine_today(), scheduled_time=None)
+    db.get(CropCycle, calendar_farm.cycle_ids["Field B"]).status = cycle_status
+    db.commit()
+    return task
+
+
+def _after_six_today() -> datetime:
+    from app.core.seasons import philippine_today
+
+    return _ph(12, 0, philippine_today())
+
+
+@pytest.mark.parametrize("cycle_status", ["harvested", "failed"])
+def test_closed_cycles_send_no_reminder(db, calendar_farm, cycle_status: str) -> None:
+    task = _due_task(db, calendar_farm, cycle_status)
+    summary = _send(db, _after_six_today())
+    assert (summary.tasks, summary.notifications) == (0, 0)
+    assert _sent(db) == []
+    assert db.get(CropActivity, task.activity_id).reminded_at is None
+
+
+def test_an_active_cycle_still_sends_one(db, calendar_farm) -> None:
+    task = _due_task(db, calendar_farm, "active")
+    assert _send(db, _after_six_today()).tasks == 1
+    assert len(_sent(db)) == 1
+    assert db.get(CropActivity, task.activity_id).reminded_at is not None
+
+
+@pytest.mark.parametrize(("cycle_status", "sent"), [("harvested", 0), ("failed", 0), ("active", 1)])
+def test_cli_skips_closed_cycles(db, calendar_farm, capsys, cycle_status: str, sent: int) -> None:
+    from datetime import time as clock_time
+
+    task = _due_task(db, calendar_farm, cycle_status)
+    task.scheduled_time = clock_time(0, 0)  # due whatever the time of day the test runs
+    db.commit()
+
+    assert cli.main(["send-reminders"]) == 0
+    assert f"Reminders sent: {sent} tasks, {sent} notifications." in capsys.readouterr().out
+    db.expire_all()
+    assert (db.get(CropActivity, task.activity_id).reminded_at is None) is (sent == 0)
+
+
+@pytest.mark.parametrize(("cycle_status", "sent"), [("harvested", 0), ("failed", 0), ("active", 1)])
+def test_scheduler_job_skips_closed_cycles(db, calendar_farm, cycle_status: str, sent: int) -> None:
+    from datetime import time as clock_time
+
+    from app.services import weather_scheduler
+
+    task = _due_task(db, calendar_farm, cycle_status)
+    task.scheduled_time = clock_time(0, 0)
+    db.commit()
+
+    job = weather_scheduler.build_scheduler().get_job(weather_scheduler.REMINDER_JOB_ID)
+    summary = job.func()
+    db.expire_all()  # the job saved in its own session
+
+    assert (summary.tasks, summary.notifications) == (sent, sent)
+    assert len(_sent(db)) == sent
+    assert (db.get(CropActivity, task.activity_id).reminded_at is None) is (sent == 0)
