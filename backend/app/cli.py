@@ -7,7 +7,8 @@ Create the first cooperative administrator (run from backend/ with the venv acti
 
 The password is asked for twice and never echoed.
 
-Load the barangays and crop varieties in app/seeds/ (safe to run again):
+Load the barangays, crop varieties and calendar templates in app/seeds/ (safe to run
+again):
 
     python -m app.cli seed
 
@@ -23,6 +24,15 @@ Ctrl+C. Never start it inside the API server.
 Run the weather alert rules on the stored forecast, without fetching (every farm, or one):
 
     python -m app.cli evaluate-alerts [--farm-id 3]
+
+Generate the crop calendar of planned or active cycles created before Phase 7 that have no
+tasks (never duplicates):
+
+    python -m app.cli generate-calendar [--cycle-id 21]
+
+Send the task reminders that are due now, as the scheduler does every 15 minutes:
+
+    python -m app.cli send-reminders
 """
 
 import argparse
@@ -38,6 +48,8 @@ from app.schemas.admin import AdminCreate
 from app.services import (
     alert_service,
     auth_service,
+    calendar_service,
+    reminder_service,
     seed_service,
     weather_fetch_service,
     weather_scheduler,
@@ -87,6 +99,7 @@ def _seed(_args: argparse.Namespace) -> int:
             return 1
         barangays = seed_service.barangay_counts(db)
         varieties = seed_service.variety_counts(db)
+        templates = seed_service.template_counts(db)
 
     for name, result in results.items():
         print(f"{name}: {result.added} added, {result.updated} updated")
@@ -95,6 +108,9 @@ def _seed(_args: argparse.Namespace) -> int:
         print(f"  {municipality}: {count}")
     print(f"Varieties per crop ({sum(varieties.values())} in total):")
     for crop, count in varieties.items():
+        print(f"  {crop}: {count}")
+    print(f"Calendar template tasks per crop ({sum(templates.values())} in total):")
+    for crop, count in templates.items():
         print(f"  {crop}: {count}")
     return 0
 
@@ -139,6 +155,28 @@ def _evaluate_alerts(args: argparse.Namespace) -> int:
     return 1 if summary.failed else 0
 
 
+def _generate_calendar(args: argparse.Namespace) -> int:
+    with SessionLocal() as db:
+        summary = calendar_service.generate_missing(db, args.cycle_id)
+    if summary is None:
+        print(f"Cycle {args.cycle_id} not found.", file=sys.stderr)
+        return 1
+    print(
+        f"Calendar generated: {sum(summary.generated.values())} tasks for "
+        f"{len(summary.generated)} cycles; {len(summary.skipped)} skipped "
+        "(already with tasks, harvested, or failed)."
+    )
+    return 0
+
+
+def _send_reminders(_args: argparse.Namespace) -> int:
+    logging.basicConfig(level=logging.WARNING, format=LOG_FORMAT)
+    with SessionLocal() as db:
+        summary = reminder_service.send_due(db)
+    print(f"Reminders sent: {summary.tasks} tasks, {summary.notifications} notifications.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -151,7 +189,9 @@ def main(argv: list[str] | None = None) -> int:
     create_admin.add_argument("--email")
     create_admin.set_defaults(handler=_create_admin)
 
-    seed = commands.add_parser("seed", help="Load the barangays and crop varieties")
+    seed = commands.add_parser(
+        "seed", help="Load the barangays, crop varieties and calendar templates"
+    )
     seed.set_defaults(handler=_seed)
 
     fetch_weather = commands.add_parser(
@@ -170,6 +210,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     evaluate_alerts.add_argument("--farm-id", type=int, help="Only this farm (default: all)")
     evaluate_alerts.set_defaults(handler=_evaluate_alerts)
+
+    generate = commands.add_parser(
+        "generate-calendar", help="Generate tasks for planned or active cycles that have none"
+    )
+    generate.add_argument("--cycle-id", type=int, help="Only this cycle (default: all)")
+    generate.set_defaults(handler=_generate_calendar)
+
+    reminders = commands.add_parser("send-reminders", help="Send the task reminders due now")
+    reminders.set_defaults(handler=_send_reminders)
 
     args = parser.parse_args(argv)
     return args.handler(args)

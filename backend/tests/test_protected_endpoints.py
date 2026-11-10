@@ -45,6 +45,11 @@ PROTECTED = {
     ("POST", "/api/v1/notifications/read-all"),
     ("GET", "/api/v1/admin/alert-rules"),
     ("PATCH", "/api/v1/admin/alert-rules/{rule_id}"),
+    ("GET", "/api/v1/cycles/{cycle_id}/activities"),
+    ("GET", "/api/v1/farms/{farm_id}/activities"),
+    ("POST", "/api/v1/cycles/{cycle_id}/activities"),
+    ("PATCH", "/api/v1/activities/{activity_id}"),
+    ("DELETE", "/api/v1/activities/{activity_id}"),
 }
 
 

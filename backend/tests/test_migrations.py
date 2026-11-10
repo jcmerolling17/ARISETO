@@ -295,3 +295,112 @@ def test_0006_upgrade_downgrade_upgrade_seeds_the_seven_rules(db) -> None:
         ),
         ("Strong wind", "wind_speed_mps", "max", ">=", Decimal("10.83"), 24, "warning", True),
     ]
+
+
+TEMPLATE_NEW = {
+    "anchor",
+    "day_offset",
+    "day_offset_end",
+    "repeat_every_days",
+    "repeat_until_anchor",
+    "repeat_until_offset",
+    "growth_stage",
+    "source_reference",
+}
+ACTIVITY_NEW = {
+    "end_date",
+    "scheduled_time",
+    "reminder",
+    "reminded_at",
+    "notes",
+    "task_type",
+    "growth_stage",
+    "is_weather_sensitive",
+}
+
+
+def test_0007_upgrade_downgrade_upgrade(db) -> None:
+    db.close()
+    config = alembic_config()
+    assert TEMPLATE_NEW <= _columns("calendar_template_task")
+    assert "week_no" not in _columns("calendar_template_task")
+
+    command.downgrade(config, "0006")
+    try:
+        assert not TEMPLATE_NEW & _columns("calendar_template_task")
+        assert "week_no" in _columns("calendar_template_task")
+        assert not ACTIVITY_NEW & _columns("crop_activity")
+        assert "activity_id" not in _columns("notification")
+        assert _existing_types(("calendar_anchor", "growth_stage")) == set()
+    finally:
+        command.upgrade(config, "head")
+
+    assert TEMPLATE_NEW <= _columns("calendar_template_task")
+    assert ACTIVITY_NEW <= _columns("crop_activity")
+    assert "activity_id" in _columns("notification")
+    assert _existing_types(("calendar_anchor", "growth_stage")) == {
+        "calendar_anchor",
+        "growth_stage",
+    }
+
+
+def test_0007_checks(db) -> None:
+    """The documented checks: a range never ends before it starts, the repeat columns go
+    together, and activity_id is set exactly for a task_reminder."""
+    import pytest
+    from sqlalchemy.exc import IntegrityError
+
+    statements = [
+        "INSERT INTO crop_activity (cycle_id, title, scheduled_date, end_date, client_uuid) "
+        "VALUES (1, 't', '2026-11-10', '2026-11-09', gen_random_uuid())",
+        "INSERT INTO notification (user_id, type, title, body) "
+        "VALUES (1, 'task_reminder', 't', 'b')",
+    ]
+    for statement in statements:
+        with engine.connect() as connection, pytest.raises(IntegrityError):
+            connection.execute(text(statement))
+    with engine.connect() as connection:
+        checks = set(
+            connection.execute(
+                text(
+                    "SELECT conname FROM pg_constraint WHERE conrelid = "
+                    "'calendar_template_task'::regclass AND contype = 'c'"
+                )
+            ).scalars()
+        )
+    assert {
+        "ck_calendar_template_task_day_offset_end_order",
+        "ck_calendar_template_task_repeat_columns_together",
+        "ck_calendar_template_task_repeat_every_days_positive",
+    } <= checks
+
+
+def _weather_id_rule() -> tuple[str, str]:
+    with engine.connect() as connection:
+        nullable = connection.execute(
+            text(
+                "SELECT is_nullable FROM information_schema.columns "
+                "WHERE table_name = 'weather_alert' AND column_name = 'weather_id'"
+            )
+        ).scalar()
+        on_delete = connection.execute(
+            text(
+                "SELECT confdeltype FROM pg_constraint "
+                "WHERE conname = 'fk_weather_alert_weather_id_weather_log'"
+            )
+        ).scalar()
+    return nullable, on_delete
+
+
+def test_0008_upgrade_downgrade_upgrade(db) -> None:
+    db.close()
+    config = alembic_config()
+    assert _weather_id_rule() == ("YES", "n")  # n: ON DELETE SET NULL
+
+    command.downgrade(config, "0007")
+    try:
+        assert _weather_id_rule() == ("NO", "a")  # a: no action
+    finally:
+        command.upgrade(config, "head")
+
+    assert _weather_id_rule() == ("YES", "n")

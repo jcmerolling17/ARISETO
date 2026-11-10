@@ -1,6 +1,5 @@
 """Farm setup: register a farm and add its fields (Section 6 farms)."""
 
-import uuid
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -10,11 +9,10 @@ from sqlalchemy.orm import Session
 
 from app.core.constants import PLANTING_WINDOW_YEARS
 from app.core.errors import AppError
+from app.core.seasons import philippine_today
 from app.models import (
     Barangay,
-    CalendarTemplateTask,
     Crop,
-    CropActivity,
     CropCycle,
     CropVariety,
     Farm,
@@ -73,7 +71,9 @@ def _open_cycle(
     target_yield_t_ha: Decimal | None = None,
 ) -> CropCycle:
     """Open a crop cycle over the whole field and schedule its calendar from the variety's
-    template tasks."""
+    template tasks, in the caller's transaction."""
+    from app.services import calendar_service  # imports this module
+
     cycle = CropCycle(
         field_id=field.field_id,
         variety_id=variety.variety_id,
@@ -87,21 +87,7 @@ def _open_cycle(
     db.add(cycle)
     db.flush()
 
-    template_tasks = db.scalars(
-        select(CalendarTemplateTask)
-        .where(CalendarTemplateTask.variety_id == variety.variety_id)
-        .order_by(CalendarTemplateTask.week_no, CalendarTemplateTask.template_task_id)
-    )
-    db.add_all(
-        CropActivity(
-            cycle_id=cycle.cycle_id,
-            template_task_id=task.template_task_id,
-            title=task.task_name,
-            scheduled_date=planting_date + timedelta(weeks=task.week_no),
-            client_uuid=uuid.uuid4(),
-        )
-        for task in template_tasks
-    )
+    calendar_service.generate_for_cycle(db, cycle)
     return cycle
 
 
@@ -116,7 +102,7 @@ def create_farm(db: Session, user: User, data: FarmCreate) -> FarmCreated:
     barangay = db.get(Barangay, data.barangay_id)
     if barangay is None:
         raise AppError(422, "barangay_not_found")
-    today = date.today()
+    today = philippine_today()
     for item in data.fields:
         _check_planting_date(item.planting_date, today)
     varieties = {item.variety_id: _get_variety(db, item.variety_id) for item in data.fields}
@@ -186,7 +172,7 @@ def add_field(db: Session, user: User, farm_id: int, data: FieldCreate) -> Field
     if is_owner is None:
         raise AppError(403, "not_farm_owner")
 
-    today = date.today()
+    today = philippine_today()
     _check_planting_date(data.planting_date, today)
     variety = _get_variety(db, data.variety_id)
 

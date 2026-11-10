@@ -14,7 +14,7 @@
 
   --text-strong: #13261a;
   --text: #33463a;
-  --text-muted: #66766b;
+  --text-muted: #5d6d62; /* 5:1 on --app-bg and on white */
   --text-on-dark: #ffffff;
   --danger: #c62828;
   --danger-tint: rgba(198, 40, 40, 0.08);
@@ -49,6 +49,8 @@
   --fs-xl: 1.5rem;
 
   --home-bg: #f2f4f2;
+  /* The one solid background of every inner screen; white cards stand out on it. */
+  --app-bg: #f4f7f4;
   --shell-max-width: 414px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --duration: 320ms;
@@ -252,7 +254,10 @@ svg {
 }
 
 @media (min-width: 480px) {
+  /* In the device frame the viewport scrolls; a view grows with its content, so its own
+     background covers all of it and the welcome photo never shows through below. */
   .view {
+    flex: 1 0 auto;
     min-height: 100%;
   }
 }
@@ -280,12 +285,15 @@ svg {
   transform: translateY(-50%);
 }
 
+/* "Welcome" and "Login" sit on the photo, so they get a dark backing of their own. */
 .view__label {
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: rgba(13, 30, 18, 0.72);
   font-size: var(--fs-md);
   font-weight: 500;
   letter-spacing: 0.02em;
   color: var(--text-on-dark);
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
 }
 
 /* Welcome: brand sits in the open sky, card anchored to the bottom */

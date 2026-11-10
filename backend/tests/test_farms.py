@@ -135,14 +135,20 @@ def test_schedules_calendar_from_template_tasks(
         [
             CalendarTemplateTask(
                 variety_id=corn,
-                week_no=3,
+                anchor="sowing",
+                day_offset=21,
+                growth_stage="vegetative",
+                source_reference="Made up for this test",
                 task_type=TaskType.FERTILIZATION,
                 task_name="Side-dress fertilizer",
                 is_weather_sensitive=True,
             ),
             CalendarTemplateTask(
                 variety_id=corn,
-                week_no=-1,
+                anchor="sowing",
+                day_offset=-7,
+                growth_stage="land_preparation",
+                source_reference="Made up for this test",
                 task_type=TaskType.LAND_PREP,
                 task_name="Prepare the land",
                 is_weather_sensitive=False,

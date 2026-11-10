@@ -95,7 +95,7 @@ function categoryStyle(name) {
 }
 
 /** A v4 UUID made on the phone, so a resent expense is never saved twice. */
-function newClientUuid() {
+export function newClientUuid() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   bytes[6] = (bytes[6] & 0x0f) | 0x40;

@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    activities,
     admin,
     auth,
     barangays,
@@ -24,3 +25,4 @@ api_router.include_router(farms.router)
 api_router.include_router(expenses.router)
 api_router.include_router(harvests.router)
 api_router.include_router(notifications.router)
+api_router.include_router(activities.router)

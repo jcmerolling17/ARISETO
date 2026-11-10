@@ -65,12 +65,3 @@ export const QUANTITY_UNITS = [
   { value: 'bag', label: 'bag' },
   { value: 'hour', label: 'hour' },
 ];
-
-/** When a crop calendar task reminds the farmer. */
-export const REMINDER_OPTIONS = [
-  { value: 'none', label: 'None' },
-  { value: 'at_start', label: 'At start time' },
-  { value: '30_min', label: '30 minutes before' },
-  { value: '1_hour', label: '1 hour before' },
-  { value: '1_day', label: '1 day before' },
-];

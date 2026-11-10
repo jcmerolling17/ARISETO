@@ -3,6 +3,7 @@
 import { farms, ApiError } from '../api/client.js';
 import { kindFor, SUMMARIES, TIME_ZONE, manilaParts, isDaytime, formatClock, rounded } from '../api/weather.js';
 import { loadJSON, saveJSON } from '../utils/store.js';
+import { isSavedFarm, savedFarm } from '../utils/saved-farm.js';
 import { formatTimeAgo } from '../utils/dates.js';
 
 const HOURS_SHOWN = 8; // now + the next 7 three-hour forecast slots (24 hours)
@@ -126,7 +127,16 @@ export function mountWeatherPage(router) {
 
   async function render() {
     const id = (requestId += 1);
-    const farm = loadJSON('farm');
+    // Only a real saved farm is asked for; a missing or invalid one is looked up again.
+    let farm = loadJSON('farm');
+    if (!isSavedFarm(farm)) {
+      try {
+        farm = await savedFarm();
+      } catch {
+        farm = null;
+      }
+      if (id !== requestId) return;
+    }
     const today = new Date();
     field('place').textContent = placeName(farm);
     field('place-sub').textContent = `Occidental Mindoro · ${today.toLocaleDateString('en-PH', {
@@ -134,7 +144,7 @@ export function mountWeatherPage(router) {
     })}`;
     field('today-date').textContent = today.toLocaleDateString('en-PH', { timeZone: TIME_ZONE, month: 'long', day: 'numeric' });
 
-    if (farm?.farm_id == null) {
+    if (!isSavedFarm(farm)) {
       showMessage(MESSAGES.noFarm);
       return;
     }
@@ -162,6 +172,10 @@ export function mountWeatherPage(router) {
 
   window.addEventListener('online', () => {
     if (!view.hidden) render();
+  });
+  // A tab left open shows fresh weather when the member comes back to it.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !view.hidden) render();
   });
 
   router.route('weather', { onEnter: render });

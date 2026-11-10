@@ -20,10 +20,10 @@ def _user_id(db, mobile_no: str) -> int:
 
 
 def _add(db, user_id: int, minutes: int, **values) -> int:
-    """A notification created `minutes` after BASE. Task reminders need no weather alert,
+    """A notification created `minutes` after BASE. Yield updates need no weather alert or task,
     so they stand in for the rows the alert engine makes."""
     fields = {
-        "type": NotificationType.TASK_REMINDER,
+        "type": NotificationType.YIELD_UPDATE,
         "title": f"Notice {minutes}",
         "body": "Body text",
         "severity": "info",
@@ -60,7 +60,7 @@ def test_lists_own_notifications_newest_first(
     assert [item["notification_id"] for item in body["items"]] == [second, first]
     assert body["items"][1] == {
         "notification_id": first,
-        "type": "task_reminder",
+        "type": "yield_update",
         "title": "Notice 1",
         "body": "Body text",
         "severity": "info",
@@ -92,7 +92,7 @@ def test_unread_only_and_unread_count_ignores_filters(
 
     body = client.get(
         URL,
-        params={"unread_only": "true", "type": "task_reminder"},
+        params={"unread_only": "true", "type": "yield_update"},
         headers=auth_header(member_token),
     ).json()
 

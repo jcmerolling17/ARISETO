@@ -11,6 +11,6 @@ corn,DEKALB 6919,medium,105,MPMPC
 corn,PIONEER 3582,late,110,MPMPC
 onion,SUPER PINOY,early,110,MPMPC
 onion,RED PINOY,medium,120,MPMPC
-onion,RED DRAGON,late,125,MPMPC (gave 120-130 days; 125 is a placeholder until MPMPC confirms the typical value)
+onion,RED DRAGON,late,125,MPMPC (gave 120-130 days; 125 is the midpoint of MPMPC's range (settled Nov 3))
 onion,RED ALLIUM,medium,120,MPMPC
-onion,SUPER TAKII (White Onion),early,105,MPMPC (gave 100-110 days; 105 is a placeholder until MPMPC confirms the typical value)
+onion,SUPER TAKII (White Onion),early,105,MPMPC (gave 100-110 days; 105 is the midpoint of MPMPC's range (settled Nov 3))

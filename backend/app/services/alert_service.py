@@ -5,26 +5,46 @@ the slots after the evaluation time and no later than lookahead_hours after it. 
 rule adds the slots' values and a 'max' rule takes the highest. For each parameter only the
 highest firing threshold is issued, and only when it is higher than every alert already
 issued for that farm and parameter in the past 24 hours. Each alert becomes one
-notification for every farm member whose account is active."""
+notification for every farm member whose account is active.
+
+Since Phase 7 an alert also names the weather-sensitive tasks in its window: pending or
+rescheduled tasks on the farm's planned or active cycles with any day from scheduled_date to
+end_date between today and the window's last day (Philippine dates), only of the rule's
+affected_task_type when it is set. Up to three are named, then "and N more"; activity_id
+points to the earliest."""
 
 import logging
 import math
 from collections import defaultdict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.seasons import PHILIPPINE_TIME
 from app.db.session import SessionLocal
-from app.models import AlertRule, Farm, FarmAssignment, Notification, User, WeatherAlert, WeatherLog
+from app.models import (
+    AlertRule,
+    CropActivity,
+    CropCycle,
+    Farm,
+    FarmAssignment,
+    FarmField,
+    Notification,
+    User,
+    WeatherAlert,
+    WeatherLog,
+)
 from app.models.enums import (
     AccountStatus,
+    ActivityStatus,
     AlertAggregation,
     AlertOperator,
     AlertParameter,
+    CycleStatus,
     NotificationType,
 )
 
@@ -181,6 +201,56 @@ def _active_member_ids(db: Session, farm_id: int) -> list[int]:
     )
 
 
+NAMED_TASKS = 3
+
+
+def _short_date(day: date) -> str:
+    return f"{day:%b} {day.day}"
+
+
+def tasks_in_window(db: Session, farm_id: int, rule: AlertRule, now: datetime) -> list[tuple]:
+    """(activity_id, title, field_name, scheduled_date) of the weather-sensitive tasks in
+    the rule's window, earliest first."""
+    first_day = now.astimezone(PHILIPPINE_TIME).date()
+    last_day = (now + timedelta(hours=rule.lookahead_hours)).astimezone(PHILIPPINE_TIME).date()
+    query = (
+        select(
+            CropActivity.activity_id,
+            CropActivity.title,
+            FarmField.field_name,
+            CropActivity.scheduled_date,
+        )
+        .join(CropCycle, CropCycle.cycle_id == CropActivity.cycle_id)
+        .join(FarmField, FarmField.field_id == CropCycle.field_id)
+        .where(
+            FarmField.farm_id == farm_id,
+            CropCycle.status.in_([CycleStatus.PLANNED, CycleStatus.ACTIVE]),
+            CropActivity.is_weather_sensitive.is_(True),
+            CropActivity.status.in_([ActivityStatus.PENDING, ActivityStatus.RESCHEDULED]),
+            CropActivity.scheduled_date <= last_day,
+            func.coalesce(CropActivity.end_date, CropActivity.scheduled_date) >= first_day,
+        )
+        .order_by(
+            CropActivity.scheduled_date,
+            CropActivity.scheduled_time.asc().nulls_last(),
+            CropActivity.activity_id,
+        )
+    )
+    if rule.affected_task_type is not None:
+        query = query.where(CropActivity.task_type == rule.affected_task_type)
+    return [tuple(row) for row in db.execute(query)]
+
+
+def tasks_sentence(tasks: list[tuple]) -> str:
+    """'Tasks in this window: A (Field A, Nov 5), B (…), C (…) and 2 more.'"""
+    named = ", ".join(
+        f"{title} ({field_name}, {_short_date(day)})"
+        for _, title, field_name, day in tasks[:NAMED_TASKS]
+    )
+    more = len(tasks) - NAMED_TASKS
+    return f"Tasks in this window: {named}{f' and {more} more' if more > 0 else ''}."
+
+
 def evaluate_farm(db: Session, farm_id: int, now: datetime | None = None) -> list[WeatherAlert]:
     """Issue the farm's alerts for its latest forecast and notify its active members; the
     caller commits. The farm row is locked, so two evaluations of one farm (the scheduler
@@ -208,12 +278,16 @@ def evaluate_farm(db: Session, farm_id: int, now: datetime | None = None) -> lis
         previous = issued_before.get(parameter)
         if previous is not None and rule.threshold <= previous:
             continue
+        message = render_message(rule, result.value)
+        tasks = tasks_in_window(db, farm_id, rule, now)
+        if tasks:
+            message = f"{message} {tasks_sentence(tasks)}"
         alert = WeatherAlert(
             rule_id=rule.rule_id,
             farm_id=farm_id,
             weather_id=result.slot.weather_id,
-            activity_id=None,
-            message=render_message(rule, result.value),
+            activity_id=tasks[0][0] if tasks else None,
+            message=message,
             severity=rule.severity,
             issued_at=now,
         )

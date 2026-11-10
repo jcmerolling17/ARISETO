@@ -409,3 +409,79 @@ def test_a_failed_evaluation_never_breaks_the_fetch(
     assert len(_rows(db, two_farms[0], True)) == 3
     assert f"Alert evaluation failed for farm {two_farms[0]}: RuntimeError" in caplog.text
     assert "must not be logged" not in caplog.text
+
+
+# ---------- A fetch after an alert (the replaced slot keeps the alert) ----------
+
+
+def _alerts_and_notifications(db):
+    from app.models import Notification, WeatherAlert
+
+    db.expire_all()
+    return (
+        db.scalars(select(WeatherAlert).order_by(WeatherAlert.alert_id)).all(),
+        db.scalars(select(Notification).order_by(Notification.notification_id)).all(),
+    )
+
+
+def test_a_fetch_after_an_alert_replaces_its_slot_and_keeps_the_alert(
+    db, two_farms, fake_key
+) -> None:
+    now = datetime.now(UTC)
+    first = weather_fetch_service.fetch_farms(client=_rainy_client(now))
+    assert first.succeeded == two_farms
+    alerts, notifications = _alerts_and_notifications(db)
+    assert len(alerts) == 2 and all(alert.weather_id is not None for alert in alerts)
+    message = alerts[0].message
+
+    # The next fetch replaces the future slots, including the one each alert points at.
+    second = weather_fetch_service.fetch_farms(client=_rainy_client(now))
+
+    assert (second.succeeded, second.failed) == (two_farms, {})
+    kept, kept_notifications = _alerts_and_notifications(db)
+    assert [alert.alert_id for alert in kept] == [alert.alert_id for alert in alerts]
+    assert all(alert.weather_id is None for alert in kept)
+    assert kept[0].message == message
+    assert [n.notification_id for n in kept_notifications] == [
+        n.notification_id for n in notifications
+    ]
+    assert len(_rows(db, two_farms[0], True)) == 3  # the new slots, saved once
+
+
+def test_the_scheduler_keeps_fetching_after_an_alert(
+    db, two_farms, fake_key, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.services import weather_scheduler
+
+    now = datetime.now(UTC)
+    monkeypatch.setattr(openweathermap_service, "make_client", lambda: _rainy_client(now))
+
+    first = weather_scheduler.run_once()
+    second = weather_scheduler.run_once()
+
+    assert first.succeeded == two_farms
+    assert (second.succeeded, second.failed) == (two_farms, {})
+    alerts, notifications = _alerts_and_notifications(db)
+    assert len(alerts) == 2 and len(notifications) == 2
+    assert all(alert.weather_id is None for alert in alerts)
+
+
+def test_a_failed_constraint_is_named_in_the_log(
+    db, two_farms, fake_key, monkeypatch: pytest.MonkeyPatch, caplog
+) -> None:
+    from types import SimpleNamespace
+
+    from sqlalchemy.exc import IntegrityError
+
+    def broken(*_args, **_kwargs):
+        orig = SimpleNamespace(diag=SimpleNamespace(constraint_name="fk_example"))
+        raise IntegrityError("DELETE ... key=secret-text", {}, orig)
+
+    monkeypatch.setattr(weather_fetch_service, "save_fetch", broken)
+    summary = weather_fetch_service.fetch_farms(client=_mock_client(datetime.now(UTC)))
+
+    assert summary.failed == {farm_id: "unexpected_error" for farm_id in two_farms}
+    assert (
+        f"Weather fetch failed for farm {two_farms[0]}: IntegrityError (fk_example)" in caplog.text
+    )
+    assert "secret-text" not in caplog.text

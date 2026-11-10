@@ -317,6 +317,55 @@ export const harvests = {
   },
 };
 
+export const activities = {
+  /**
+   * filters: { status, from, to } (dates YYYY-MM-DD; a task matches when any day of its range
+   * falls between them)
+   * 200 { cycle: { cycle_id, field_name, crop_name, variety_name, season, planting_date,
+   *       expected_harvest_date, status, completion_pct }, items: [activity] }, where an activity
+   * is { activity_id, title, description, source_reference, task_type, growth_stage,
+   * scheduled_date, end_date, scheduled_time, reminder, notes, status, completed_at,
+   * is_weather_sensitive, is_custom }; by date, then time (untimed last)
+   * 404 cycle_not_found
+   */
+  forCycle(cycleId, filters) {
+    return request(`/cycles/${encodeURIComponent(cycleId)}/activities${queryString(filters)}`);
+  },
+
+  /**
+   * filters: { field_id, status, q, from, to, limit (default 50, at most 200), offset }
+   * 200 { items: [activity plus cycle_id and field_name] } for each field's current cycle
+   * 403 not_farm_member; 422 field_not_in_farm
+   */
+  forFarm(farmId, filters) {
+    return request(`/farms/${encodeURIComponent(farmId)}/activities${queryString(filters)}`);
+  },
+
+  /**
+   * payload: { title, scheduled_date, scheduled_time, reminder, notes, growth_stage, client_uuid }
+   * 201 the custom task; 200 with the same body when client_uuid was already saved on this cycle
+   * 404 cycle_not_found; 409 cycle_closed | client_uuid_taken; 422 date_out_of_range
+   */
+  create(cycleId, payload) {
+    return request(`/cycles/${encodeURIComponent(cycleId)}/activities`, { method: 'POST', body: payload });
+  },
+
+  /**
+   * payload: any of { status ('pending' | 'done' | 'skipped'), scheduled_date, scheduled_time,
+   *   reminder, notes, title and growth_stage (custom tasks only) }
+   * 200 the task. A new date or time is a reschedule.
+   * 404 activity_not_found; 409 cycle_closed; 422 not_editable | date_out_of_range
+   */
+  update(activityId, payload) {
+    return request(`/activities/${encodeURIComponent(activityId)}`, { method: 'PATCH', body: payload });
+  },
+
+  /** 204; custom tasks only. 404 activity_not_found; 409 generated_task | cycle_closed */
+  remove(activityId) {
+    return request(`/activities/${encodeURIComponent(activityId)}`, { method: 'DELETE' });
+  },
+};
+
 export const notifications = {
   /**
    * filters: { unread_only (true or false), type (e.g. 'weather_alert'), limit (default 20,

@@ -4,7 +4,7 @@
 .view--app {
   gap: 0;
   padding: 0;
-  background: var(--home-bg);
+  background: var(--app-bg);
 }
 
 .app-header {
@@ -13,16 +13,6 @@
   padding: max(var(--space-4), env(safe-area-inset-top)) var(--space-5) var(--space-5);
   background: var(--primary-gradient);
   color: var(--text-on-dark);
-}
-
-.app-header--photo::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: url("../assets/images/bg-setup.jpg") center / cover no-repeat;
-  opacity: 0.22;
-  mix-blend-mode: luminosity;
 }
 
 .app-header__row {
@@ -222,6 +212,25 @@
 .chat-link svg {
   width: 18px;
   height: 18px;
+}
+
+/* A feature not built yet: looks like a disabled button, still shows "Coming soon" on tap. */
+.chat-link--soon {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--text); /* 9:1 on white */
+  cursor: not-allowed;
+}
+
+.soon-tag {
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: #eef2ef;
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted); /* 5:1 on #eef2ef */
 }
 
 .icon-plain {
@@ -1330,7 +1339,7 @@
 .notice-toolbar__read-all {
   flex-shrink: 0;
   margin: 0;
-  color: var(--primary-green);
+  color: var(--primary-green-dark); /* 6:1 on --app-bg */
 }
 
 .notice-more {
@@ -1909,7 +1918,7 @@ a.weather {
 }
 
 .view--weather {
-  background: linear-gradient(180deg, #8fc3e6 0%, #cfe5f3 38%, #e8f1f4 62%, var(--home-bg) 100%);
+  background: var(--app-bg);
 }
 
 .weather-top {
@@ -2087,7 +2096,7 @@ a.weather {
 
 /* ---------- Disease Detection ---------- */
 .view--scan {
-  background: radial-gradient(120% 80% at 50% 30%, #2e3f2c 0%, #172116 70%, #0f160f 100%);
+  background: var(--app-bg);
 }
 
 .scan-body {
@@ -2111,7 +2120,7 @@ a.weather {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text);
 }
 
 .scan-frame {
@@ -2122,7 +2131,7 @@ a.weather {
   aspect-ratio: 4 / 5;
   border: 4px solid var(--primary-green-light);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.06);
+  background: #1c2a1b; /* the camera view stays dark, so its hint text stays readable */
   overflow: hidden;
 }
 
@@ -2144,12 +2153,12 @@ a.weather {
 .scan-status {
   min-height: 1.4em;
   font-size: var(--fs-sm);
-  color: var(--text-on-dark);
+  color: var(--text-strong);
   text-align: center;
 }
 
 .scan-status[data-tone="error"] {
-  color: #ffb4a8;
+  color: var(--danger);
 }
 
 .scan-upload {
@@ -2160,6 +2169,7 @@ a.weather {
   padding: 0 var(--space-5);
   border-radius: var(--radius-pill);
   background: var(--surface);
+  border: 1px solid var(--border); /* outline on the light background */
   font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--text-strong);
@@ -2175,7 +2185,7 @@ a.weather {
   display: block;
   width: 76px;
   height: 76px;
-  border: 4px solid rgba(255, 255, 255, 0.9);
+  border: 4px solid var(--border-strong);
   border-radius: 50%;
   background: var(--surface) content-box;
   padding: 4px;
@@ -2201,10 +2211,10 @@ a.weather {
   gap: var(--space-1) var(--space-3);
   margin: auto 0 0;
   padding: var(--space-2) var(--space-3);
-  border: 1px dashed rgba(255, 255, 255, 0.35);
+  border: 1px dashed var(--border-strong);
   border-radius: var(--radius-sm);
   font-size: var(--fs-xs);
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--text);
 }
 
 .demo-switch legend {
@@ -2230,7 +2240,7 @@ a.weather {
 
 /* Results */
 .view--result {
-  background: var(--home-bg);
+  background: var(--app-bg);
 }
 
 .result-photo {
@@ -2609,7 +2619,7 @@ a.weather {
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4) var(--space-3);
-  background: linear-gradient(180deg, rgba(242, 244, 242, 0) 0%, var(--home-bg) 18%);
+  background: linear-gradient(180deg, rgba(244, 247, 244, 0) 0%, var(--app-bg) 18%);
 }
 
 .chat-chips {
@@ -2703,4 +2713,37 @@ a.setting-row {
   .stat dd {
     font-size: var(--fs-md);
   }
+}
+
+/* ---------- Crop calendar (Phase 7) ---------- */
+/* Later days of a ranged task, under the day's schedule. */
+.day-ongoing__title {
+  margin: var(--space-3) 0 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.day-list--ongoing {
+  margin-top: var(--space-2);
+}
+
+.status-tag--overdue {
+  background: var(--danger-tint);
+  color: var(--danger);
+}
+
+/* "Remind me" on the task form: the label on the left, the switch on the right. */
+.task-reminder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.task-reminder .field__label {
+  margin: 0;
 }
