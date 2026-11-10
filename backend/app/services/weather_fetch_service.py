@@ -30,10 +30,20 @@ class FetchSummary:
     failed: dict[int, str] = field(default_factory=dict)
 
 
+def error_name(exc: Exception) -> str:
+    """The error type, plus the database constraint when one failed (for example
+    "IntegrityError (fk_weather_alert_weather_id_weather_log)"). Never the error text, which
+    could include the request URL and so the key."""
+    constraint = getattr(getattr(getattr(exc, "orig", None), "diag", None), "constraint_name", None)
+    name = type(exc).__name__
+    return f"{name} ({constraint})" if constraint else name
+
+
 def save_fetch(db: Session, farm_id: int, fetched: FetchedWeather) -> None:
     """Add the current reading, kept as history, and replace the farm's forecast slots from
     the fetch time on. Replacement starts at the earliest new slot when that is earlier, so
-    a slot is never stored twice. The caller commits, so it is one transaction."""
+    a slot is never stored twice. The caller commits, so it is one transaction. An alert whose
+    slot is replaced keeps its message; its weather_id clears (ON DELETE SET NULL)."""
     replace_from = min(
         [fetched.current["fetched_at"], *(slot["forecast_for"] for slot in fetched.forecast)]
     )
@@ -85,11 +95,9 @@ def fetch_farms(
                 summary.failed[farm.farm_id] = exc.reason
                 logger.warning("Weather fetch failed for farm %s: %s", farm.farm_id, exc)
             except Exception as exc:  # one bad farm must not stop the rest
-                # Only the type is logged: an unexpected error's text could include the URL.
+                # Only the type and constraint are logged: an error's text could include the URL.
                 summary.failed[farm.farm_id] = "unexpected_error"
-                logger.error(
-                    "Weather fetch failed for farm %s: %s", farm.farm_id, type(exc).__name__
-                )
+                logger.error("Weather fetch failed for farm %s: %s", farm.farm_id, error_name(exc))
             else:
                 summary.succeeded.append(farm.farm_id)
                 # Logs and swallows its own errors, so a fetch never fails because of alerts.
@@ -106,4 +114,4 @@ def fetch_new_farm(farm_id: int) -> None:
     try:
         fetch_farms([farm_id])
     except Exception as exc:  # runs after the 201 response was sent
-        logger.error("Weather fetch failed for new farm %s: %s", farm_id, type(exc).__name__)
+        logger.error("Weather fetch failed for new farm %s: %s", farm_id, error_name(exc))

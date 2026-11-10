@@ -908,7 +908,7 @@
 
       <!-- Crop Calendar (GET /farms/{farm_id}/fields, GET /cycles/{cycle_id}/activities) -->
       <section class="view view--app" data-view="calendar" aria-labelledby="calendar-title" hidden>
-        <header class="app-header app-header--photo">
+        <header class="app-header">
           <div class="app-header__row">
             <a href="#/home" class="app-header__back" aria-label="Back to home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
@@ -979,9 +979,10 @@
               <p class="muted-note" data-week-empty hidden>No tasks for this field yet. Add one from Manage All Tasks.</p>
             </section>
 
-            <a href="#/chatbot" class="chat-link" data-chat-soon>
+            <a href="#/chatbot" class="chat-link chat-link--soon" aria-disabled="true" data-chat-soon>
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
               <span>Ask the chatbot about this</span>
+              <span class="soon-tag">Coming soon</span>
             </a>
           </div>
         </div>
@@ -2327,7 +2328,7 @@
       </section>
       <!-- Yield Estimation (sample data: js/data/sample-yield.js) -->
       <section class="view view--app" data-view="yield" aria-labelledby="yield-title" hidden>
-        <header class="app-header app-header--photo">
+        <header class="app-header">
           <div class="app-header__row">
             <a href="#/home" class="app-header__back" aria-label="Back to home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>

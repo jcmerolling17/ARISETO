@@ -373,3 +373,34 @@ def test_0007_checks(db) -> None:
         "ck_calendar_template_task_repeat_columns_together",
         "ck_calendar_template_task_repeat_every_days_positive",
     } <= checks
+
+
+def _weather_id_rule() -> tuple[str, str]:
+    with engine.connect() as connection:
+        nullable = connection.execute(
+            text(
+                "SELECT is_nullable FROM information_schema.columns "
+                "WHERE table_name = 'weather_alert' AND column_name = 'weather_id'"
+            )
+        ).scalar()
+        on_delete = connection.execute(
+            text(
+                "SELECT confdeltype FROM pg_constraint "
+                "WHERE conname = 'fk_weather_alert_weather_id_weather_log'"
+            )
+        ).scalar()
+    return nullable, on_delete
+
+
+def test_0008_upgrade_downgrade_upgrade(db) -> None:
+    db.close()
+    config = alembic_config()
+    assert _weather_id_rule() == ("YES", "n")  # n: ON DELETE SET NULL
+
+    command.downgrade(config, "0007")
+    try:
+        assert _weather_id_rule() == ("NO", "a")  # a: no action
+    finally:
+        command.upgrade(config, "head")
+
+    assert _weather_id_rule() == ("YES", "n")

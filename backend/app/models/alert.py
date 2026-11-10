@@ -70,7 +70,11 @@ class WeatherAlert(Base):
     alert_id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
     rule_id: Mapped[int] = mapped_column(ForeignKey("alert_rule.rule_id"))
     farm_id: Mapped[int] = mapped_column(ForeignKey("farm.farm_id"))
-    weather_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("weather_log.weather_id"))
+    # The forecast slot that triggered the rule. The next fetch replaces future slots, so
+    # the link clears (ON DELETE SET NULL) while the alert and its message stay.
+    weather_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("weather_log.weather_id", ondelete="SET NULL")
+    )
     # NULL until the crop calendar links alerts to weather-sensitive tasks.
     activity_id: Mapped[int | None] = mapped_column(ForeignKey("crop_activity.activity_id"))
     message: Mapped[str] = mapped_column(Text)
