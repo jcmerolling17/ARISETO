@@ -1,7 +1,8 @@
 """Task reminders (Section 6, "Crop calendar (Phase 7)"): every 15 minutes the weather
 scheduler sends one task_reminder notification to each active member of the farm for each
 pending or rescheduled task with reminder on and dated today (Philippine time), once the
-task's time, or 06:00 when it has none, has passed. reminded_at makes it once only."""
+task's time, or 06:00 when it has none, has passed. reminded_at makes it once only. Tasks on
+a harvested or failed cycle are skipped, since those cycles are read-only."""
 
 import logging
 from collections.abc import Callable
@@ -14,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.core.seasons import PHILIPPINE_TIME
 from app.db.session import SessionLocal
 from app.models import CropActivity, CropCycle, FarmAssignment, FarmField, Notification, User
-from app.models.enums import AccountStatus, ActivityStatus, NotificationType
+from app.models.enums import AccountStatus, ActivityStatus, CycleStatus, NotificationType
 
 logger = logging.getLogger("app.calendar")
 
@@ -60,6 +61,8 @@ def send_due(db: Session, now: datetime | None = None) -> ReminderSummary:
         .join(CropCycle, CropCycle.cycle_id == CropActivity.cycle_id)
         .join(FarmField, FarmField.field_id == CropCycle.field_id)
         .where(
+            # Tasks on a harvested or failed cycle are read-only, so they never remind.
+            CropCycle.status.in_([CycleStatus.PLANNED, CycleStatus.ACTIVE]),
             CropActivity.reminder.is_(True),
             CropActivity.reminded_at.is_(None),
             CropActivity.status.in_([ActivityStatus.PENDING, ActivityStatus.RESCHEDULED]),
