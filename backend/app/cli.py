@@ -33,12 +33,24 @@ tasks (never duplicates):
 Send the task reminders that are due now, as the scheduler does every 15 minutes:
 
     python -m app.cli send-reminders
+
+Load the disease knowledge base from the team's two CSV files, in one transaction (diseases
+are added or updated by model_class_label and their treatment steps replaced; any bad row
+rejects both files). --dry-run checks and counts without saving:
+
+    python -m app.cli import-diseases diseases.csv treatments.csv [--dry-run]
+
+Report whether the disease model loads (DISEASE_* settings in .env), how many labels it has,
+and which labels have no DISEASE row:
+
+    python -m app.cli check-model
 """
 
 import argparse
 import getpass
 import logging
 import sys
+from pathlib import Path
 
 from pydantic import ValidationError
 
@@ -49,6 +61,8 @@ from app.services import (
     alert_service,
     auth_service,
     calendar_service,
+    disease_model,
+    disease_service,
     reminder_service,
     seed_service,
     weather_fetch_service,
@@ -177,6 +191,52 @@ def _send_reminders(_args: argparse.Namespace) -> int:
     return 0
 
 
+def _import_diseases(args: argparse.Namespace) -> int:
+    with SessionLocal() as db:
+        try:
+            result = disease_service.import_files(
+                db, Path(args.diseases_csv), Path(args.treatments_csv), dry_run=args.dry_run
+            )
+        except disease_service.ImportFileError as exc:
+            print("Nothing imported:", file=sys.stderr)
+            for error in exc.errors:
+                print(f"  {error}", file=sys.stderr)
+            return 1
+    prefix = "Dry run, nothing saved: would import" if args.dry_run else "Imported"
+    print(
+        f"{prefix} {result.added + result.updated} diseases ({result.added} added, "
+        f"{result.updated} updated) with {result.steps} treatment steps."
+    )
+    return 0
+
+
+def _check_model(_args: argparse.Namespace) -> int:
+    status = disease_model.load()
+    if status.predictor is None:
+        print(f"Model not loaded: {status.reason}")
+    else:
+        print(
+            f"Model loaded: version {status.predictor.version}, "
+            f"threshold {status.predictor.threshold:g}."
+        )
+    if status.labels is None:
+        return 1
+
+    print(f"Labels: {len(status.labels)}.")
+    healthy = [label for label in status.labels if label.endswith("_healthy")]
+    with SessionLocal() as db:
+        known = disease_service.known_labels(db)
+    missing = [label for label in status.labels if label not in known and label not in healthy]
+    print(f"Healthy classes: {', '.join(healthy) or 'none'}.")
+    if missing:
+        print(f"Labels with no DISEASE row ({len(missing)}; scanned as unrecognized):")
+        for label in missing:
+            print(f"  {label}")
+    else:
+        print("Every disease label has a DISEASE row.")
+    return 0 if status.predictor is not None else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -219,6 +279,21 @@ def main(argv: list[str] | None = None) -> int:
 
     reminders = commands.add_parser("send-reminders", help="Send the task reminders due now")
     reminders.set_defaults(handler=_send_reminders)
+
+    import_diseases = commands.add_parser(
+        "import-diseases", help="Load the disease knowledge base from the team's CSV files"
+    )
+    import_diseases.add_argument("diseases_csv")
+    import_diseases.add_argument("treatments_csv")
+    import_diseases.add_argument(
+        "--dry-run", action="store_true", help="Check and count only; save nothing"
+    )
+    import_diseases.set_defaults(handler=_import_diseases)
+
+    check_model = commands.add_parser(
+        "check-model", help="Report whether the disease model loads and which labels lack a row"
+    )
+    check_model.set_defaults(handler=_check_model)
 
     args = parser.parse_args(argv)
     return args.handler(args)

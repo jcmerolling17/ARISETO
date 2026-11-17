@@ -2095,6 +2095,7 @@ a.weather {
 }
 
 /* ---------- Disease Detection ---------- */
+/* Diagnosis Entries: New Health Check card, then Recent Scans */
 .view--scan {
   background: var(--app-bg);
 }
@@ -2103,51 +2104,136 @@ a.weather {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: var(--space-4) var(--space-5) var(--space-6);
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-5) var(--space-6);
 }
 
-.scan-content {
-  flex: 1;
+.scan-check {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: 0 6px 18px rgba(12, 40, 20, 0.08);
 }
 
-.scan-crop {
-  align-self: stretch;
+.scan-check__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.scan-check__title svg {
+  width: 22px;
+  height: 22px;
+  color: var(--primary-green-dark);
+}
+
+.scan-check__text {
+  margin-top: calc(var(--space-2) * -1);
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.scan-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.scan-picker[hidden] {
+  display: none;
+}
+
+.scan-picker:focus-within {
+  box-shadow: var(--focus-ring);
+}
+
+.scan-picker__label {
   font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--text);
+  color: var(--text-muted);
 }
 
-.scan-frame {
-  position: relative;
+.scan-picker__select {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 32px 0 0;
+  border: 0;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' stroke='%2313261a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") no-repeat right 4px center / 18px;
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.scan-picker__select:focus {
+  outline: none;
+}
+
+.scan-actions {
   display: grid;
-  place-items: center;
-  width: min(100%, 260px);
-  aspect-ratio: 4 / 5;
-  border: 4px solid var(--primary-green-light);
-  border-radius: 18px;
-  background: #1c2a1b; /* the camera view stays dark, so its hint text stays readable */
-  overflow: hidden;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
 }
 
-.scan-frame__photo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.scan-frame__hint {
-  padding: var(--space-5);
+.scan-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 104px;
+  padding: var(--space-3);
+  border: 2px solid var(--primary-green);
+  border-radius: var(--radius-md);
   font-size: var(--fs-sm);
-  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   text-align: center;
+  cursor: pointer;
+}
+
+.scan-action svg {
+  width: 34px;
+  height: 34px;
+}
+
+.scan-action--camera {
+  border-color: transparent;
+  background: var(--primary-gradient);
+  color: var(--text-on-dark);
+  box-shadow: var(--shadow-btn);
+}
+
+.scan-action--upload {
+  background: var(--surface);
+  color: var(--primary-green-dark);
+}
+
+.scan-action:focus-within {
+  box-shadow: var(--focus-ring);
+}
+
+.scan-action:has(:disabled) {
+  opacity: 0.55;
+  cursor: progress;
 }
 
 .scan-status {
@@ -2157,85 +2243,175 @@ a.weather {
   text-align: center;
 }
 
+.scan-status:empty {
+  min-height: 0;
+}
+
 .scan-status[data-tone="error"] {
   color: var(--danger);
 }
 
-.scan-upload {
-  display: inline-flex;
+.scan-history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.scan-history__head {
+  display: flex;
   align-items: center;
-  gap: var(--space-2);
-  min-height: 44px;
-  padding: 0 var(--space-5);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  border: 1px solid var(--border); /* outline on the light background */
-  font-size: var(--fs-sm);
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.scan-history__title {
+  font-size: var(--fs-md);
   font-weight: 600;
+  color: var(--text-strong);
+}
+
+.scan-history__all {
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  margin-right: calc(var(--space-2) * -1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.scan-history__all:hover {
+  color: var(--primary-green-dark);
+}
+
+.scan-history__note {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.scan-history__note:empty {
+  display: none;
+}
+
+.scan-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scan-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 4px 12px rgba(12, 40, 20, 0.07);
+  font: inherit;
+  text-align: left;
   color: var(--text-strong);
   cursor: pointer;
 }
 
-.scan-upload svg {
-  width: 20px;
-  height: 20px;
+.scan-card:hover {
+  border-color: var(--primary-green);
 }
 
-.scan-shutter {
-  display: block;
-  width: 76px;
-  height: 76px;
-  border: 4px solid var(--border-strong);
-  border-radius: 50%;
-  background: var(--surface) content-box;
-  padding: 4px;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-}
-
-.scan-upload:has(:disabled),
-.scan-shutter:has(:disabled) {
-  opacity: 0.5;
-  cursor: progress;
-}
-
-.scan-upload:focus-within,
-.scan-shutter:focus-within {
-  box-shadow: var(--focus-ring);
-}
-
-.demo-switch {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-1) var(--space-3);
-  margin: auto 0 0;
-  padding: var(--space-2) var(--space-3);
-  border: 1px dashed var(--border-strong);
+.scan-card__thumb {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
   border-radius: var(--radius-sm);
-  font-size: var(--fs-xs);
-  color: var(--text);
+  background: linear-gradient(160deg, #5c8f4a, #2e5a2c);
+  overflow: hidden;
 }
 
-.demo-switch legend {
-  padding: 0 var(--space-1);
-  font-size: 0.625rem;
+.scan-card__thumb svg {
+  width: 28px;
+  height: 28px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.scan-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scan-card__thumb [hidden] {
+  display: none;
+}
+
+.scan-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.scan-card__meta {
+  overflow: hidden;
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.scan-card__meta [data-tag] {
   text-transform: uppercase;
 }
 
-.demo-switch label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 32px;
-  cursor: pointer;
+.scan-card__title {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
-.demo-switch label:has(:disabled) {
-  opacity: 0.45;
-  cursor: not-allowed;
+.scan-card__status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.scan-card__status svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.scan-card[data-result="diseased"] .scan-card__status {
+  color: #b3261e;
+}
+
+.scan-card[data-result="healthy"] .scan-card__status {
+  color: var(--primary-green-dark);
+}
+
+.scan-card__chevron {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  color: var(--text-muted);
 }
 
 /* Results */
@@ -2350,10 +2526,17 @@ a.weather {
   color: var(--text-strong);
 }
 
-.result-source {
-  margin-top: var(--space-2);
+.result-step-source {
+  display: block;
+  margin-top: 2px;
   font-size: var(--fs-xs);
   font-style: italic;
+  color: var(--text-muted);
+}
+
+.result-local {
+  margin-top: calc(var(--space-3) * -1);
+  font-size: var(--fs-sm);
   color: var(--text-muted);
 }
 

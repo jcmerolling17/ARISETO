@@ -19,9 +19,16 @@ dependencies = [
     "argon2-cffi>=23.1",
     "httpx2>=2.13",
     "apscheduler>=3.10,<4",
+    "python-multipart>=0.0.9",
+    "pillow>=10.4",
 ]
 
 [project.optional-dependencies]
+# The disease detection model; without it the API runs and POST /diagnoses answers 503.
+# Match the TensorFlow version the model team trains with (Keras 3 .keras files).
+ml = [
+    "tensorflow==2.20.*",
+]
 dev = [
     "pytest>=8.3",
     "ruff>=0.6",
@@ -47,4 +54,10 @@ known-first-party = ["app"]
 known-third-party = ["alembic"]
 
 [tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path"]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.File",
+    "fastapi.Form",
+]

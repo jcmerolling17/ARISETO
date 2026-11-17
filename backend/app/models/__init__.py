@@ -4,6 +4,7 @@ from app.models.alert import AlertRule, Notification, WeatherAlert
 from app.models.barangay import Barangay
 from app.models.crop import Crop, CropCycle, CropVariety
 from app.models.crop_calendar import CalendarTemplateTask, CropActivity
+from app.models.disease import Diagnosis, Disease, Treatment
 from app.models.expense import Expense, ExpenseCategory, HarvestRecord
 from app.models.farm import Farm, FarmAssignment
 from app.models.field import FarmField
@@ -18,6 +19,8 @@ __all__ = [
     "CropActivity",
     "CropCycle",
     "CropVariety",
+    "Diagnosis",
+    "Disease",
     "Expense",
     "ExpenseCategory",
     "Farm",
@@ -25,6 +28,7 @@ __all__ = [
     "FarmField",
     "HarvestRecord",
     "Notification",
+    "Treatment",
     "User",
     "WeatherAlert",
     "WeatherLog",

@@ -184,6 +184,10 @@
       <path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .9-1 1.6v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
       <circle cx="12" cy="16.8" r="1.1" fill="currentColor"/>
     </symbol>
+    <symbol id="icon-camera" viewBox="0 0 24 24">
+      <path d="M4.5 7.5h3l1.6-2.5h5.8l1.6 2.5h3A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5V9a1.5 1.5 0 0 1 1.5-1.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <circle cx="12" cy="13.5" r="3.6" stroke="currentColor" stroke-width="1.8" fill="none"/>
+    </symbol>
     <symbol id="icon-upload" viewBox="0 0 24 24">
       <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4.5 14.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </symbol>
@@ -2193,7 +2197,7 @@
           </li>
         </template>
       </section>
-      <!-- Disease Detection: capture (sample results: js/data/sample-disease.js) -->
+      <!-- Disease Detection: Diagnosis Entries (new scan and history) -->
       <section class="view view--app view--scan" data-view="scan" aria-labelledby="scan-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
@@ -2201,63 +2205,85 @@
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="scan-title" class="app-header__title" tabindex="-1" data-route-focus>Disease Detection</h1>
-              <p class="app-header__subtitle">Capture or upload an image of the affected plant.</p>
+              <h1 id="scan-title" class="app-header__title" tabindex="-1" data-route-focus>Disease Diagnosis Entries</h1>
+              <p class="app-header__subtitle">Keep tabs on past scans and plant health records</p>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
-          <label class="field-picker">
-            <span class="field-picker__label">Field</span>
-            <select class="field-picker__select" data-scan-field></select>
-          </label>
         </header>
 
         <div class="scan-body">
-          <div class="app-empty" data-empty hidden>
-            <svg aria-hidden="true"><use href="#icon-scan"/></svg>
-            <p>No fields yet. Set up your farm to check your crops for disease.</p>
-            <a href="#/setup" class="link">Set up your farm</a>
-          </div>
+          <section class="scan-check" aria-labelledby="scan-check-title">
+            <h2 id="scan-check-title" class="scan-check__title">
+              <svg aria-hidden="true"><use href="#icon-camera"/></svg>New Health Check
+            </h2>
+            <p class="scan-check__text">Take a clear photo of the affected plant leaf to identify the problem.</p>
 
-          <div class="scan-content" data-content>
-            <p class="scan-crop" data-scan-crop></p>
-            <div class="scan-frame">
-              <img class="scan-frame__photo" alt="" data-preview hidden>
-              <p class="scan-frame__hint" data-frame-hint>Point the camera at one affected leaf, then take the photo.</p>
+            <label class="scan-picker" data-pick="field" hidden>
+              <span class="scan-picker__label">Field</span>
+              <select class="scan-picker__select" data-scan-field></select>
+            </label>
+            <label class="scan-picker" data-pick="crop" hidden>
+              <span class="scan-picker__label">Crop</span>
+              <select class="scan-picker__select" data-scan-crop></select>
+            </label>
+
+            <div class="scan-actions">
+              <label class="scan-action scan-action--camera">
+                <svg aria-hidden="true"><use href="#icon-camera"/></svg>
+                <span>Open Camera</span>
+                <input type="file" class="sr-only" accept="image/*" capture="environment" data-camera>
+              </label>
+              <label class="scan-action scan-action--upload">
+                <svg aria-hidden="true"><use href="#icon-upload"/></svg>
+                <span>Upload Image</span>
+                <input type="file" class="sr-only" accept="image/*" data-upload>
+              </label>
             </div>
             <p class="scan-status" role="status" aria-live="polite" data-scan-status></p>
+          </section>
 
-            <label class="scan-upload">
-              <span>Upload From Gallery</span>
-              <svg aria-hidden="true"><use href="#icon-upload"/></svg>
-              <input type="file" class="sr-only" accept="image/*" data-upload>
-            </label>
-            <label class="scan-shutter">
-              <span class="sr-only">Take a photo</span>
-              <input type="file" class="sr-only" accept="image/*" capture="environment" data-camera>
-            </label>
-
-            <fieldset class="demo-switch">
-              <legend>Demo result</legend>
-              <label><input type="radio" name="demo-result" value="diseased" checked data-demo-diseased> <span>Leaf blight (corn)</span></label>
-              <label><input type="radio" name="demo-result" value="healthy"> <span>Healthy</span></label>
-              <label><input type="radio" name="demo-result" value="unrecognized"> <span>Unrecognized</span></label>
-            </fieldset>
-          </div>
+          <section class="scan-history" aria-labelledby="scan-history-title">
+            <div class="scan-history__head">
+              <h2 id="scan-history-title" class="scan-history__title">Recent Scans</h2>
+              <button type="button" class="scan-history__all" data-more hidden>View All</button>
+            </div>
+            <ul class="scan-list" data-scan-list></ul>
+            <p class="scan-history__note" role="status" aria-live="polite" data-history-status></p>
+          </section>
         </div>
+
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="scan"></nav>
+
+        <template data-scan-tpl>
+          <li>
+            <button type="button" class="scan-card" data-open>
+              <span class="scan-card__thumb">
+                <svg aria-hidden="true" data-thumb-icon><use href="#icon-leaf"/></svg>
+                <img alt="" data-thumb hidden>
+              </span>
+              <span class="scan-card__body">
+                <span class="scan-card__meta"><span data-tag></span> • <span data-time></span></span>
+                <span class="scan-card__title" data-title></span>
+                <span class="scan-card__status">
+                  <svg aria-hidden="true"><use href="#icon-alert"/></svg><span data-status></span>
+                </span>
+              </span>
+              <svg class="scan-card__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+            </button>
+          </li>
+        </template>
       </section>
 
       <!-- Disease Detection: results -->
       <section class="view view--app view--result" data-view="scan-result" aria-labelledby="result-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/scan" class="app-header__back" aria-label="Back to disease detection">
+            <a href="#/scan" class="app-header__back" aria-label="Back to diagnosis entries">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
               <p class="app-header__title">Detection Results</p>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
         </header>
 
@@ -2269,12 +2295,13 @@
         <div class="result-sheet">
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-scan"/></svg>
-            <p>No scan yet. Take a photo of a leaf to check it.</p>
+            <p data-empty-text>No scan yet. Take a photo of a leaf to check it.</p>
             <a href="#/scan" class="link">Scan a leaf</a>
           </div>
 
-          <div class="result-content" data-content>
+          <div class="result-content" data-content hidden>
             <h1 id="result-title" class="result-title" tabindex="-1" data-route-focus data-result-title></h1>
+            <p class="result-local" data-result-local hidden></p>
             <p class="result-confidence" data-result-confidence></p>
             <p class="result-for" data-result-for></p>
 
@@ -2285,7 +2312,7 @@
 
             <section class="result-block" data-block="signs">
               <h2 class="result-block__title result-block__title--warn">
-                <svg aria-hidden="true"><use href="#icon-alert"/></svg><span data-signs-title>Warning Signs</span>
+                <svg aria-hidden="true"><use href="#icon-alert"/></svg><span>Warning Signs</span>
               </h2>
               <ul class="result-list" data-signs></ul>
             </section>
@@ -2295,7 +2322,6 @@
                 <svg aria-hidden="true"><use href="#icon-check-circle"/></svg><span data-actions-title>Recommended Actions</span>
               </h2>
               <ol class="result-list result-list--numbered" data-actions></ol>
-              <p class="result-source" data-source></p>
             </section>
 
             <section class="result-why" data-block="why">

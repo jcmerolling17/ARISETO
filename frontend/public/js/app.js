@@ -48,7 +48,7 @@ function bootstrap() {
       'change-password': { title: 'Change Password' },
       'add-plot': { title: 'Add Plot' },
       weather: { title: 'Weather Tracker' },
-      scan: { title: 'Disease Detection' },
+      scan: { title: 'Disease Diagnosis Entries' },
       'scan-result': { title: 'Detection Results' },
       yield: { title: 'Yield Estimation' },
       chatbot: { title: 'Chatbot' },

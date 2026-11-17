@@ -50,6 +50,11 @@ PROTECTED = {
     ("POST", "/api/v1/cycles/{cycle_id}/activities"),
     ("PATCH", "/api/v1/activities/{activity_id}"),
     ("DELETE", "/api/v1/activities/{activity_id}"),
+    ("POST", "/api/v1/diagnoses"),
+    ("GET", "/api/v1/diagnoses"),
+    ("GET", "/api/v1/diagnoses/{diagnosis_id}"),
+    ("GET", "/api/v1/diagnoses/{diagnosis_id}/image"),
+    ("GET", "/api/v1/diseases"),
 }
 
 

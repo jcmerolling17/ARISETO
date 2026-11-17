@@ -101,25 +101,31 @@ function errorMessage(data, status) {
   return 'Request failed. Please try again.';
 }
 
-export async function request(path, { method = 'GET', body, headers = {}, auth = true, timeout = DEFAULT_TIMEOUT_MS } = {}) {
+/**
+ * body: a JSON-serializable value, or FormData for a file upload (the browser sets the
+ * multipart Content-Type). blob: true returns a successful response as a Blob (e.g. a photo).
+ */
+export async function request(path, { method = 'GET', body, headers = {}, auth = true, timeout = DEFAULT_TIMEOUT_MS, blob = false } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
   const token = auth ? tokenStore.get() : null;
+  const isForm = body instanceof FormData;
 
   try {
     const response = await fetch(`${API_BASE}${path}`, {
       method,
       headers: {
         Accept: 'application/json',
-        ...(body !== undefined && { 'Content-Type': 'application/json' }),
+        ...(body !== undefined && !isForm && { 'Content-Type': 'application/json' }),
         ...(token && { Authorization: `Bearer ${token}` }),
         ...headers,
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined || isForm ? body : JSON.stringify(body),
       credentials: 'same-origin',
       signal: controller.signal,
     });
 
+    if (blob && response.ok) return await response.blob();
     const data = await parseBody(response);
     if (!response.ok) {
       const error = new ApiError(errorMessage(data, response.status), { status: response.status, details: data });
@@ -438,6 +444,61 @@ export const crops = {
    */
   list() {
     return request('/crops');
+  },
+};
+
+const SCAN_TIMEOUT_MS = 60000; // a photo upload plus the model run, on a slow connection
+
+export const diagnoses = {
+  /**
+   * Scans a leaf photo (JPEG or PNG, at most 5 MB, at least 224 x 224 px). Send cycleId (the
+   * chosen field's current crop cycle) or cropId when no field is chosen.
+   * 201 { diagnosis_id, result_status: 'diseased'|'healthy'|'unrecognized', confidence,
+   *       crop_name, disease: { disease_id, disease_name, local_name, pathogen_type, symptoms,
+   *       description_en, description_fil, impact_en, impact_fil,
+   *       treatments: [{ step_no, treatment_type, instruction_en, instruction_fil,
+   *                      source_reference }] } or null, model_version, created_at }
+   * 404 cycle_not_found; 413 image_too_large; 415 unsupported_image_type;
+   * 422 crop_required | crop_not_found | crop_mismatch | image_too_small | image_unreadable;
+   * 503 model_unavailable
+   */
+  create({ image, cycleId = null, cropId = null }) {
+    const form = new FormData();
+    form.append('image', image, 'leaf.jpg');
+    if (cycleId != null) form.append('cycle_id', String(cycleId));
+    if (cropId != null) form.append('crop_id', String(cropId));
+    return request('/diagnoses', { method: 'POST', body: form, timeout: SCAN_TIMEOUT_MS });
+  },
+
+  /**
+   * The caller's own scans, newest first (limit 1 to 100, default 20):
+   * 200 [{ diagnosis_id, created_at, crop_name, field_name (null when no field was chosen),
+   *        result_status, disease_name, local_name, confidence }]
+   */
+  list({ limit = 20, offset = 0 } = {}) {
+    return request(`/diagnoses${queryString({ limit, offset })}`);
+  },
+
+  /** One of the caller's scans, as POST returns it. 404 diagnosis_not_found */
+  get(diagnosisId) {
+    return request(`/diagnoses/${encodeURIComponent(diagnosisId)}`);
+  },
+
+  /** The scan's photo as a Blob, fetched with the token. 404 diagnosis_not_found | image_missing */
+  image(diagnosisId) {
+    return request(`/diagnoses/${encodeURIComponent(diagnosisId)}/image`, { blob: true });
+  },
+};
+
+export const diseases = {
+  /**
+   * The disease knowledge base (any logged-in user; empty until it is imported):
+   * 200 [{ disease_id, crop_name, disease_name, local_name, model_class_label, pathogen_type,
+   *        treatment_count }]
+   * 422 crop_not_found
+   */
+  list(cropId = null) {
+    return request(`/diseases${queryString({ crop_id: cropId })}`);
   },
 };
 
