@@ -6,6 +6,8 @@ from app.api.v1.endpoints import (
     auth,
     barangays,
     crops,
+    diagnoses,
+    diseases,
     expenses,
     farms,
     harvests,
@@ -26,3 +28,5 @@ api_router.include_router(expenses.router)
 api_router.include_router(harvests.router)
 api_router.include_router(notifications.router)
 api_router.include_router(activities.router)
+api_router.include_router(diagnoses.router)
+api_router.include_router(diseases.router)

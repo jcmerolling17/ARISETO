@@ -8,3 +8,7 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .ruff_cache/
+
+# Leaf photos and model files: local only, never committed
+backend/var/
+backend/models/

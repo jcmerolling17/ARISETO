@@ -139,6 +139,34 @@ class NotificationType(enum.StrEnum):
     DISEASE_DETECTED = "disease_detected"
 
 
+class PathogenType(enum.StrEnum):
+    """DISEASE.pathogen_type (Table 11); 'pest' because armyworm is in scope."""
+
+    FUNGAL = "fungal"
+    BACTERIAL = "bacterial"
+    VIRAL = "viral"
+    PEST = "pest"
+    NUTRIENT = "nutrient"
+    UNKNOWN = "unknown"
+
+
+class TreatmentType(enum.StrEnum):
+    """TREATMENT.treatment_type (Table 12)."""
+
+    CULTURAL = "cultural"
+    BIOLOGICAL = "biological"
+    CHEMICAL = "chemical"
+    PREVENTIVE = "preventive"
+
+
+class ResultStatus(enum.StrEnum):
+    """DIAGNOSIS.result_status (Table 13)."""
+
+    DISEASED = "diseased"
+    HEALTHY = "healthy"
+    UNRECOGNIZED = "unrecognized"
+
+
 def pg_enum(enum_cls: type[enum.Enum], name: str) -> Enum:
     """A named PostgreSQL enum storing the members' lowercase values."""
     return Enum(
@@ -166,3 +194,6 @@ alert_operator = pg_enum(AlertOperator, "alert_operator")
 alert_severity = pg_enum(AlertSeverity, "alert_severity")
 alert_aggregation = pg_enum(AlertAggregation, "alert_aggregation")
 notification_type = pg_enum(NotificationType, "notification_type")
+pathogen_type = pg_enum(PathogenType, "pathogen_type")
+treatment_type = pg_enum(TreatmentType, "treatment_type")
+result_status = pg_enum(ResultStatus, "result_status")

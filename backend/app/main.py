@@ -1,14 +1,25 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
+from app.services import disease_model
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    # The disease model is loaded once here; without it the API still starts (503 on scans).
+    disease_model.load_at_startup()
+    yield
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="ARISETO API", version="0.1.0")
+    app = FastAPI(title="ARISETO API", version="0.1.0", lifespan=lifespan)
     register_error_handlers(app)
     app.include_router(api_router, prefix="/api/v1")
 

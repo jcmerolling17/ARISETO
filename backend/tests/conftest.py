@@ -100,6 +100,28 @@ def no_real_weather(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
 
+@pytest.fixture(autouse=True)
+def no_real_disease_model(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterator[None]:
+    """Tests never load a real disease model or write to backend/var: the DISEASE_* settings
+    from .env are cleared (disease detection off, 503) and leaf photos go to a temporary
+    folder. Tests that scan use the fake_predictor fixture."""
+    from app.services import disease_model
+
+    settings = get_settings()
+    for name in (
+        "disease_model_path",
+        "disease_labels_path",
+        "disease_model_version",
+        "disease_confidence_threshold",
+    ):
+        monkeypatch.setattr(settings, name, None)
+    monkeypatch.setattr(settings, "leaf_image_dir", tmp_path / "leaf_images")
+    disease_model.reset()
+    yield
+    disease_model.reset()
+    app.dependency_overrides.clear()
+
+
 @pytest.fixture
 def client() -> Iterator[TestClient]:
     with TestClient(app) as test_client:

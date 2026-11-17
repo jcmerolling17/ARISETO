@@ -1,10 +1,11 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import SecretStr
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+BACKEND_DIR = REPO_ROOT / "backend"
 
 
 class Settings(BaseSettings):
@@ -26,6 +27,38 @@ class Settings(BaseSettings):
     # Optional so the API starts without it; weather fetching then reports missing_key.
     # SecretStr keeps the value out of reprs and logs.
     openweathermap_api_key: SecretStr | None = None
+
+    # Disease detection model (Section 6, "Disease detection runtime (Phase 10)"). Read as
+    # text and checked when the model loads, so a missing or bad value never stops the API:
+    # disease detection is then off and POST /diagnoses answers 503 model_unavailable.
+    disease_model_path: str | None = None
+    disease_labels_path: str | None = None
+    disease_model_version: str | None = None
+    disease_confidence_threshold: str | None = None
+    # Leaf photos, stored as leaf/YYYY/MM/<diagnosis_id>.<ext> under this folder.
+    leaf_image_dir: Path = BACKEND_DIR / "var" / "leaf_images"
+
+    @field_validator(
+        "disease_model_path",
+        "disease_labels_path",
+        "disease_model_version",
+        "disease_confidence_threshold",
+        mode="before",
+    )
+    @classmethod
+    def _empty_is_unset(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator("leaf_image_dir", mode="before")
+    @classmethod
+    def _leaf_dir(cls, value: object) -> object:
+        """Empty means the default; a relative path is relative to backend/."""
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return BACKEND_DIR / "var" / "leaf_images"
+        path = Path(str(value).strip())
+        return path if path.is_absolute() else BACKEND_DIR / path
 
     @property
     def is_development(self) -> bool:

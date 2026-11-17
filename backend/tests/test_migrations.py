@@ -404,3 +404,34 @@ def test_0008_upgrade_downgrade_upgrade(db) -> None:
         command.upgrade(config, "head")
 
     assert _weather_id_rule() == ("YES", "n")
+
+
+DISEASE_TABLES = {"disease", "treatment", "diagnosis"}
+DISEASE_ENUMS = ("pathogen_type", "treatment_type", "result_status")
+
+
+def _enum_types() -> set[str]:
+    with engine.connect() as connection:
+        return set(
+            connection.execute(
+                text("SELECT typname FROM pg_type WHERE typname = ANY(:names)"),
+                {"names": list(DISEASE_ENUMS)},
+            ).scalars()
+        )
+
+
+def test_0009_upgrade_downgrade_upgrade(db) -> None:
+    db.close()
+    config = alembic_config()
+    assert DISEASE_TABLES <= _tables()
+    assert _enum_types() == set(DISEASE_ENUMS)
+
+    command.downgrade(config, "0008")
+    try:
+        assert not DISEASE_TABLES & _tables()
+        assert _enum_types() == set()
+    finally:
+        command.upgrade(config, "head")
+
+    assert DISEASE_TABLES <= _tables()
+    assert _columns("disease") >= {"description_en", "description_fil", "impact_en", "impact_fil"}
