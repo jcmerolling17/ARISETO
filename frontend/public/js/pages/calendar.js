@@ -51,7 +51,6 @@ const MESSAGES = {
   undone: 'Task marked as not done.',
   skipped: 'Task skipped.',
   deleted: 'Task deleted.',
-  chatbotSoon: 'Coming soon: ask the chatbot about your calendar.',
   deleteConfirm: (title) => `Delete "${title}"?`,
   // Error codes of the activity endpoints, as short plain messages.
   cycle_not_found: 'This crop cycle could not be found. Go back and try again.',
@@ -381,11 +380,6 @@ function mountCalendar() {
     const first = calendar?.items.find((t) => t.scheduled_date.startsWith(month.value));
     selectedDay = first ? parseISODate(first.scheduled_date) : new Date(year, mon - 1, 1);
     render();
-  });
-
-  view.querySelector('[data-chat-soon]').addEventListener('click', (event) => {
-    event.preventDefault();
-    showToast(MESSAGES.chatbotSoon);
   });
 
   reloadWhenVisible(view, () => reload());

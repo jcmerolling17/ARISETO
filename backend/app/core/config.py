@@ -35,6 +35,12 @@ class Settings(BaseSettings):
     disease_labels_path: str | None = None
     disease_model_version: str | None = None
     disease_confidence_threshold: str | None = None
+    # Chatbot intent model (Section 6, "Chatbot runtime (Phase 12)"), read the same way: without
+    # it the API runs and POST /chat/messages answers 503 model_unavailable.
+    chatbot_model_path: str | None = None
+    chatbot_labels_path: str | None = None
+    chatbot_model_version: str | None = None
+    chatbot_confidence_threshold: str | None = None
     # Leaf photos, stored as leaf/YYYY/MM/<diagnosis_id>.<ext> under this folder.
     leaf_image_dir: Path = BACKEND_DIR / "var" / "leaf_images"
 
@@ -43,6 +49,10 @@ class Settings(BaseSettings):
         "disease_labels_path",
         "disease_model_version",
         "disease_confidence_threshold",
+        "chatbot_model_path",
+        "chatbot_labels_path",
+        "chatbot_model_version",
+        "chatbot_confidence_threshold",
         mode="before",
     )
     @classmethod

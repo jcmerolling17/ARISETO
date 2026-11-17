@@ -2,6 +2,7 @@
 
 from app.models.alert import AlertRule, Notification, WeatherAlert
 from app.models.barangay import Barangay
+from app.models.chat import ChatIntent, ChatMessage, ChatSession
 from app.models.crop import Crop, CropCycle, CropVariety
 from app.models.crop_calendar import CalendarTemplateTask, CropActivity
 from app.models.disease import Diagnosis, Disease, Treatment
@@ -15,6 +16,9 @@ __all__ = [
     "AlertRule",
     "Barangay",
     "CalendarTemplateTask",
+    "ChatIntent",
+    "ChatMessage",
+    "ChatSession",
     "Crop",
     "CropActivity",
     "CropCycle",

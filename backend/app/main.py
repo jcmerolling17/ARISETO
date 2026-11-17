@@ -7,13 +7,14 @@ from fastapi.staticfiles import StaticFiles
 from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
-from app.services import disease_model
+from app.services import chat_model, disease_model
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    # The disease model is loaded once here; without it the API still starts (503 on scans).
+    # The models are loaded once here; without them the API still starts (503 on those calls).
     disease_model.load_at_startup()
+    chat_model.load_at_startup()
     yield
 
 

@@ -435,3 +435,29 @@ def test_0009_upgrade_downgrade_upgrade(db) -> None:
 
     assert DISEASE_TABLES <= _tables()
     assert _columns("disease") >= {"description_en", "description_fil", "impact_en", "impact_fil"}
+
+
+CHAT_TABLES = {"chat_intent", "chat_session", "chat_message"}
+
+
+def _has_chat_sender_type() -> bool:
+    with engine.connect() as connection:
+        return connection.execute(
+            text("SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'chat_sender')")
+        ).scalar()
+
+
+def test_0010_upgrade_downgrade_upgrade(db) -> None:
+    db.close()
+    config = alembic_config()
+    assert CHAT_TABLES <= _tables()
+
+    command.downgrade(config, "0009")
+    try:
+        assert not CHAT_TABLES & _tables()
+        assert not _has_chat_sender_type()
+    finally:
+        command.upgrade(config, "head")
+
+    assert CHAT_TABLES <= _tables()
+    assert _has_chat_sender_type()

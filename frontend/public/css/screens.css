@@ -214,25 +214,6 @@
   height: 18px;
 }
 
-/* A feature not built yet: looks like a disabled button, still shows "Coming soon" on tap. */
-.chat-link--soon {
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  text-decoration: none;
-  color: var(--text); /* 9:1 on white */
-  cursor: not-allowed;
-}
-
-.soon-tag {
-  padding: 1px 6px;
-  border-radius: var(--radius-pill);
-  background: #eef2ef;
-  font-size: 0.625rem;
-  letter-spacing: 0.04em;
-  color: var(--text-muted); /* 5:1 on #eef2ef */
-}
-
 .icon-plain {
   display: grid;
   place-items: center;
@@ -2785,6 +2766,28 @@ a.weather {
 
 .chat-msg--user .chat-msg__time {
   text-align: right;
+}
+
+.chat-msg__source {
+  margin-top: 4px;
+  font-size: 0.6875rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.chat-status {
+  font-size: var(--fs-sm);
+  color: var(--text-strong);
+  text-align: center;
+}
+
+.chat-status:empty {
+  display: none;
+}
+
+.chat-status[data-tone="error"] {
+  color: var(--danger);
 }
 
 .chat-msg__chips {

@@ -167,6 +167,13 @@ class ResultStatus(enum.StrEnum):
     UNRECOGNIZED = "unrecognized"
 
 
+class ChatSender(enum.StrEnum):
+    """CHAT_MESSAGE.sender (Table 22)."""
+
+    USER = "user"
+    BOT = "bot"
+
+
 def pg_enum(enum_cls: type[enum.Enum], name: str) -> Enum:
     """A named PostgreSQL enum storing the members' lowercase values."""
     return Enum(
@@ -197,3 +204,4 @@ notification_type = pg_enum(NotificationType, "notification_type")
 pathogen_type = pg_enum(PathogenType, "pathogen_type")
 treatment_type = pg_enum(TreatmentType, "treatment_type")
 result_status = pg_enum(ResultStatus, "result_status")
+chat_sender = pg_enum(ChatSender, "chat_sender")
