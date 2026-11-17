@@ -502,6 +502,40 @@ export const diseases = {
   },
 };
 
+export const chat = {
+  /**
+   * Asks the chatbot. Leave out sessionId to start a new conversation; farmId is the farm
+   * used for the farm-data answers (weather check, today's tasks).
+   * 201 { session_id, user_message: { message_id, message_text, created_at },
+   *       reply: { message_id, message_text, intent_tag (null for the fallback), confidence,
+   *                source_reference, created_at } }
+   * 403 not_farm_member; 404 session_not_found; 422 message_empty | message_too_long;
+   * 503 model_unavailable
+   */
+  send({ message, sessionId = null, farmId = null }) {
+    const body = { message };
+    if (sessionId != null) body.session_id = sessionId;
+    if (farmId != null) body.farm_id = farmId;
+    return request('/chat/messages', { method: 'POST', body });
+  },
+
+  /** The caller's conversations, latest activity first (limit 1 to 50, default 10):
+   * 200 [{ session_id, started_at, last_message_at, last_message_text }] */
+  sessions({ limit = 10 } = {}) {
+    return request(`/chat/sessions${queryString({ limit })}`);
+  },
+
+  /**
+   * A conversation's messages, oldest first (limit 1 to 200, default 50):
+   * 200 [{ message_id, sender: 'user'|'bot', message_text, intent_tag, confidence,
+   *        source_reference, created_at }]
+   * 404 session_not_found
+   */
+  messages(sessionId, { limit = 50, offset = 0 } = {}) {
+    return request(`/chat/sessions/${encodeURIComponent(sessionId)}/messages${queryString({ limit, offset })}`);
+  },
+};
+
 export const barangays = {
   /**
    * Barangays of one Occidental Mindoro municipality (public; needed during sign-up):

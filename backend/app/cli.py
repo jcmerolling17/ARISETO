@@ -44,6 +44,21 @@ Report whether the disease model loads (DISEASE_* settings in .env), how many la
 and which labels have no DISEASE row:
 
     python -m app.cli check-model
+
+Load the chatbot intents from the team's intents.csv, in one transaction (added or updated by
+intent_tag; rows not in the file stay; any bad row rejects the file). --dry-run checks only:
+
+    python -m app.cli import-intents intents.csv [--dry-run]
+
+Train the chatbot's intent model from examples.csv on this machine (needs TensorFlow:
+pip install -e ".[ml]"), and write intent_model.keras and labels.json to a folder:
+
+    python -m app.cli train-intents examples.csv --out models/chatbot
+
+Report whether the chatbot model loads (CHATBOT_* settings in .env), its labels, and which
+labels have no active CHAT_INTENT row:
+
+    python -m app.cli check-chatbot
 """
 
 import argparse
@@ -61,8 +76,11 @@ from app.services import (
     alert_service,
     auth_service,
     calendar_service,
+    chat_model,
     disease_model,
     disease_service,
+    intent_service,
+    intent_training,
     reminder_service,
     seed_service,
     weather_fetch_service,
@@ -237,6 +255,84 @@ def _check_model(_args: argparse.Namespace) -> int:
     return 0 if status.predictor is not None else 1
 
 
+def _import_intents(args: argparse.Namespace) -> int:
+    with SessionLocal() as db:
+        try:
+            result = intent_service.import_intents(db, Path(args.intents_csv), dry_run=args.dry_run)
+        except intent_service.ImportFileError as exc:
+            print("Nothing imported:", file=sys.stderr)
+            for error in exc.errors:
+                print(f"  {error}", file=sys.stderr)
+            return 1
+    prefix = "Dry run, nothing saved: would import" if args.dry_run else "Imported"
+    print(
+        f"{prefix} {result.added + result.updated} intents "
+        f"({result.added} added, {result.updated} updated)."
+    )
+    return 0
+
+
+def _confidence_range(values: tuple[float, float] | None) -> str:
+    return "none" if values is None else f"{values[0]:.4f} to {values[1]:.4f}"
+
+
+def _train_intents(args: argparse.Namespace) -> int:
+    print("Training the intent model; this takes about a minute...")
+    try:
+        report = intent_training.train(Path(args.examples_csv), Path(args.out))
+    except intent_service.ImportFileError as exc:
+        print("Not trained:", file=sys.stderr)
+        for error in exc.errors:
+            print(f"  {error}", file=sys.stderr)
+        return 1
+    except intent_training.TensorFlowMissing:
+        print(
+            'TensorFlow is not installed. Install it with: pip install -e ".[ml]" (in backend)',
+            file=sys.stderr,
+        )
+        return 1
+
+    print(
+        f"Intents: {len(report.labels)}; examples: {report.train_count} for training, "
+        f"{report.test_count} held out."
+    )
+    print(f"Held-out accuracy: {report.accuracy:.1%}")
+    print(f"Confidence of right answers: {_confidence_range(report.right_confidence)}")
+    print(f"Confidence of wrong answers: {_confidence_range(report.wrong_confidence)}")
+    for text, expected, predicted, confidence in report.mistakes:
+        print(f"  wrong: {text!r} is {expected}, got {predicted} ({confidence:.4f})")
+    print(f"Saved {report.model_path} and {report.labels_path}.")
+    print("Set CHATBOT_MODEL_PATH and CHATBOT_LABELS_PATH in .env to use them.")
+    return 0
+
+
+def _check_chatbot(_args: argparse.Namespace) -> int:
+    status = chat_model.load()
+    if status.predictor is None:
+        print(f"Model not loaded: {status.reason}")
+    else:
+        print(
+            f"Model loaded: version {status.predictor.version}, "
+            f"threshold {status.predictor.threshold:g}."
+        )
+    if status.labels is None:
+        return 1
+
+    print(f"Labels ({len(status.labels)}): {', '.join(status.labels)}")
+    with SessionLocal() as db:
+        active = intent_service.active_tags(db)
+    missing = [label for label in status.labels if label not in active]
+    if missing:
+        print(
+            f"Labels with no active CHAT_INTENT row ({len(missing)}; answered with the fallback):"
+        )
+        for label in missing:
+            print(f"  {label}")
+    else:
+        print("Every label has an active CHAT_INTENT row.")
+    return 0 if status.predictor is not None else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -294,6 +390,27 @@ def main(argv: list[str] | None = None) -> int:
         "check-model", help="Report whether the disease model loads and which labels lack a row"
     )
     check_model.set_defaults(handler=_check_model)
+
+    import_intents = commands.add_parser(
+        "import-intents", help="Load the chatbot intents from the team's intents.csv"
+    )
+    import_intents.add_argument("intents_csv")
+    import_intents.add_argument(
+        "--dry-run", action="store_true", help="Check and count only; save nothing"
+    )
+    import_intents.set_defaults(handler=_import_intents)
+
+    train_intents = commands.add_parser(
+        "train-intents", help="Train the chatbot's intent model from examples.csv (offline)"
+    )
+    train_intents.add_argument("examples_csv")
+    train_intents.add_argument("--out", required=True, help="Folder for the model and labels")
+    train_intents.set_defaults(handler=_train_intents)
+
+    check_chatbot = commands.add_parser(
+        "check-chatbot", help="Report whether the chatbot model loads and which labels lack a row"
+    )
+    check_chatbot.set_defaults(handler=_check_chatbot)
 
     args = parser.parse_args(argv)
     return args.handler(args)

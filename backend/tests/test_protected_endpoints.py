@@ -55,6 +55,9 @@ PROTECTED = {
     ("GET", "/api/v1/diagnoses/{diagnosis_id}"),
     ("GET", "/api/v1/diagnoses/{diagnosis_id}/image"),
     ("GET", "/api/v1/diseases"),
+    ("POST", "/api/v1/chat/messages"),
+    ("GET", "/api/v1/chat/sessions"),
+    ("GET", "/api/v1/chat/sessions/{session_id}/messages"),
 }
 
 

@@ -5,6 +5,7 @@ from app.api.v1.endpoints import (
     admin,
     auth,
     barangays,
+    chat,
     crops,
     diagnoses,
     diseases,
@@ -30,3 +31,4 @@ api_router.include_router(notifications.router)
 api_router.include_router(activities.router)
 api_router.include_router(diagnoses.router)
 api_router.include_router(diseases.router)
+api_router.include_router(chat.router)

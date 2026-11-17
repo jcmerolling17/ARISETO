@@ -972,10 +972,9 @@
               <p class="muted-note" data-week-empty hidden>No tasks for this field yet. Add one from Manage All Tasks.</p>
             </section>
 
-            <a href="#/chatbot" class="chat-link chat-link--soon" aria-disabled="true" data-chat-soon>
+            <a href="#/chatbot" class="chat-link">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
               <span>Ask the chatbot about this</span>
-              <span class="soon-tag">Coming soon</span>
             </a>
           </div>
         </div>
@@ -2413,7 +2412,7 @@
           </li>
         </template>
       </section>
-      <!-- Chatbot (sample data: js/data/sample-chatbot.js) -->
+      <!-- Chatbot -->
       <section class="view view--app view--chat" data-view="chatbot" aria-labelledby="chat-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
@@ -2424,13 +2423,13 @@
               <h1 id="chat-title" class="app-header__title" tabindex="-1" data-route-focus>Chatbot</h1>
               <p class="app-header__subtitle">Get instant answers to your farming questions.</p>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
         </header>
 
         <div class="chat-body">
           <ol class="chat-log" data-chat-log aria-live="polite" aria-label="Conversation"></ol>
           <p class="chat-empty" data-chat-empty hidden>Ask a question about your farm, or tap a topic below.</p>
+          <p class="chat-status" role="status" aria-live="polite" data-chat-status></p>
         </div>
 
         <div class="chat-compose">
@@ -2455,6 +2454,7 @@
             <img class="chat-msg__avatar" src="assets/icons/logo-badge.png" alt="" width="36" height="36" data-avatar>
             <div class="chat-msg__content">
               <p class="chat-msg__bubble" data-text></p>
+              <p class="chat-msg__source" data-source hidden></p>
               <div class="chat-msg__chips" data-msg-chips hidden></div>
               <p class="chat-msg__time" data-time></p>
             </div>
