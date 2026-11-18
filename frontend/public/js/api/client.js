@@ -248,6 +248,21 @@ export const farms = {
   weather(farmId) {
     return request(`/farms/${encodeURIComponent(farmId)}/weather`);
   },
+
+  /**
+   * The owner's farm report for one season (DFD 7.5); filters: { season, season_year }
+   * (sent together; without them, the current season).
+   * 200 { farm_name, season, season_year, fields: [{ field_name, crop_name, variety_name,
+   *       area_ha, planting_date, status, expenses_php, harvest_kg, gross_income_php,
+   *       net_profit_php, actual_yield_t_ha (null before the first harvest),
+   *       task_completion_pct, scans: { diseased, healthy, unrecognized }, top_disease }],
+   *       totals: { area_ha, expenses_php, whole_farm_expenses_php, harvest_kg,
+   *       gross_income_php, net_profit_php } }; the totals match summary().
+   * 403 not_farm_owner, not_farm_member; 422 season_incomplete
+   */
+  report(farmId, filters) {
+    return request(`/farms/${encodeURIComponent(farmId)}/report${queryString(filters)}`);
+  },
 };
 
 /** '?a=1&b=2' from the set (non-null, non-empty) values; '' when there are none. */
@@ -544,5 +559,58 @@ export const barangays = {
    */
   list(municipality) {
     return request(`/barangays?municipality=${encodeURIComponent(municipality)}`, { auth: false });
+  },
+};
+
+export const admin = {
+  /**
+   * Accounts newest first; filters: { status ('pending' | 'active' | 'deactivated'),
+   * deletion_requested (true: requests not yet processed), role ('member' | 'coop_admin'),
+   * q (name, mobile or member number), limit (default 50, at most 200), offset }.
+   * 200 [{ user_id, first_name, last_name, mobile_no, email, member_no, municipality,
+   *        barangay_name, role, account_status, created_at, deletion_requested_at }]
+   * 403 not_admin
+   */
+  users(filters) {
+    return request(`/admin/users${queryString(filters)}`);
+  },
+
+  /** 200 { pending, active, deactivated, deletion_requested }: member accounts. 403 not_admin */
+  counts() {
+    return request('/admin/users/counts');
+  },
+
+  /**
+   * Approve ('active') or reject or deactivate ('deactivated') an account.
+   * 200 { user_id, account_status }
+   * 403 not_admin; 404 user_not_found; 409 cannot_deactivate_self | last_active_admin
+   */
+  setStatus(userId, accountStatus) {
+    return request(`/admin/users/${encodeURIComponent(userId)}/status`, {
+      method: 'PATCH',
+      body: { account_status: accountStatus },
+    });
+  },
+
+  /**
+   * Process a deletion request: deactivates the account and removes its personal details;
+   * farm records stay. Processing again changes nothing.
+   * 200 { user_id, account_status: 'deactivated' }
+   * 403 not_admin; 404 user_not_found;
+   * 409 no_deletion_request | cannot_deactivate_self | last_active_admin
+   */
+  processDeletion(userId) {
+    return request(`/admin/users/${encodeURIComponent(userId)}/process-deletion`, { method: 'POST' });
+  },
+
+  /**
+   * The cooperative report (DFD 7.6); filters: { season, season_year, municipality }.
+   * 200 { season, season_year, active_members, farms, by_crop: [{ crop_name, cycles, area_ha,
+   *       harvested_cycles, harvest_kg, avg_yield_t_ha }], diseases: [{ crop_name,
+   *       disease_name, scans }], scans: { diseased, healthy, unrecognized } }
+   * 403 not_admin; 422 season_incomplete | unknown_municipality
+   */
+  cooperativeReport(filters) {
+    return request(`/admin/reports/cooperative${queryString(filters)}`);
   },
 };

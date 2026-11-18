@@ -32,3 +32,16 @@ def cycle_season_year(season: CropSeason, planting_date: date) -> int:
     if season == CropSeason.DRY and planting_date.month <= 5:
         return planting_date.year - 1
     return planting_date.year
+
+
+def season_dates(season: CropSeason, season_year: int) -> tuple[date, date]:
+    """First day of the season and the first day after it: wet runs June 1 to November 30,
+    dry December 1 to May 31 of the next year."""
+    if season == CropSeason.WET:
+        return date(season_year, 6, 1), date(season_year, 12, 1)
+    return date(season_year, 12, 1), date(season_year + 1, 6, 1)
+
+
+def philippine_midnight(day: date) -> datetime:
+    """The moment a Philippine date starts, as an aware datetime."""
+    return datetime(day.year, day.month, day.day, tzinfo=PHILIPPINE_TIME)

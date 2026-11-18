@@ -12,6 +12,7 @@ import {
 } from '../utils/form.js';
 import { saveJSON } from '../utils/store.js';
 import { mountBarangayPicker } from '../utils/barangay-picker.js';
+import { rememberUser } from '../utils/session.js';
 
 const MAX_AREA_HA = 999999.9999; // FARM.total_area_ha NUMERIC(10,4)
 const MAX_FIELDS = 20;
@@ -192,7 +193,7 @@ function mountStart(router) {
       const firstName = state?.user?.first_name;
       if (firstName) {
         nameEl.textContent = firstName;
-        saveJSON('user', { first_name: firstName });
+        rememberUser({ first_name: firstName });
       }
     },
   });

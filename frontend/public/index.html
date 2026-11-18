@@ -325,6 +325,53 @@
 
           <p class="card__footer">Don't have an account? <a href="#/signup" class="link">Sign up</a></p>
         </div>
+
+        <p class="admin-entry"><a href="#/admin-login" class="link">Admin login</a></p>
+      </section>
+
+      <!-- Admin Portal login: the same POST /auth/login; a member who signs in here goes Home -->
+      <section class="view view--admin-login" data-view="admin-login" aria-labelledby="admin-login-title" hidden>
+        <div class="brand brand--compact">
+          <img class="brand__logo" src="assets/icons/logo.png" alt="ARISETO" width="236" height="256" decoding="async">
+        </div>
+
+        <div class="glass-card">
+          <h1 id="admin-login-title" class="card__title" tabindex="-1" data-route-focus>Admin Portal</h1>
+          <p class="card__subtitle">Login to your Account</p>
+
+          <form id="admin-login-form" class="form" novalidate>
+            <div class="field">
+              <label for="admin-login-identifier" class="field__label">Mobile Number / Email</label>
+              <input id="admin-login-identifier" name="identifier" class="input" type="text"
+                     inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false"
+                     placeholder="+639XXXXXXXXX or name@email.com"
+                     aria-describedby="admin-login-identifier-error" required>
+              <p id="admin-login-identifier-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="admin-login-password" class="field__label">Password</label>
+              <div class="input-group">
+                <input id="admin-login-password" name="password" class="input" type="password"
+                       autocomplete="current-password" placeholder="Enter your password"
+                       aria-describedby="admin-login-password-error" required>
+                <button type="button" class="input-group__toggle" data-toggle-password
+                        aria-controls="admin-login-password" aria-label="Show password" aria-pressed="false">
+                  <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
+                  <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
+                </button>
+              </div>
+              <p id="admin-login-password-error" class="field__error" aria-live="polite"></p>
+            </div>
+
+            <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+            <button type="submit" class="btn btn--solid btn--block">
+              <span class="btn__label">Login</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+          </form>
+        </div>
       </section>
 
       <!-- Sign up -->
@@ -1258,6 +1305,7 @@
 
             <a href="#/expense-new" class="btn btn--gradient btn--block btn--rounded">Add Expense</a>
             <a href="#/harvest-new" class="btn btn--outline btn--block btn--rounded" data-record-harvest hidden>Record Harvest</a>
+            <a href="#/farm-report" class="btn btn--outline btn--block btn--rounded" data-farm-report hidden>Farm report</a>
 
             <section aria-labelledby="breakdown-title">
               <h2 id="breakdown-title" class="section-title">Category Breakdown</h2>
@@ -1630,6 +1678,13 @@
               </button>
             </div>
             <ul class="field-list" data-plot-list></ul>
+            <div class="setting-list" data-farm-report hidden>
+              <a href="#/farm-report" class="setting-row">
+                <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-chart"/></svg>
+                <span class="setting-row__text"><span class="setting-row__title">Farm report</span></span>
+                <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+              </a>
+            </div>
             <div class="app-empty" data-plots-empty hidden>
               <svg aria-hidden="true"><use href="#icon-pin"/></svg>
               <p>No plots yet. Set up your farm to add your fields.</p>
@@ -2460,6 +2515,264 @@
             </div>
           </li>
         </template>
+      </section>
+
+      <!-- Farm report (DFD 7.5): the farm owner's season report -->
+      <section class="view view--app" data-view="farm-report" aria-labelledby="farm-report-title" hidden>
+        <header class="app-header">
+          <div class="app-header__row">
+            <a href="#/expenses" class="app-header__back" aria-label="Back to Farm Expenses">
+              <svg aria-hidden="true"><use href="#icon-back"/></svg>
+            </a>
+            <div class="app-header__text">
+              <h1 id="farm-report-title" class="app-header__title" tabindex="-1" data-route-focus>Farm Report</h1>
+              <p class="app-header__subtitle" data-report-subtitle></p>
+            </div>
+          </div>
+          <div class="picker-row">
+            <label class="field-picker">
+              <span class="field-picker__label">Season</span>
+              <select class="field-picker__select" data-season-picker></select>
+            </label>
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="app-empty" data-empty hidden>
+            <svg aria-hidden="true"><use href="#icon-chart"/></svg>
+            <p data-empty-text></p>
+            <a href="#/setup" class="link" data-empty-setup hidden>Set up your farm</a>
+          </div>
+
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+          <div class="app-stack" data-content hidden>
+            <section class="card report-card" aria-labelledby="report-totals-title">
+              <h2 id="report-totals-title" class="section-title">Season totals</h2>
+              <dl class="report-rows" data-totals></dl>
+            </section>
+            <p class="muted-note" data-no-cycles hidden>No crop cycles in this season.</p>
+            <div class="report-list" data-field-list></div>
+          </div>
+        </div>
+
+        <template data-field-tpl>
+          <section class="card report-card">
+            <div class="report-card__head">
+              <div>
+                <h2 class="report-card__title" data-field-name></h2>
+                <p class="report-card__meta" data-crop></p>
+              </div>
+              <span class="status-chip" data-status></span>
+            </div>
+            <dl class="report-rows" data-rows></dl>
+          </section>
+        </template>
+      </section>
+
+      <!-- Admin Portal: Admin Approval List (DFD 1.4) -->
+      <section class="view view--admin" data-view="admin" aria-labelledby="admin-title" hidden>
+        <header class="admin-bar">
+          <div class="admin-bar__brand">
+            <img src="assets/icons/logo-badge.png" alt="" width="40" height="40">
+            <div>
+              <p class="admin-bar__title">Admin Portal</p>
+              <p class="admin-bar__subtitle">Mindoro Progressive Multi-Purpose Cooperative (MPMPC)</p>
+            </div>
+          </div>
+          <nav class="admin-bar__nav" aria-label="Admin Portal">
+            <a href="#/admin" class="admin-bar__link" data-admin-nav="admin">Approval List</a>
+            <a href="#/admin-report" class="admin-bar__link" data-admin-nav="admin-report">Cooperative Report</a>
+          </nav>
+          <div class="admin-bar__user">
+            <svg aria-hidden="true"><use href="#icon-user"/></svg>
+            <span>Cooperative Admin</span>
+            <button type="button" class="admin-bar__logout" data-admin-logout>Log out</button>
+          </div>
+        </header>
+
+        <div class="admin-page">
+          <div class="admin-page__head">
+            <h1 id="admin-title" class="admin-page__title" tabindex="-1" data-route-focus>Admin Approval List</h1>
+            <p class="admin-page__subtitle">Review and approve MPMPC member sign-ups.</p>
+          </div>
+
+          <div class="admin-stats">
+            <div class="admin-stat admin-stat--pending">
+              <p class="admin-stat__label"><svg aria-hidden="true"><use href="#icon-clock"/></svg>Pending</p>
+              <p class="admin-stat__value" data-count="pending">–</p>
+              <p class="admin-stat__hint">Requires admin review</p>
+            </div>
+            <div class="admin-stat admin-stat--active">
+              <p class="admin-stat__label"><svg aria-hidden="true"><use href="#icon-check-circle"/></svg>Active</p>
+              <p class="admin-stat__value" data-count="active">–</p>
+              <p class="admin-stat__hint">MPMPC members</p>
+            </div>
+            <div class="admin-stat admin-stat--deactivated">
+              <p class="admin-stat__label"><svg aria-hidden="true"><use href="#icon-user-x"/></svg>Deactivated</p>
+              <p class="admin-stat__value" data-count="deactivated">–</p>
+              <p class="admin-stat__hint">Rejected or deactivated</p>
+            </div>
+            <div class="admin-stat admin-stat--deletion">
+              <p class="admin-stat__label"><svg aria-hidden="true"><use href="#icon-trash"/></svg>Deletion requests</p>
+              <p class="admin-stat__value" data-count="deletion_requested">–</p>
+              <p class="admin-stat__hint">Waiting to be processed</p>
+            </div>
+          </div>
+
+          <div class="admin-toolbar">
+            <label class="search-box admin-toolbar__search">
+              <svg aria-hidden="true"><use href="#icon-search"/></svg>
+              <span class="sr-only">Search accounts</span>
+              <input type="search" class="search-box__input" maxlength="100"
+                     placeholder="Search by name, mobile or member number" data-admin-search>
+            </label>
+            <div class="admin-tabs" role="tablist" aria-label="Accounts">
+              <button type="button" class="admin-tab" role="tab" data-tab="pending">Pending</button>
+              <button type="button" class="admin-tab" role="tab" data-tab="active">Approved</button>
+              <button type="button" class="admin-tab" role="tab" data-tab="deactivated">Rejected</button>
+              <button type="button" class="admin-tab" role="tab" data-tab="all">All</button>
+              <button type="button" class="admin-tab" role="tab" data-tab="deletion">Deletion requests</button>
+            </div>
+          </div>
+
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+          <div class="admin-table admin-table--users" role="table" aria-label="Member accounts">
+            <div class="admin-table__head" role="row">
+              <span role="columnheader">Applicant</span>
+              <span role="columnheader">Contact &amp; Location</span>
+              <span role="columnheader">Submission Date</span>
+              <span role="columnheader">Status</span>
+              <span role="columnheader">Actions</span>
+            </div>
+            <div class="admin-table__body" role="rowgroup" data-user-list aria-live="polite"></div>
+            <p class="admin-table__empty" data-user-empty hidden></p>
+          </div>
+          <button type="button" class="btn btn--outline btn--rounded admin-more" data-load-more hidden>Load more</button>
+        </div>
+
+        <template data-user-tpl>
+          <div class="admin-row" role="row">
+            <div class="admin-row__applicant" role="cell">
+              <span class="admin-row__avatar" aria-hidden="true"><svg><use href="#icon-user"/></svg></span>
+              <div>
+                <p class="admin-row__name" data-name></p>
+                <p class="admin-row__sub" data-member-no></p>
+              </div>
+            </div>
+            <div class="admin-row__contact" role="cell">
+              <p><svg aria-hidden="true"><use href="#icon-phone"/></svg><span data-mobile></span></p>
+              <p><svg aria-hidden="true"><use href="#icon-pin"/></svg><span data-place></span></p>
+            </div>
+            <div class="admin-row__date" role="cell">
+              <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
+              <div><p data-date></p><p class="admin-row__sub" data-time></p></div>
+            </div>
+            <div role="cell"><span class="status-chip" data-status></span></div>
+            <div class="admin-row__actions" role="cell">
+              <button type="button" class="admin-btn admin-btn--approve" data-action="approve" hidden>
+                <svg aria-hidden="true"><use href="#icon-check-circle"/></svg>Approve
+              </button>
+              <button type="button" class="admin-btn admin-btn--reject" data-action="reject" hidden>
+                <svg aria-hidden="true"><use href="#icon-close"/></svg>Reject
+              </button>
+              <button type="button" class="admin-btn admin-btn--reject" data-action="process" hidden>
+                <svg aria-hidden="true"><use href="#icon-user-x"/></svg>Process
+              </button>
+            </div>
+          </div>
+        </template>
+
+        <dialog class="admin-dialog" data-confirm-dialog aria-labelledby="admin-dialog-title">
+          <form method="dialog" class="admin-dialog__body">
+            <h2 id="admin-dialog-title" class="admin-dialog__title" data-dialog-title></h2>
+            <p class="admin-dialog__text" data-dialog-text></p>
+            <div class="admin-dialog__actions">
+              <button type="submit" value="cancel" class="btn btn--outline btn--rounded">Cancel</button>
+              <button type="submit" value="confirm" class="btn btn--solid btn--rounded admin-dialog__confirm" data-dialog-confirm></button>
+            </div>
+          </form>
+        </dialog>
+      </section>
+
+      <!-- Admin Portal: Cooperative Report (DFD 7.6) -->
+      <section class="view view--admin" data-view="admin-report" aria-labelledby="coop-report-title" hidden>
+        <header class="admin-bar">
+          <div class="admin-bar__brand">
+            <img src="assets/icons/logo-badge.png" alt="" width="40" height="40">
+            <div>
+              <p class="admin-bar__title">Admin Portal</p>
+              <p class="admin-bar__subtitle">Mindoro Progressive Multi-Purpose Cooperative (MPMPC)</p>
+            </div>
+          </div>
+          <nav class="admin-bar__nav" aria-label="Admin Portal">
+            <a href="#/admin" class="admin-bar__link" data-admin-nav="admin">Approval List</a>
+            <a href="#/admin-report" class="admin-bar__link" data-admin-nav="admin-report">Cooperative Report</a>
+          </nav>
+          <div class="admin-bar__user">
+            <svg aria-hidden="true"><use href="#icon-user"/></svg>
+            <span>Cooperative Admin</span>
+            <button type="button" class="admin-bar__logout" data-admin-logout>Log out</button>
+          </div>
+        </header>
+
+        <div class="admin-page">
+          <div class="admin-page__head">
+            <h1 id="coop-report-title" class="admin-page__title" tabindex="-1" data-route-focus>Cooperative Report</h1>
+            <p class="admin-page__subtitle">Crop health and yield across MPMPC farms.</p>
+          </div>
+
+          <div class="admin-toolbar">
+            <label class="admin-picker">
+              <span class="admin-picker__label">Season</span>
+              <select class="admin-picker__select" data-season-picker></select>
+            </label>
+            <label class="admin-picker">
+              <span class="admin-picker__label">Municipality</span>
+              <select class="admin-picker__select" data-municipality-picker></select>
+            </label>
+          </div>
+
+          <p class="form__status" role="status" aria-live="polite" data-form-status></p>
+
+          <div class="admin-stats admin-stats--three">
+            <div class="admin-stat admin-stat--active">
+              <p class="admin-stat__label"><svg aria-hidden="true"><use href="#icon-user"/></svg>Active members</p>
+              <p class="admin-stat__value" data-figure="active_members">–</p>
+            </div>
+            <div class="admin-stat admin-stat--active">
+              <p class="admin-stat__label"><svg aria-hidden="true"><use href="#icon-pin"/></svg>Farms</p>
+              <p class="admin-stat__value" data-figure="farms">–</p>
+            </div>
+            <div class="admin-stat admin-stat--active">
+              <p class="admin-stat__label"><svg aria-hidden="true"><use href="#icon-scan"/></svg>Scans (diseased / healthy / unrecognized)</p>
+              <p class="admin-stat__value" data-figure="scans">–</p>
+            </div>
+          </div>
+
+          <section class="admin-section" aria-labelledby="by-crop-title">
+            <h2 id="by-crop-title" class="section-title">By crop</h2>
+            <div class="admin-table admin-table--crops" role="table" aria-labelledby="by-crop-title">
+              <div class="admin-table__head" role="row">
+                <span role="columnheader">Crop</span>
+                <span role="columnheader">Cycles</span>
+                <span role="columnheader">Area (ha)</span>
+                <span role="columnheader">Harvested</span>
+                <span role="columnheader">Harvest (kg)</span>
+                <span role="columnheader">Avg. yield (t/ha)</span>
+              </div>
+              <div class="admin-table__body" role="rowgroup" data-crop-list></div>
+              <p class="admin-table__empty" data-crop-empty hidden>No crop cycles in this season.</p>
+            </div>
+          </section>
+
+          <section class="admin-section" aria-labelledby="diseases-title">
+            <h2 id="diseases-title" class="section-title">Diseases found</h2>
+            <ul class="admin-disease-list" data-disease-list></ul>
+            <p class="admin-table__empty" data-disease-empty hidden>No diseased scans in this season.</p>
+          </section>
+        </div>
       </section>
     </main>
 

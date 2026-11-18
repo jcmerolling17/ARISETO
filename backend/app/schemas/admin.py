@@ -46,3 +46,12 @@ class AdminUserItem(BaseModel):
     account_status: AccountStatus
     created_at: datetime
     deletion_requested_at: datetime | None
+
+
+class UserCounts(BaseModel):
+    """GET /admin/users/counts: member accounts per status and unprocessed deletion requests."""
+
+    pending: int
+    active: int
+    deactivated: int
+    deletion_requested: int

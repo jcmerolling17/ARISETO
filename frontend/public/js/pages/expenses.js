@@ -125,6 +125,7 @@ function mountExpenses(router) {
   const txEmpty = view.querySelector('[data-tx-empty]');
   const txMore = view.querySelector('[data-tx-more]');
   const recordHarvest = view.querySelector('[data-record-harvest]');
+  const farmReport = view.querySelector('[data-farm-report]');
   const tpl = (name) => view.querySelector(`template[data-${name}-tpl]`).content.firstElementChild;
   let visible = PAGE_SIZE;
   let farm = null;
@@ -294,6 +295,7 @@ function mountExpenses(router) {
       const hasFields = Boolean(farm) && loaded.fields.length > 0;
       view.querySelector('.picker-row').hidden = !hasFields;
       recordHarvest.hidden = farm?.role_on_farm !== 'owner';
+      farmReport.hidden = farm?.role_on_farm !== 'owner';
       if (!hasFields) {
         content.hidden = true;
         showEmpty(view, MESSAGES.noFarm);
