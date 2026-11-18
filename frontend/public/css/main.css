@@ -295,7 +295,7 @@ svg {
 
 /* The photo screens (Welcome, Login, Start Setup, Home) keep their original muted grey. */
 .view--welcome,
-.view[data-view="login"],
+:is(.view[data-view="login"], .view--admin-login),
 .view--setup-start,
 .view--home {
   --text-muted: #66766b;
@@ -309,17 +309,17 @@ svg {
 }
 
 .view--welcome,
-.view[data-view="login"] {
+:is(.view[data-view="login"], .view--admin-login) {
   --glass-bg: rgba(255, 255, 255, 0.6);
   --glass-border: rgba(255, 255, 255, 0.5);
   --blur: blur(6px);
 }
 
-:is(.view--welcome, .view[data-view="login"]) :is(.card__subtitle, .card__text, .card__footer) {
+:is(.view--welcome, .view[data-view="login"], .view--admin-login) :is(.card__subtitle, .card__text, .card__footer) {
   color: var(--text-strong);
 }
 
-:is(.view--welcome, .view[data-view="login"]) .card__footer .link {
+:is(.view--welcome, .view[data-view="login"], .view--admin-login) .card__footer .link {
   color: var(--text-strong);
   font-weight: 700;
   text-decoration: underline;
@@ -334,35 +334,35 @@ svg {
   background: rgba(255, 255, 255, 0.35);
 }
 
-.view[data-view="login"] .card__subtitle {
+:is(.view[data-view="login"], .view--admin-login) .card__subtitle {
   margin-top: var(--space-4);
   font-size: var(--fs-md);
   font-weight: 500;
   text-align: left;
 }
 
-.view[data-view="login"] .form {
+:is(.view[data-view="login"], .view--admin-login) .form {
   margin-top: var(--space-4);
 }
 
-.view[data-view="login"] .field__error {
+:is(.view[data-view="login"], .view--admin-login) .field__error {
   width: fit-content;
   padding: 2px var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--surface);
 }
 
-.view[data-view="login"] .form__status[data-tone="error"] {
+:is(.view[data-view="login"], .view--admin-login) .form__status[data-tone="error"] {
   background: linear-gradient(var(--danger-tint), var(--danger-tint)), var(--surface);
 }
 
-.view[data-view="login"] .form__status[data-tone="success"] {
+:is(.view[data-view="login"], .view--admin-login) .form__status[data-tone="success"] {
   background: linear-gradient(var(--primary-tint), var(--primary-tint)), var(--surface);
 }
 
 /* Welcome and Login: brand sits in the open sky, card anchored to the bottom */
 .view--welcome .brand,
-.view[data-view="login"] .brand {
+:is(.view[data-view="login"], .view--admin-login) .brand {
   flex: 1;
   justify-content: center;
 }

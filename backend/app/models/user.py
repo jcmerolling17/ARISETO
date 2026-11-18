@@ -3,7 +3,12 @@ from datetime import datetime
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Identity, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.constants import MOBILE_PATTERN, MUNICIPALITIES, sql_in_list
+from app.core.constants import (
+    DELETED_MOBILE_PATTERN,
+    MOBILE_PATTERN,
+    MUNICIPALITIES,
+    sql_in_list,
+)
 from app.db.base import Base
 from app.models.enums import (
     AccountStatus,
@@ -20,7 +25,10 @@ class User(Base):
 
     __tablename__ = "users"
     __table_args__ = (
-        CheckConstraint(f"mobile_no ~ '{MOBILE_PATTERN}'", name="mobile_no_format"),
+        CheckConstraint(
+            f"mobile_no ~ '{MOBILE_PATTERN}' OR mobile_no ~ '{DELETED_MOBILE_PATTERN}'",
+            name="mobile_no_format",
+        ),
         CheckConstraint(
             "role <> 'member' OR member_no IS NOT NULL", name="member_no_required_for_member"
         ),

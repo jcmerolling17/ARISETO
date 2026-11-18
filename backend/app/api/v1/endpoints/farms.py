@@ -1,9 +1,10 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import require_active_user
 from app.db.session import get_db
 from app.models import User
+from app.models.enums import CropSeason
 from app.schemas.farm import (
     FarmCreate,
     FarmCreated,
@@ -12,8 +13,9 @@ from app.schemas.farm import (
     FieldCreated,
     FieldSummary,
 )
+from app.schemas.report import FarmReport
 from app.schemas.weather import FarmWeather
-from app.services import farm_service, weather_fetch_service, weather_service
+from app.services import farm_service, report_service, weather_fetch_service, weather_service
 
 router = APIRouter(prefix="/farms", tags=["farms"])
 
@@ -92,3 +94,21 @@ def farm_weather(
     Errors: 401 not_authenticated; 403 account_pending | account_deactivated | not_farm_member.
     """
     return weather_service.farm_weather(db, user, farm_id)
+
+
+@router.get("/{farm_id}/report", response_model=FarmReport)
+def farm_report(
+    farm_id: int,
+    season: CropSeason | None = None,
+    season_year: int | None = Query(None, ge=1, le=9999),
+    user: User = Depends(require_active_user),
+    db: Session = Depends(get_db),
+) -> FarmReport:
+    """The farm owner's report for one season (DFD 7.5): one entry per crop cycle and the
+    totals, which match GET /farms/{farm_id}/summary. Computed on request, never stored.
+
+    Errors: 401 not_authenticated; 403 account_pending | account_deactivated,
+    not_farm_member (also for a farm that does not exist), not_farm_owner;
+    422 season_incomplete.
+    """
+    return report_service.farm_report(db, user, farm_id, season, season_year)

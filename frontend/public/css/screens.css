@@ -2933,3 +2933,628 @@ a.setting-row {
 .task-reminder .field__label {
   margin: 0;
 }
+
+/* ---------- Phase 13: Admin Portal, Cooperative Report and Farm Report ---------- */
+
+/* The Admin Portal and its login use the whole window on a desktop (the device frame widens);
+   at phone width they look like the other screens. */
+@media (min-width: 480px) {
+  body.is-wide .app-shell {
+    max-width: 1240px;
+  }
+}
+
+body.is-wide .view--admin-login .glass-card,
+body.is-wide .view--admin-login .brand {
+  width: 100%;
+  max-width: 380px;
+  margin-inline: auto;
+}
+
+/* "Admin login" under the member Login card, readable over the photo. */
+.admin-entry {
+  text-align: center;
+  font-size: var(--fs-sm);
+}
+
+.admin-entry .link {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+/* Inner admin screens: one solid background, white cards on it. */
+.view--admin {
+  gap: 0;
+  padding: 0;
+  background: var(--app-bg);
+}
+
+.admin-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  padding: max(var(--space-3), env(safe-area-inset-top)) var(--space-5) var(--space-3);
+  background: var(--primary-gradient);
+  color: var(--text-on-dark);
+}
+
+.admin-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+.admin-bar__brand img {
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.admin-bar__title {
+  font-weight: 600;
+}
+
+.admin-bar__subtitle {
+  font-size: var(--fs-xs);
+  opacity: 0.9;
+}
+
+.admin-bar__nav {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.admin-bar__link {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.admin-bar__link:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.admin-bar__link.is-active {
+  background: #fff;
+  color: var(--primary-green-dark);
+}
+
+.admin-bar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.admin-bar__user svg {
+  width: 24px;
+  height: 24px;
+}
+
+.admin-bar__logout {
+  margin-left: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  font-size: var(--fs-xs);
+}
+
+.admin-bar__logout:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5) var(--space-8);
+}
+
+.admin-page__title {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.admin-page__subtitle {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.admin-stats--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(12, 40, 20, 0.07);
+  text-align: center;
+}
+
+.admin-stat__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-align: left;
+}
+
+.admin-stat__label svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.admin-stat--pending .admin-stat__label { color: #b45309; }
+.admin-stat--active .admin-stat__label { color: var(--primary-green-dark); }
+.admin-stat--deactivated .admin-stat__label { color: var(--danger); }
+.admin-stat--deletion .admin-stat__label { color: #1d5fa8; }
+
+.admin-stat__value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-strong);
+}
+
+.admin-stat__hint {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(12, 40, 20, 0.07);
+}
+
+.admin-toolbar__search {
+  flex: 1 1 260px;
+  max-width: 420px;
+}
+
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--app-bg);
+}
+
+.admin-tab {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.admin-tab.is-active {
+  background: var(--surface);
+  color: var(--text-strong);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(12, 40, 20, 0.12);
+}
+
+.admin-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 200px;
+  max-width: 280px;
+}
+
+.admin-picker__label {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.admin-picker__select {
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font: inherit;
+  font-size: var(--fs-sm);
+  color: var(--text-strong);
+}
+
+.admin-table {
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(12, 40, 20, 0.07);
+}
+
+.admin-table--users {
+  --admin-columns: 1.4fr 1.4fr 1fr 0.9fr 1.3fr;
+}
+
+.admin-table--crops {
+  --admin-columns: 1.2fr repeat(5, 1fr);
+}
+
+.admin-table__head,
+.admin-row {
+  display: grid;
+  grid-template-columns: var(--admin-columns);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.admin-table__head {
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.admin-row {
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+
+.admin-row:last-child {
+  border-bottom: 0;
+}
+
+.admin-row__applicant,
+.admin-row__date {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.admin-row__avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--app-bg);
+  color: var(--text-muted);
+}
+
+.admin-row__avatar svg,
+.admin-row__date > svg {
+  width: 18px;
+  height: 18px;
+}
+
+.admin-row__date > svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.admin-row__name {
+  font-weight: 600;
+  color: var(--text-strong);
+  overflow-wrap: anywhere;
+}
+
+.admin-row__sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.admin-row__contact p {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.admin-row__contact svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+}
+
+.admin-row__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.admin-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.admin-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.admin-btn--approve {
+  border: 1px solid var(--primary-green-dark);
+  background: var(--primary-green-dark);
+  color: #fff;
+}
+
+.admin-btn--reject {
+  border: 1px solid var(--danger);
+  background: var(--surface);
+  color: var(--danger);
+}
+
+.admin-table__empty {
+  padding: var(--space-6) var(--space-4);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.admin-more {
+  align-self: center;
+  min-width: 200px;
+}
+
+/* Status chips on account rows and report cards. */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-3);
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.status-chip[data-status="pending"],
+.status-chip[data-status="planned"] { color: #b45309; background: #fff7e6; }
+.status-chip[data-status="active"],
+.status-chip[data-status="harvested"] { color: var(--primary-green-dark); background: var(--primary-tint); }
+.status-chip[data-status="deactivated"],
+.status-chip[data-status="failed"] { color: var(--danger); background: var(--danger-tint); }
+.status-chip[data-status="deletion"] { color: #1d5fa8; background: #eaf2fb; }
+.status-chip[data-status="removed"] { color: var(--text-muted); background: var(--app-bg); }
+
+.admin-section .section-title {
+  margin-bottom: var(--space-3);
+}
+
+.admin-disease-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(12, 40, 20, 0.07);
+}
+
+.admin-disease {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+
+.admin-disease:last-child {
+  border-bottom: 0;
+}
+
+.admin-disease__name {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.admin-disease__crop {
+  flex: 1;
+  color: var(--text-muted);
+}
+
+.admin-disease__count {
+  color: var(--text-strong);
+}
+
+.admin-dialog {
+  width: min(460px, calc(100vw - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.admin-dialog::backdrop {
+  background: rgba(12, 30, 18, 0.5);
+}
+
+.admin-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.admin-dialog__title {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.admin-dialog__text {
+  font-size: var(--fs-sm);
+}
+
+.admin-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.admin-dialog__confirm {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Phone width: cards stack, and each table row becomes a small card. */
+@media (max-width: 900px) {
+  .admin-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-stats--three {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-table__head {
+    display: none;
+  }
+
+  .admin-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  .admin-row--crop {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-row--crop [role="cell"]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+  }
+
+  .admin-row--crop [role="cell"]:first-child {
+    grid-column: 1 / -1;
+    font-weight: 600;
+    color: var(--text-strong);
+  }
+
+  .admin-row--crop [role="cell"]:first-child::before {
+    content: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .admin-page {
+    padding-inline: var(--space-4);
+  }
+
+  .admin-stat__value {
+    font-size: 1.5rem;
+  }
+
+  .admin-bar__nav {
+    width: 100%;
+  }
+}
+
+/* Farm Report: one card per crop cycle and a totals card. */
+.report-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.report-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.report-card__title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.report-card__meta {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.report-rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.report-rows dt {
+  color: var(--text-muted);
+}
+
+.report-rows dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.report-rows dd small {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.report-rows dd[data-tone="negative"] {
+  color: var(--danger);
+}

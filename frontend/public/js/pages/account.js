@@ -15,7 +15,6 @@ import {
   focusFirstInvalid,
   bindLiveErrorClearing,
 } from '../utils/form.js';
-import { saveJSON } from '../utils/store.js';
 import {
   cleanName,
   isValidEmail,
@@ -31,6 +30,7 @@ import {
   toHectares,
   toISODate,
 } from './setup.js';
+import { rememberUser } from '../utils/session.js';
 
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 128;
@@ -191,7 +191,7 @@ function mountEditProfile(router) {
     setBusy(form, true);
     try {
       const user = await users.update(changes);
-      saveJSON('user', { first_name: user.first_name });
+      rememberUser(user);
       currentPassword.value = '';
       router.navigate('profile', { replace: true, state: { message: MESSAGES.profileSaved } });
     } catch (err) {

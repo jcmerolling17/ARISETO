@@ -22,6 +22,9 @@ CROPS_IN_SCOPE: tuple[str, ...] = ("rice", "corn", "onion")
 PLANTING_WINDOW_YEARS = 2
 
 MOBILE_PATTERN = r"^\+639[0-9]{9}$"
+# A processed deletion request sets mobile_no to D<user_id> (Phase 13): no sign-up or profile
+# change can enter it, so it never logs in or clashes with a real number.
+DELETED_MOBILE_PATTERN = r"^D[0-9]{1,10}$"
 MIN_PASSWORD_LENGTH = 8
 
 

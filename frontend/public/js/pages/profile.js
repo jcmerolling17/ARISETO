@@ -3,8 +3,9 @@
 import { CROPS } from '../data/farm-options.js';
 import { auth, farms, users, ApiError } from '../api/client.js';
 import { setStatus } from '../utils/form.js';
-import { removeJSON, saveJSON } from '../utils/store.js';
+import { removeJSON } from '../utils/store.js';
 import { showToast } from '../utils/toast.js';
+import { rememberUser } from '../utils/session.js';
 
 const MESSAGES = {
   online: 'Online',
@@ -74,6 +75,7 @@ export function mountProfilePage(router) {
     plotCount.textContent = `${active} active ${active === 1 ? 'plot' : 'plots'}`;
     plotCount.hidden = active === 0;
     addPlot.hidden = farm?.role_on_farm !== 'owner';
+    view.querySelector('[data-farm-report]').hidden = farm?.role_on_farm !== 'owner';
 
     plotList.replaceChildren(...fields.map((field) => {
       const card = tpl.cloneNode(true);
@@ -100,7 +102,7 @@ export function mountProfilePage(router) {
       const fields = farm ? await farms.fields(farm.farm_id) : [];
       if (id !== requestId) return;
       firstFarm = farm;
-      saveJSON('user', { first_name: user.first_name });
+      rememberUser(user);
       renderUser(user);
       renderPlots(farm, fields ?? []);
     } catch (err) {

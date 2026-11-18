@@ -3,6 +3,7 @@
 import { auth, farms, ApiError } from '../api/client.js';
 import { MUNICIPALITIES } from '../data/farm-options.js';
 import { saveJSON, removeJSON } from '../utils/store.js';
+import { rememberUser } from '../utils/session.js';
 import { mountBarangayPicker } from '../utils/barangay-picker.js';
 import { takeLegalAnswer } from './legal.js';
 import {
@@ -135,9 +136,13 @@ function loginErrorMessage(err) {
   return err.message;
 }
 
-function mountLogin(router) {
-  const view = document.querySelector('[data-view="login"]');
-  const form = document.getElementById('login-form');
+/**
+ * The member Login and the Admin Portal login share this: both send POST /auth/login, then
+ * a coop_admin goes to the Admin Portal and a member to Home (or farm setup).
+ */
+function mountLogin(router, { route, formId }) {
+  const view = document.querySelector(`[data-view="${route}"]`);
+  const form = document.getElementById(formId);
   const identifier = form.elements.identifier;
   const password = form.elements.password;
 
@@ -177,7 +182,11 @@ function mountLogin(router) {
       setStatus(view, MESSAGES.loginSuccess, 'success');
       window.dispatchEvent(new CustomEvent('ariseto:authenticated', { detail: session }));
       const user = session?.user ?? session;
-      if (user?.first_name) saveJSON('user', { first_name: user.first_name });
+      rememberUser(user);
+      if (user?.role === 'coop_admin') {
+        router.navigate('admin', { replace: true });
+        return;
+      }
 
       let next;
       try {
@@ -196,7 +205,7 @@ function mountLogin(router) {
     }
   });
 
-  router.route('login', {
+  router.route(route, {
     onEnter({ state } = {}) {
       if (state?.identifier) identifier.value = state.identifier;
       if (state?.message) setStatus(view, state.message, state.tone || 'success');
@@ -366,6 +375,7 @@ function mountSignup(router) {
 
 export function mountAuthPages(router, root = document) {
   bindPasswordToggles(root);
-  mountLogin(router);
+  mountLogin(router, { route: 'login', formId: 'login-form' });
+  mountLogin(router, { route: 'admin-login', formId: 'admin-login-form' });
   mountSignup(router);
 }

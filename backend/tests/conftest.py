@@ -350,6 +350,25 @@ def other_farm(client: TestClient, outsider_token: str, barangay_id: int, variet
     return create_farm(client, outsider_token, barangay_id, variety_ids, philippine_today())
 
 
+@pytest.fixture
+def wet_2026(db, farm: FarmSetup, monkeypatch) -> FarmSetup:
+    """Both of the owner's cycles sown on June 15, 2026 (wet 2026); 'today' is October 1,
+    2026 for harvests and the reports' current season."""
+    from datetime import date
+
+    from app.models import CropCycle
+    from app.models.enums import CropSeason
+    from app.services import harvest_service, report_service
+
+    for cycle_id in farm.cycle_ids.values():
+        cycle = db.get(CropCycle, cycle_id)
+        cycle.season, cycle.planting_date = CropSeason.WET, date(2026, 6, 15)
+    db.commit()
+    monkeypatch.setattr(harvest_service, "philippine_today", lambda: date(2026, 10, 1))
+    monkeypatch.setattr(report_service, "philippine_today", lambda: date(2026, 10, 1))
+    return farm
+
+
 # ---------- Crop calendar ----------
 
 
