@@ -298,3 +298,17 @@ def test_train_with_tensorflow(tmp_path, capsys) -> None:
     assert "Confidence of right answers:" in printed
     assert json.loads((out / "labels.json").read_text(encoding="utf-8")) == ["test_a", "test_b"]
     assert (out / "intent_model.keras").is_file()
+
+    # The saved files load through the app's own loader and answer a raw question.
+    status = chat_model.load(
+        SimpleNamespace(
+            chatbot_model_path=str(out / "intent_model.keras"),
+            chatbot_labels_path=str(out / "labels.json"),
+            chatbot_model_version="trained-test",
+            chatbot_confidence_threshold="0.5",
+        )
+    )
+    assert status.reason is None
+    prediction = status.predictor.predict("test_b question number 3")
+    assert prediction.label == "test_b"
+    assert 0 <= prediction.confidence <= 1
