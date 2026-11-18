@@ -113,7 +113,12 @@ def train(examples_csv: Path, out_dir: Path) -> TrainingReport:
     vectorize = keras.layers.TextVectorization(
         standardize="lower_and_strip_punctuation", ngrams=2, output_mode="tf_idf"
     )
-    vectorize.adapt(np.array([e.text for e in train_set]))
+
+    # Keras 3 rejects NumPy unicode arrays ('<U..'), so every text goes in as a tf.string tensor.
+    def texts(subset: list[Example]):
+        return tf.constant([[e.text] for e in subset], dtype=tf.string)
+
+    vectorize.adapt(tf.constant([e.text for e in train_set], dtype=tf.string))
     inputs = keras.Input(shape=(1,), dtype="string")
     x = vectorize(inputs)
     x = keras.layers.Dropout(DROPOUT)(x)
@@ -123,7 +128,7 @@ def train(examples_csv: Path, out_dir: Path) -> TrainingReport:
     model = keras.Model(inputs, outputs)
     model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
     model.fit(
-        np.array([[e.text] for e in train_set]),
+        texts(train_set),
         np.array([index[e.tag] for e in train_set]),
         epochs=EPOCHS,
         batch_size=BATCH_SIZE,
@@ -139,7 +144,7 @@ def train(examples_csv: Path, out_dir: Path) -> TrainingReport:
 
     # Score the saved file, so the report also proves it loads the way the API loads it.
     saved = keras.models.load_model(model_path, compile=False)
-    probabilities = np.asarray(saved(tf.constant([[e.text] for e in test_set]), training=False))
+    probabilities = np.asarray(saved(texts(test_set), training=False))
     right, wrong, mistakes = [], [], []
     for example, row in zip(test_set, probabilities, strict=True):
         best = int(np.argmax(row))
