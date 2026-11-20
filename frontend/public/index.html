@@ -8,8 +8,8 @@
   <meta name="description" content="ARISETO — AI-powered tools that help Filipino farmers optimize their farming and maximize crop yields.">
   <meta name="ariseto-api-base" content="/api/v1">
   <title>Welcome · ARISETO</title>
-  <link rel="icon" type="image/png" href="assets/icons/logo-badge.png">
-  <link rel="apple-touch-icon" href="assets/icons/logo-badge.png">
+  <link rel="icon" type="image/png" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -965,6 +965,7 @@
         </header>
 
         <div class="app-body">
+          <p class="offline-banner" role="status" data-offline-banner hidden></p>
           <p class="form__status" role="status" aria-live="polite" data-form-status></p>
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
@@ -1088,6 +1089,7 @@
         </header>
 
         <div class="app-body">
+          <p class="offline-banner" role="status" data-offline-banner hidden></p>
           <label class="search-box">
             <svg aria-hidden="true"><use href="#icon-search"/></svg>
             <span class="sr-only">Search tasks</span>
@@ -1278,6 +1280,7 @@
         </header>
 
         <div class="app-body">
+          <p class="offline-banner" role="status" data-offline-banner hidden></p>
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-wallet"/></svg>
             <p data-empty-text></p>
@@ -1703,11 +1706,11 @@
 
           <section aria-labelledby="sync-title">
             <h2 id="sync-title" class="section-title">Sync and Offline</h2>
-            <label class="setting-row setting-row--toggle" data-soon="Auto-Sync">
-              <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-sync"/></svg>
-              <span class="setting-row__text"><span class="setting-row__title">Auto-Sync Data</span><span class="setting-row__hint">Syncs when Wi-Fi is available</span></span>
-              <input type="checkbox" class="switch" role="switch" disabled>
-            </label>
+            <button type="button" class="setting-row" data-install-app hidden>
+              <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-download"/></svg>
+              <span class="setting-row__text"><span class="setting-row__title">Install app</span><span class="setting-row__hint">Add ARISETO to your home screen</span></span>
+              <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+            </button>
           </section>
 
           <section aria-labelledby="privacy-title">
@@ -2395,7 +2398,7 @@
           </div>
         </div>
       </section>
-      <!-- Yield Estimation (sample data: js/data/sample-yield.js) -->
+      <!-- Yield Estimation: not available until there are past harvest records -->
       <section class="view view--app" data-view="yield" aria-labelledby="yield-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
@@ -2404,68 +2407,18 @@
             </a>
             <div class="app-header__text">
               <h1 id="yield-title" class="app-header__title" tabindex="-1" data-route-focus>Yield Estimation</h1>
-              <p class="app-header__subtitle">Track your expected harvest.</p>
             </div>
-            <span class="demo-badge">Demo data</span>
           </div>
-          <label class="field-picker">
-            <span class="field-picker__label">Field</span>
-            <select class="field-picker__select" data-yield-field></select>
-          </label>
         </header>
 
         <div class="app-body">
-          <div class="app-empty" data-empty hidden>
+          <div class="app-empty">
             <svg aria-hidden="true"><use href="#icon-chart"/></svg>
-            <p data-empty-text></p>
-            <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
-          </div>
-
-          <div class="app-stack" data-content>
-            <section class="summary-card yield-card" aria-labelledby="yield-total-label">
-              <p class="yield-card__label" id="yield-total-label">
-                <svg aria-hidden="true"><use href="#icon-seeds"/></svg>Estimated Yield
-              </p>
-              <p class="yield-card__total"><span data-total></span> <span class="yield-card__unit">tons</span></p>
-              <dl class="stat-grid">
-                <div class="stat"><dt>Yield per hectare</dt><dd data-per-ha></dd></div>
-                <div class="stat"><dt>Expected value</dt><dd data-value></dd></div>
-              </dl>
-              <p class="yield-card__meta" data-estimated-at></p>
-            </section>
-
-            <section aria-labelledby="factors-title">
-              <h2 id="factors-title" class="section-title">Impact Factors</h2>
-              <ul class="factor-grid" data-factors></ul>
-            </section>
-
-            <section class="card" aria-labelledby="history-chart-title">
-              <h2 id="history-chart-title" class="section-title">Estimate history</h2>
-              <p class="muted-note yield-history__note">Estimated total harvest each time the estimate was run.</p>
-              <svg class="history-chart" viewBox="0 0 320 180" role="img" data-history-chart></svg>
-            </section>
-
-            <a href="#/chatbot" class="chat-link">
-              <svg aria-hidden="true"><use href="#icon-chat"/></svg>
-              <span>Ask the chatbot about this</span>
-            </a>
-
-            <button type="button" class="btn btn--gradient btn--block btn--rounded" data-soon="Recalculating the estimate">Recalculate Estimation</button>
+            <p>Yield estimation isn't available yet. It needs past harvest records to learn from.</p>
           </div>
         </div>
 
         <nav class="bottom-nav" aria-label="Main" data-bottom-nav="yield"></nav>
-
-        <template data-factor-tpl>
-          <li class="factor">
-            <p class="factor__head">
-              <svg class="factor__icon" aria-hidden="true"><use data-icon href=""/></svg>
-              <span class="factor__name" data-name></span>
-            </p>
-            <p class="factor__value" data-value></p>
-            <p class="factor__note" data-note></p>
-          </li>
-        </template>
       </section>
       <!-- Chatbot -->
       <section class="view view--app view--chat" data-view="chatbot" aria-labelledby="chat-title" hidden>
@@ -2777,6 +2730,11 @@
     </main>
 
     <p class="toast" role="status" aria-live="polite" data-app-toast hidden></p>
+
+    <div class="update-bar" role="status" data-update-bar hidden>
+      <span>A new version of ARISETO is ready.</span>
+      <button type="button" class="update-bar__button" data-update-reload>Reload</button>
+    </div>
 
     <!-- Bottom navigation shared by Home and the feature screens (js/utils/bottom-nav.js) -->
     <template id="bottom-nav-template">

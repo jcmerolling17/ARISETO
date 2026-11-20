@@ -1,5 +1,7 @@
 // frontend/public/js/api/client.js
 
+import { enqueue, queuedItems, readAnswer, saveAnswer } from '../utils/offline-store.js';
+
 const API_BASE = (
   document.querySelector('meta[name="ariseto-api-base"]')?.content || '/api/v1'
 ).replace(/\/+$/, '');
@@ -16,7 +18,59 @@ export class ApiError extends Error {
     this.code = errorCode(details);
     /** True when this response ended the session; the app is already on its way to Login. */
     this.sessionEnded = false;
+    /** True when no answer came back at all (offline, unreachable, or timed out). */
+    this.network = false;
   }
+}
+
+/** The signed-in account's user_id, read from the token's payload. */
+export function currentUserId() {
+  const token = tokenStore.get();
+  if (!token) return null;
+  try {
+    const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = part.padEnd(part.length + ((4 - (part.length % 4)) % 4), '=');
+    const sub = JSON.parse(atob(padded)).sub;
+    return sub == null ? null : String(sub);
+  } catch {
+    return null;
+  }
+}
+
+/* ---------- Offline reading and the offline queue (Phase 14) ---------- */
+
+const NOT_LOADED_MESSAGE =
+  "You're offline, and this hasn't been opened on this phone yet. Connect once to use it offline.";
+
+// Answers served from the phone instead of the network, mapped to the time they were saved.
+const savedAnswerTimes = new WeakMap();
+
+/** When data came from the phone's saved answers, the time it was saved (ms); otherwise null. */
+export function offlineSince(data) {
+  return data && typeof data === 'object' ? savedAnswerTimes.get(data) ?? null : null;
+}
+
+const SYNC_TAG = 'ariseto-sync';
+
+/** Asks the service worker to wake the app when the phone is online again (Background Sync). */
+function requestBackgroundSync() {
+  navigator.serviceWorker?.ready
+    ?.then((registration) => registration.sync?.register(SYNC_TAG))
+    .catch(() => { /* not supported: the app sends the queue when it opens or goes online */ });
+}
+
+async function enqueueWrite(userId, path, method, body, queue) {
+  const item = await enqueue({
+    userId,
+    kind: queue.kind,
+    method,
+    path,
+    body,
+    label: queue.label,
+    display: queue.display ?? null,
+  });
+  requestBackgroundSync();
+  return { queued: true, queue_id: item.id };
 }
 
 /** Business error code, e.g. 'account_pending', from the API's { "detail": { "code": "<error_code>" } } shape. */
@@ -105,7 +159,49 @@ function errorMessage(data, status) {
  * body: a JSON-serializable value, or FormData for a file upload (the browser sets the
  * multipart Content-Type). blob: true returns a successful response as a Blob (e.g. a photo).
  */
-export async function request(path, { method = 'GET', body, headers = {}, auth = true, timeout = DEFAULT_TIMEOUT_MS, blob = false } = {}) {
+/**
+ * offline: true saves each successful GET answer on the phone and, when no answer comes back,
+ * returns the saved one instead (see offlineSince). queue: { kind, label, display } lets a
+ * write wait in the offline queue when the phone is offline, when the request gets no
+ * answer, or when earlier changes are still waiting (so changes keep their order). A queued
+ * write resolves with { queued: true, queue_id }.
+ */
+export async function request(path, { offline = false, queue = null, ...options } = {}) {
+  const method = (options.method ?? 'GET').toUpperCase();
+  const userId = options.auth === false ? null : currentUserId();
+
+  if (queue && userId) {
+    const waiting = (await queuedItems()).some((item) => item.userId === userId);
+    if (navigator.onLine === false || waiting) {
+      return enqueueWrite(userId, path, method, options.body, queue);
+    }
+  }
+  try {
+    const data = await send(path, options);
+    if (offline && method === 'GET' && userId && data !== null && typeof data === 'object') {
+      saveAnswer(userId, path, data);
+    }
+    return data;
+  } catch (err) {
+    if (!(err instanceof ApiError) || !err.network) throw err;
+    if (offline && method === 'GET' && userId) {
+      const saved = await readAnswer(userId, path);
+      if (saved) {
+        savedAnswerTimes.set(saved.data, saved.savedAt);
+        return saved.data;
+      }
+      const notLoaded = new ApiError(NOT_LOADED_MESSAGE, {
+        details: { detail: { code: 'offline_not_loaded' } },
+      });
+      notLoaded.network = true;
+      throw notLoaded;
+    }
+    if (queue && userId) return enqueueWrite(userId, path, method, options.body, queue);
+    throw err;
+  }
+}
+
+async function send(path, { method = 'GET', body, headers = {}, auth = true, timeout = DEFAULT_TIMEOUT_MS, blob = false } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
   const token = auth ? tokenStore.get() : null;
@@ -140,14 +236,12 @@ export async function request(path, { method = 'GET', body, headers = {}, auth =
     return data;
   } catch (err) {
     if (err instanceof ApiError) throw err;
-    if (err.name === 'AbortError') {
-      throw new ApiError('The server took too long to respond. Please try again.');
-    }
-    throw new ApiError(
-      navigator.onLine === false
-        ? 'You appear to be offline. Check your connection and try again.'
-        : 'Unable to reach ARISETO right now. Please try again.',
-    );
+    let message = 'Unable to reach ARISETO right now. Please try again.';
+    if (err.name === 'AbortError') message = 'The server took too long to respond. Please try again.';
+    else if (navigator.onLine === false) message = 'You appear to be offline. Check your connection and try again.';
+    const failure = new ApiError(message);
+    failure.network = true;
+    throw failure;
   } finally {
     clearTimeout(timer);
   }
@@ -207,7 +301,7 @@ export const farms = {
    *        total_area_ha, role_on_farm }]
    */
   list() {
-    return request('/farms');
+    return request('/farms', { offline: true });
   },
 
   /**
@@ -231,7 +325,7 @@ export const farms = {
    * 403 not_farm_member (also for a farm that does not exist)
    */
   fields(farmId) {
-    return request(`/farms/${encodeURIComponent(farmId)}/fields`);
+    return request(`/farms/${encodeURIComponent(farmId)}/fields`, { offline: true });
   },
 
   /**
@@ -278,7 +372,7 @@ function queryString(params = {}) {
 export const expenses = {
   /** 200 [{ category_id, category_name }]: the seven categories in their documented order. */
   categories() {
-    return request('/expense-categories');
+    return request('/expense-categories', { offline: true });
   },
 
   /**
@@ -289,7 +383,7 @@ export const expenses = {
    * 403 not_farm_member; 422 season_incomplete | field_not_in_farm
    */
   list(farmId, filters) {
-    return request(`/farms/${encodeURIComponent(farmId)}/expenses${queryString(filters)}`);
+    return request(`/farms/${encodeURIComponent(farmId)}/expenses${queryString(filters)}`, { offline: true });
   },
 
   /**
@@ -301,9 +395,14 @@ export const expenses = {
    * 403 not_farm_member; 409 client_uuid_taken; 422 category_not_found | cycle_not_in_farm |
    * season_required | season_mismatch | unit_required | quantity_required |
    * expense_date_in_future
+   * queue: { label, display } lets it wait in the offline queue ({ queued: true } is returned).
    */
-  create(farmId, payload) {
-    return request(`/farms/${encodeURIComponent(farmId)}/expenses`, { method: 'POST', body: payload });
+  create(farmId, payload, queue = null) {
+    return request(`/farms/${encodeURIComponent(farmId)}/expenses`, {
+      method: 'POST',
+      body: payload,
+      queue: queue && { kind: 'expense', ...queue },
+    });
   },
 
   /** 204; allowed for the member who recorded it and the farm owner. 403 not_allowed; 404 expense_not_found */
@@ -318,7 +417,7 @@ export const expenses = {
    * With field_id, whole-farm expenses are left out.
    */
   summary(farmId, filters) {
-    return request(`/farms/${encodeURIComponent(farmId)}/summary${queryString(filters)}`);
+    return request(`/farms/${encodeURIComponent(farmId)}/summary${queryString(filters)}`, { offline: true });
   },
 };
 
@@ -334,7 +433,7 @@ export const harvests = {
 
   /** Same filters as expenses.list(); 200 [{ harvest_id, cycle_id, field_name, crop_name, ... }] */
   list(farmId, filters) {
-    return request(`/farms/${encodeURIComponent(farmId)}/harvests${queryString(filters)}`);
+    return request(`/farms/${encodeURIComponent(farmId)}/harvests${queryString(filters)}`, { offline: true });
   },
 };
 
@@ -350,7 +449,7 @@ export const activities = {
    * 404 cycle_not_found
    */
   forCycle(cycleId, filters) {
-    return request(`/cycles/${encodeURIComponent(cycleId)}/activities${queryString(filters)}`);
+    return request(`/cycles/${encodeURIComponent(cycleId)}/activities${queryString(filters)}`, { offline: true });
   },
 
   /**
@@ -359,16 +458,21 @@ export const activities = {
    * 403 not_farm_member; 422 field_not_in_farm
    */
   forFarm(farmId, filters) {
-    return request(`/farms/${encodeURIComponent(farmId)}/activities${queryString(filters)}`);
+    return request(`/farms/${encodeURIComponent(farmId)}/activities${queryString(filters)}`, { offline: true });
   },
 
   /**
    * payload: { title, scheduled_date, scheduled_time, reminder, notes, growth_stage, client_uuid }
    * 201 the custom task; 200 with the same body when client_uuid was already saved on this cycle
    * 404 cycle_not_found; 409 cycle_closed | client_uuid_taken; 422 date_out_of_range
+   * queue: { label, display } lets it wait in the offline queue ({ queued: true } is returned).
    */
-  create(cycleId, payload) {
-    return request(`/cycles/${encodeURIComponent(cycleId)}/activities`, { method: 'POST', body: payload });
+  create(cycleId, payload, queue = null) {
+    return request(`/cycles/${encodeURIComponent(cycleId)}/activities`, {
+      method: 'POST',
+      body: payload,
+      queue: queue && { kind: 'task', ...queue },
+    });
   },
 
   /**
@@ -376,9 +480,14 @@ export const activities = {
    *   reminder, notes, title and growth_stage (custom tasks only) }
    * 200 the task. A new date or time is a reschedule.
    * 404 activity_not_found; 409 cycle_closed; 422 not_editable | date_out_of_range
+   * queue: { label, display } lets it wait in the offline queue ({ queued: true } is returned).
    */
-  update(activityId, payload) {
-    return request(`/activities/${encodeURIComponent(activityId)}`, { method: 'PATCH', body: payload });
+  update(activityId, payload, queue = null) {
+    return request(`/activities/${encodeURIComponent(activityId)}`, {
+      method: 'PATCH',
+      body: payload,
+      queue: queue && { kind: 'task-update', ...queue },
+    });
   },
 
   /** 204; custom tasks only. 404 activity_not_found; 409 generated_task | cycle_closed */

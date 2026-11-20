@@ -17,6 +17,7 @@ import {
   bindLiveErrorClearing,
 } from '../utils/form.js';
 import { loadFirstFarm, showSeasonNext } from './expenses.js';
+import { OFFLINE_MESSAGES, isOffline } from '../utils/offline-ui.js';
 
 const MAX_VALUE = 99999999.99; // quantity_kg and unit_price_php NUMERIC(10,2)
 const MAX_GROSS = 9999999999.99; // gross_income_php NUMERIC(12,2)
@@ -141,6 +142,10 @@ export function mountHarvestPage(router) {
       return;
     }
 
+    if (navigator.onLine === false) {
+      setStatus(view, OFFLINE_MESSAGES.recordHarvest, 'error');
+      return;
+    }
     setBusy(form, true);
     try {
       const saved = await harvests.record(values.cycle.cycle_id, values.body);
@@ -149,6 +154,10 @@ export function mountHarvestPage(router) {
       router.navigate('expenses', { replace: true, state: { message } });
     } catch (err) {
       if (isSessionEnd(err)) return;
+      if (isOffline(err)) {
+        setStatus(view, OFFLINE_MESSAGES.recordHarvest, 'error');
+        return;
+      }
       const code = err instanceof ApiError ? err.code : null;
       if (code === 'harvest_date_out_of_range') {
         setFieldError(date, MESSAGES[code]);

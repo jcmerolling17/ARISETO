@@ -30,6 +30,8 @@ import {
   toISODate,
 } from '../utils/dates.js';
 import { loadFirstFarm, newClientUuid } from './expenses.js';
+import { myQueuedItems } from '../utils/sync.js';
+import { OFFLINE_MESSAGES, isOffline, showOfflineBanner, waitingTag } from '../utils/offline-ui.js';
 
 const FINISHED = new Set(['done', 'skipped']);
 const PAGE_SIZE = 200; // GET /farms/{farm_id}/activities allows at most 200 per page
@@ -71,7 +73,42 @@ function isSessionEnd(err) {
 }
 
 function errorMessage(err, fallback) {
+  if (err instanceof ApiError && err.code === 'offline_not_loaded') return err.message;
   return (err instanceof ApiError && MESSAGES[err.code]) || fallback;
+}
+
+/**
+ * The tasks as they will be once the offline queue is sent: queued updates are applied to
+ * their tasks, and custom tasks added offline (for the given cycles) are listed too. Both
+ * carry waiting: true for the "Waiting to sync" tag; a task added offline also has
+ * queued: true and can't be changed until it has synced.
+ */
+function withQueue(tasks, queued, cycleIds) {
+  const updates = queued.filter((item) => item.kind === 'task-update');
+  const merged = tasks.map((task) => {
+    const mine = updates.filter((item) => item.display?.activity_id === task.activity_id);
+    if (!mine.length) return task;
+    const next = mine.reduce((acc, item) => ({ ...acc, ...item.body }), { ...task });
+    const moved = mine.some((item) => 'scheduled_date' in item.body || 'scheduled_time' in item.body);
+    if (moved && next.status !== 'done' && !mine.some((item) => 'status' in item.body)) next.status = 'rescheduled';
+    return { ...next, waiting: true };
+  });
+  const added = queued
+    .filter((item) => item.kind === 'task' && cycleIds.includes(item.display?.cycle_id))
+    .map((item) => ({ ...item.display.task, activity_id: -item.id, waiting: true, queued: true }));
+  return [...merged, ...added];
+}
+
+/** Shows "Waiting to sync" on a task row or card that has unsent changes. */
+function markWaiting(el, task, selector) {
+  if (!task.waiting) return;
+  el.classList.add('is-queued');
+  (el.querySelector(selector) ?? el).append(waitingTag());
+}
+
+/** Queue details for a task update made while offline. */
+function updateQueue(task) {
+  return { label: task.title, display: { activity_id: task.activity_id } };
 }
 
 function labelOf(options, value) {
@@ -130,10 +167,16 @@ function bindCheck(check, task, reload, view) {
   check.dataset.activity = String(task.activity_id);
   check.checked = task.status === 'done';
   check.addEventListener('change', async () => {
+    if (task.queued) {
+      check.checked = !check.checked;
+      setStatus(view, OFFLINE_MESSAGES.queuedTask, 'error');
+      return;
+    }
     check.disabled = true;
     setStatus(view, '');
     try {
-      await api.update(task.activity_id, { status: check.checked ? 'done' : 'pending' });
+      const saved = await api.update(task.activity_id, { status: check.checked ? 'done' : 'pending' }, updateQueue(task));
+      if (saved?.queued) showToast(OFFLINE_MESSAGES.savedOffline);
       await reload();
       view.querySelector(`[data-check][data-activity="${task.activity_id}"]`)?.focus();
     } catch (err) {
@@ -170,6 +213,7 @@ function mountCalendar() {
   const tpl = (name) => view.querySelector(`template[data-${name}-tpl]`).content.firstElementChild;
   const openWeeks = new Set();
   let fields = [];
+  let farmAnswers = [];
   let calendar = null; // { cycle, items } from GET /cycles/{cycle_id}/activities
   let selectedDay = philippineToday();
   let showAllWeeks = false;
@@ -209,6 +253,7 @@ function mountCalendar() {
     item.querySelector('[data-time]').textContent = time || 'Any time';
     item.querySelector('[data-title]').textContent = task.title;
     item.classList.toggle('is-done', FINISHED.has(task.status));
+    markWaiting(item, task, '[data-title]');
     bindCheck(check, task, reload, view);
     return item;
   }
@@ -256,6 +301,7 @@ function mountCalendar() {
     row.classList.toggle('is-done', FINISHED.has(task.status));
     tag.hidden = task.status !== 'skipped';
     tag.textContent = 'Skipped';
+    markWaiting(row, task, '[data-title]');
     bindCheck(check, task, reload, view);
     return row;
   }
@@ -336,7 +382,9 @@ function mountCalendar() {
         const loaded = await loadFirstFarm();
         if (id !== requestId) return;
         fields = loaded.farm ? loaded.fields : [];
+        farmAnswers = loaded.answers;
       }
+      showOfflineBanner(view, ...farmAnswers);
       view.querySelector('[data-empty]').hidden = true;
       syncFieldSelection(fields);
       renderPicker();
@@ -353,9 +401,10 @@ function mountCalendar() {
         showEmpty(view, MESSAGES.noCycle);
         return;
       }
-      const loaded = await api.forCycle(cycle.cycle_id);
+      const [loaded, queued] = await Promise.all([api.forCycle(cycle.cycle_id), myQueuedItems()]);
       if (id !== requestId) return;
-      calendar = loaded;
+      showOfflineBanner(view, ...farmAnswers, loaded);
+      calendar = { ...loaded, items: withQueue(loaded.items, queued, [cycle.cycle_id]) };
       render();
     } catch (err) {
       if (id !== requestId || isSessionEnd(err)) return;
@@ -383,6 +432,10 @@ function mountCalendar() {
   });
 
   reloadWhenVisible(view, () => reload());
+  // A change was queued, or the queue was sent: show the calendar as it is now.
+  const refresh = () => { if (!view.hidden) reload(); };
+  window.addEventListener('ariseto:queue-changed', refresh);
+  window.addEventListener('ariseto:synced', refresh);
 
   return {
     enter() {
@@ -456,6 +509,7 @@ function mountTasks(router) {
     tag.hidden = !label;
     tag.textContent = label;
     tag.classList.toggle('status-tag--overdue', overdue);
+    markWaiting(card, task, '[data-meta]');
     menuBtn.setAttribute('aria-label', `More actions for "${task.title}"`);
 
     const finished = FINISHED.has(task.status);
@@ -484,8 +538,8 @@ function mountTasks(router) {
   async function change(task, payload, message) {
     setStatus(view, '');
     try {
-      await api.update(task.activity_id, payload);
-      showToast(message);
+      const saved = await api.update(task.activity_id, payload, updateQueue(task));
+      showToast(saved?.queued ? OFFLINE_MESSAGES.savedOffline : message);
       await reload();
     } catch (err) {
       if (!isSessionEnd(err)) setStatus(view, errorMessage(err, MESSAGES.saveFailed), 'error');
@@ -493,6 +547,14 @@ function mountTasks(router) {
   }
 
   async function runAction(action, task) {
+    if (task.queued) {
+      setStatus(view, OFFLINE_MESSAGES.queuedTask, 'error');
+      return;
+    }
+    if (action === 'delete' && navigator.onLine === false) {
+      setStatus(view, OFFLINE_MESSAGES.deleteTask, 'error');
+      return;
+    }
     if (action === 'done') await change(task, { status: 'done' }, MESSAGES.done);
     else if (action === 'undo') await change(task, { status: 'pending' }, MESSAGES.undone);
     else if (action === 'skip') await change(task, { status: 'skipped' }, MESSAGES.skipped);
@@ -505,7 +567,8 @@ function mountTasks(router) {
         showToast(MESSAGES.deleted);
         await reload();
       } catch (err) {
-        if (!isSessionEnd(err)) setStatus(view, errorMessage(err, MESSAGES.saveFailed), 'error');
+        if (isSessionEnd(err)) return;
+        setStatus(view, isOffline(err) ? OFFLINE_MESSAGES.deleteTask : errorMessage(err, MESSAGES.saveFailed), 'error');
       }
     }
   }
@@ -619,18 +682,23 @@ function mountTasks(router) {
     const id = ++requestId;
     setStatus(view, '');
     try {
-      const { farm, fields: farmFields } = await loadFirstFarm();
+      const { farm, fields: farmFields, answers } = await loadFirstFarm();
       const all = [];
+      const pages = [];
       if (farm) {
         for (let offset = 0; ; offset += PAGE_SIZE) {
           const page = await api.forFarm(farm.farm_id, { limit: PAGE_SIZE, offset });
+          pages.push(page);
           all.push(...page.items);
           if (page.items.length < PAGE_SIZE) break;
         }
       }
+      const queued = await myQueuedItems();
       if (id !== requestId) return;
       fields = farm ? farmFields : [];
-      tasks = all;
+      showOfflineBanner(view, ...answers, ...pages);
+      const cycleIds = fields.map((f) => f.current_cycle?.cycle_id).filter(Boolean);
+      tasks = withQueue(all, queued, cycleIds);
       loaded = true;
       render();
     } catch (err) {
@@ -663,6 +731,9 @@ function mountTasks(router) {
     if (event.key === 'Escape') closeMenus();
   });
   reloadWhenVisible(view, reload);
+  const refresh = () => { if (!view.hidden) reload(); };
+  window.addEventListener('ariseto:queue-changed', refresh);
+  window.addEventListener('ariseto:synced', refresh);
 
   return {
     enter({ from, state } = {}) {
@@ -765,19 +836,53 @@ function mountTaskForm(router) {
 
     const fieldId = editing ? fields.find((f) => f.current_cycle?.cycle_id === editing.cycle_id)?.field_id : Number(fieldSelect.value);
     setBusy(form, true);
+    let saved = null;
     try {
       if (editing) {
         const patch = changes(values);
-        if (Object.keys(patch).length) await api.update(editing.activity_id, patch);
+        // Renaming or moving a custom task needs internet; the documented offline updates
+        // are done, skipped, reschedule, reminder, and notes.
+        const renames = 'title' in patch || 'growth_stage' in patch;
+        if (renames && navigator.onLine === false) {
+          setStatus(view, OFFLINE_MESSAGES.renameTask, 'error');
+          return;
+        }
+        if (Object.keys(patch).length) {
+          saved = await api.update(editing.activity_id, patch, renames ? null : updateQueue(editing));
+        }
       } else {
-        await api.create(cycleFor(fieldId).cycle_id, { ...values, client_uuid: clientUuid });
+        const cycle = cycleFor(fieldId);
+        const body = { ...values, client_uuid: clientUuid };
+        saved = await api.create(cycle.cycle_id, body, {
+          label: values.title,
+          display: {
+            cycle_id: cycle.cycle_id,
+            task: {
+              cycle_id: cycle.cycle_id,
+              title: values.title,
+              description: null,
+              notes: values.notes,
+              scheduled_date: values.scheduled_date,
+              end_date: null,
+              scheduled_time: values.scheduled_time,
+              reminder: values.reminder,
+              growth_stage: values.growth_stage,
+              task_type: 'other',
+              status: 'pending',
+              is_custom: true,
+              is_weather_sensitive: false,
+            },
+          },
+        });
         clientUuid = newClientUuid();
       }
       if (fieldId != null) shared.fieldId = fieldId;
-      showToast(MESSAGES.saved);
+      showToast(saved?.queued ? OFFLINE_MESSAGES.savedOffline : MESSAGES.saved);
       router.navigate('tasks', { replace: true, state: { savedFieldId: shared.fieldId } });
     } catch (err) {
-      if (!isSessionEnd(err)) showError(err);
+      if (isSessionEnd(err)) return;
+      if (editing && isOffline(err)) setStatus(view, OFFLINE_MESSAGES.renameTask, 'error');
+      else showError(err);
     } finally {
       setBusy(form, false);
     }
@@ -825,7 +930,7 @@ function mountTaskForm(router) {
         fields = loaded.farm ? loaded.fields : [];
       } catch (err) {
         if (isSessionEnd(err)) return;
-        showEmpty(view, MESSAGES.loadFailed);
+        showEmpty(view, errorMessage(err, MESSAGES.loadFailed));
         return;
       }
       const planted = fields.filter((f) => f.current_cycle);

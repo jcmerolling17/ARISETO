@@ -48,15 +48,6 @@ export function cycleSeason(cycle) {
   return seasonOf(cycle.season, cycle.season === 'dry' && month <= 5 ? year - 1 : year);
 }
 
-/** Latest YIELD_ESTIMATE of a cycle and its expected value (predicted_total_t × farm-gate price), or null. */
-export function latestEstimate(yieldData, cycle) {
-  const rows = yieldData.estimates.filter((e) => e.cycle_id === cycle.cycle_id);
-  if (!rows.length) return null;
-  const latest = rows.reduce((a, b) => (a.created_at > b.created_at ? a : b));
-  const price = yieldData.farmgate_prices.find((p) => p.crop_name === cycle.crop_name)?.price_php_per_kg;
-  return { ...latest, expected_value_php: price == null ? null : latest.predicted_total_t * 1000 * price };
-}
-
 /** '₱112.5K' for amounts of ₱1,000 or more, otherwise '₱850'. */
 export function formatPesoShort(value) {
   if (Math.abs(value) >= 1000) return `₱${(value / 1000).toLocaleString('en-PH', { maximumFractionDigits: 1 })}K`;
