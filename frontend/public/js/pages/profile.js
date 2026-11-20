@@ -6,12 +6,16 @@ import { setStatus } from '../utils/form.js';
 import { removeJSON } from '../utils/store.js';
 import { showToast } from '../utils/toast.js';
 import { rememberUser } from '../utils/session.js';
+import { clearOfflineData } from '../utils/offline-store.js';
+import { myQueuedItems } from '../utils/sync.js';
 
 const MESSAGES = {
   online: 'Online',
   offline: 'Offline',
   loadFailed: 'Your profile could not be loaded. Check your connection and try again.',
   loggedOut: 'You have logged out.',
+  logoutWaiting: (n) =>
+    `${n} change(s) are still waiting to sync and will be lost if you log out now. Log out anyway?`,
   deletionHint: 'An MPMPC administrator removes your personal details',
   deletionRequested: (day) => `Requested on ${day}. An MPMPC administrator will process it.`,
   deletionConfirm:
@@ -128,12 +132,36 @@ export function mountProfilePage(router) {
     }
   });
 
-  // Log out for real: forget the session token and the saved user and farm, then go to Login.
-  view.querySelector('[data-logout]').addEventListener('click', () => {
+  // Log out for real: forget the session token, the saved user and farm, and the phone's
+  // offline data (queue and saved answers), then go to Login. Waiting changes are lost, so ask.
+  view.querySelector('[data-logout]').addEventListener('click', async () => {
+    const waiting = (await myQueuedItems()).length;
+    if (waiting && !window.confirm(MESSAGES.logoutWaiting(waiting))) return;
+    await clearOfflineData();
     auth.logout();
     removeJSON('user');
     removeJSON('farm');
     router.navigate('login', { replace: true, state: { message: MESSAGES.loggedOut, tone: 'success' } });
+  });
+
+  // Install app: shown only when the browser offers to install (Chrome on Android, Edge).
+  const installRow = view.querySelector('[data-install-app]');
+  let installPrompt = null;
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    installPrompt = event;
+    installRow.hidden = false;
+  });
+  window.addEventListener('appinstalled', () => {
+    installPrompt = null;
+    installRow.hidden = true;
+  });
+  installRow.addEventListener('click', async () => {
+    if (!installPrompt) return;
+    const prompt = installPrompt;
+    installPrompt = null;
+    installRow.hidden = true;
+    await prompt.prompt();
   });
 
   window.addEventListener('online', () => { if (!view.hidden) renderOnline(); });

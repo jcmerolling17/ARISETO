@@ -315,12 +315,13 @@ def test_photo_is_removed_when_the_row_cannot_be_saved(
     def failing_commit(self) -> None:
         raise RuntimeError("database went away")
 
-    monkeypatch.setattr(Session, "commit", failing_commit)
+    # Only the failing commit is undone afterwards; monkeypatch.undo() would also undo the
+    # autouse fixture's temporary leaf_image_dir and look at the real backend/var folder.
+    with monkeypatch.context() as patch:
+        patch.setattr(Session, "commit", failing_commit)
+        with pytest.raises(RuntimeError):
+            scan(client, member_token, {"cycle_id": farm.cycle_ids["Field A"]})
 
-    with pytest.raises(RuntimeError):
-        scan(client, member_token, {"cycle_id": farm.cycle_ids["Field A"]})
-
-    monkeypatch.undo()
     assert diagnosis_count(db) == 0
     assert leaf_files() == []
 

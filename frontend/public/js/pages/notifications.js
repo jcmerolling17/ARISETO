@@ -9,6 +9,7 @@ import { notifications as api, ApiError } from '../api/client.js';
 import { TIME_ZONE } from '../api/weather.js';
 import { formatTimeAgo } from '../utils/dates.js';
 import { setStatus } from '../utils/form.js';
+import { OFFLINE_MESSAGES, isOffline } from '../utils/offline-ui.js';
 
 const PAGE_SIZE = 20;
 
@@ -131,7 +132,7 @@ export function mountNotificationsPage(router) {
       render();
     } catch (err) {
       if (id !== requestId || isSessionEnd(err)) return;
-      setStatus(view, MESSAGES.loadFailed, 'error');
+      setStatus(view, isOffline(err) ? OFFLINE_MESSAGES.screen : MESSAGES.loadFailed, 'error');
     }
   }
 
@@ -145,7 +146,7 @@ export function mountNotificationsPage(router) {
     } catch (err) {
       if (isSessionEnd(err)) return;
       if (!(err instanceof ApiError && err.code === 'notification_not_found')) {
-        setStatus(view, MESSAGES.markFailed, 'error');
+        setStatus(view, isOffline(err) ? OFFLINE_MESSAGES.screen : MESSAGES.markFailed, 'error');
         return;
       }
       // Gone from the server: drop it from the list.
@@ -170,7 +171,7 @@ export function mountNotificationsPage(router) {
       render();
       tabs[0].focus();
     } catch (err) {
-      if (!isSessionEnd(err)) setStatus(view, MESSAGES.readAllFailed, 'error');
+      if (!isSessionEnd(err)) setStatus(view, isOffline(err) ? OFFLINE_MESSAGES.screen : MESSAGES.readAllFailed, 'error');
     } finally {
       readAll.disabled = false;
     }

@@ -3558,3 +3558,135 @@ body.is-wide .view--admin-login .brand {
 .report-rows dd[data-tone="negative"] {
   color: var(--danger);
 }
+
+/* ---------- Phase 14: offline banner, "Waiting to sync", update bar ---------- */
+
+.offline-banner {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid #f0d58a;
+  border-radius: var(--radius-sm);
+  background: #fff8e1;
+  font-size: var(--fs-sm);
+  color: #6b4e00;
+}
+
+.sync-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--space-2);
+  padding: 1px var(--space-2);
+  border: 1px dashed #1d5fa8;
+  border-radius: var(--radius-pill);
+  background: #eaf2fb;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  color: #1d5fa8;
+}
+
+.is-queued {
+  outline: 1px dashed rgba(29, 95, 168, 0.45);
+  outline-offset: -1px;
+}
+
+.update-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(calc(100% - 32px), calc(var(--shell-max-width) - 32px));
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--text-strong);
+  box-shadow: var(--shadow-card);
+  font-size: var(--fs-sm);
+  color: #fff;
+  transform: translateX(-50%);
+}
+
+.update-bar span {
+  flex: 1;
+}
+
+.update-bar__button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--primary-green-light);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+/* ---------- Date and time fields match the other inputs (iPhone Safari) ---------- */
+
+/* Safari draws its own pill for date and time inputs, ignoring the .input box, and centers
+   the value. Reset that look; tapping still opens the native date or time picker. */
+.input[type="date"],
+.input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 50px;
+  min-height: 50px;
+  padding: 0 var(--space-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--surface);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 47px; /* 50px minus the borders: the value sits in the middle like other inputs */
+  color: var(--text-strong);
+  text-align: left;
+}
+
+.input[type="date"]::-webkit-date-and-time-value,
+.input[type="time"]::-webkit-date-and-time-value {
+  margin: 0;
+  min-height: 47px;
+  line-height: 47px;
+  text-align: left;
+}
+
+.input[type="date"]::-webkit-datetime-edit,
+.input[type="time"]::-webkit-datetime-edit {
+  padding: 0;
+}
+
+.input[type="date"]:hover,
+.input[type="time"]:hover {
+  border-color: var(--border-strong);
+}
+
+.input[type="date"]:focus,
+.input[type="time"]:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: var(--focus-ring);
+}
+
+.input[type="date"][aria-invalid="true"],
+.input[type="time"][aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+/* iPhone zooms in on any field whose text is under 16px when it is tapped. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select,
+textarea {
+  font-size: max(16px, 1em);
+}
+
+.picker-row .field-picker__select,
+.field-picker__select,
+.admin-picker__select,
+.scan-picker__select,
+.daily__month,
+.search-box__input,
+.chat-form__input,
+.chip--select select {
+  font-size: 16px;
+}

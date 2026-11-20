@@ -5,12 +5,13 @@ const TOAST_MS = 2600;
 let toastEl = null;
 let timer = 0;
 
-export function showToast(message) {
+/** Shows message for TOAST_MS, or for durationMs when a longer message needs more time. */
+export function showToast(message, durationMs = TOAST_MS) {
   if (!toastEl) return;
   clearTimeout(timer);
   toastEl.textContent = message;
   toastEl.hidden = false;
-  timer = setTimeout(() => { toastEl.hidden = true; }, TOAST_MS);
+  timer = setTimeout(() => { toastEl.hidden = true; }, durationMs);
 }
 
 export function hideToast() {

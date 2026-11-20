@@ -13,6 +13,8 @@ import { setStatus } from '../utils/form.js';
 import { removeJSON } from '../utils/store.js';
 import { showToast } from '../utils/toast.js';
 import { seasonChoices } from './expenses.js';
+import { clearOfflineData } from '../utils/offline-store.js';
+import { OFFLINE_MESSAGES, isOffline } from '../utils/offline-ui.js';
 
 const PAGE_SIZE = 50;
 const SEARCH_DELAY_MS = 300;
@@ -65,6 +67,7 @@ function isSessionEnd(err) {
 }
 
 function errorMessage(err) {
+  if (isOffline(err)) return OFFLINE_MESSAGES.screen;
   return (err instanceof ApiError && ERRORS[err.code]) || err.message;
 }
 
@@ -121,7 +124,8 @@ function mountPortalChrome(router, view, route) {
     link.classList.toggle('is-active', active);
     if (active) link.setAttribute('aria-current', 'page');
   });
-  view.querySelector('[data-admin-logout]').addEventListener('click', () => {
+  view.querySelector('[data-admin-logout]').addEventListener('click', async () => {
+    await clearOfflineData();
     auth.logout();
     removeJSON('user');
     removeJSON('farm');

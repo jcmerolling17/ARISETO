@@ -3,8 +3,10 @@
 import { farms, expenses as expensesApi, ApiError } from '../api/client.js';
 import { EXPENSE_CATEGORIES, QUANTITY_UNITS } from '../data/farm-options.js';
 import { showToast } from '../utils/toast.js';
-import { formatPeso, seasonForDate, seasonOf, shiftSeason } from '../utils/farm.js';
+import { cycleSeason, formatPeso, seasonForDate, seasonOf, shiftSeason } from '../utils/farm.js';
 import { formatShortDate, parseISODate, philippineToday, toISODate } from '../utils/dates.js';
+import { myQueuedItems } from '../utils/sync.js';
+import { OFFLINE_MESSAGES, isOffline, showOfflineBanner, waitingTag } from '../utils/offline-ui.js';
 import {
   setFieldError,
   clearFieldErrors,
@@ -61,13 +63,19 @@ export function showSeasonNext(season) {
 
 /**
  * The member's first farm (GET /farms, oldest first) and its fields with their current
- * cycles (GET /farms/{farm_id}/fields); farm is null before farm setup.
+ * cycles (GET /farms/{farm_id}/fields); farm is null before farm setup. answers holds both
+ * responses, so a screen can show the offline banner when they came from the phone.
  */
 export async function loadFirstFarm() {
   const list = await farms.list();
   const farm = Array.isArray(list) ? list[0] ?? null : null;
   const fields = farm ? (await farms.fields(farm.farm_id)) ?? [] : [];
-  return { farm, fields };
+  return { farm, fields, answers: [list, fields] };
+}
+
+/** The message for a failed load: offline without a saved answer says so. */
+function loadErrorMessage(err) {
+  return err instanceof ApiError && err.code === 'offline_not_loaded' ? err.message : MESSAGES.loadFailed;
 }
 
 /** The next season, the current one, and each season back two years, newest first. */
@@ -130,6 +138,8 @@ function mountExpenses(router) {
   let visible = PAGE_SIZE;
   let farm = null;
   let rows = [];
+  let queued = []; // expenses added offline, shown with "Waiting to sync"
+  let farmAnswers = [];
   let requestId = 0;
 
   function renderPickers(fields) {
@@ -219,10 +229,21 @@ function mountExpenses(router) {
     }));
   }
 
+  /** Queued expenses of this farm, season and field, as list rows (they are not in the totals). */
+  function queuedRows() {
+    const season = seasonFromKey(filters.seasonKey);
+    return queued
+      .map((item) => item.display)
+      .filter((d) => d && d.farm_id === farm?.farm_id && d.season === season.season && d.season_year === season.year)
+      .filter((d) => filters.fieldId === ALL_FIELDS || String(d.field_id) === filters.fieldId)
+      .map((d) => ({ ...d, queued: true, can_delete: false }));
+  }
+
   /** The expense list from the API (already newest first), filtered by the search box. */
   function renderTransactions() {
     const query = search.value.trim().toLowerCase();
-    const shown = rows.filter((e) => !query || `${e.description ?? ''} ${e.category_name}`.toLowerCase().includes(query));
+    const shown = [...queuedRows(), ...rows]
+      .filter((e) => !query || `${e.description ?? ''} ${e.category_name}`.toLowerCase().includes(query));
 
     txList.replaceChildren(...shown.slice(0, visible).map((e) => {
       const row = tpl('tx').cloneNode(true);
@@ -231,8 +252,14 @@ function mountExpenses(router) {
       row.querySelector('[data-title]').textContent = title;
       row.querySelector('[data-date]').textContent = formatShortDate(parseISODate(e.expense_date));
       row.querySelector('[data-category]').textContent = e.category_name;
-      row.querySelector('[data-plot]').textContent = `${e.field_name ?? 'Whole farm'}${quantity} · ${e.recorded_by_name}`;
+      row.querySelector('[data-plot]').textContent = e.queued
+        ? `${e.field_name ?? 'Whole farm'}${quantity}`
+        : `${e.field_name ?? 'Whole farm'}${quantity} · ${e.recorded_by_name}`;
       row.querySelector('[data-amount]').textContent = formatPeso(-e.amount_php);
+      if (e.queued) {
+        row.classList.add('is-queued');
+        row.querySelector('.tx-row__meta').append(waitingTag());
+      }
       const remove = row.querySelector('[data-delete]');
       remove.hidden = !e.can_delete;
       remove.setAttribute('aria-label', `Delete ${title}`);
@@ -244,12 +271,20 @@ function mountExpenses(router) {
   }
 
   async function deleteExpense(expense, title) {
+    if (navigator.onLine === false) {
+      setStatus(view, OFFLINE_MESSAGES.deleteExpense, 'error');
+      return;
+    }
     if (!window.confirm(MESSAGES.deleteConfirm(title))) return;
     try {
       await expensesApi.remove(expense.expense_id);
       showToast(MESSAGES.deleted);
     } catch (err) {
       if (isSessionEnd(err)) return;
+      if (isOffline(err)) {
+        setStatus(view, OFFLINE_MESSAGES.deleteExpense, 'error');
+        return;
+      }
       const code = err instanceof ApiError ? err.code : null;
       setStatus(view, MESSAGES[code] ?? MESSAGES.deleteFailed, 'error');
     }
@@ -266,19 +301,22 @@ function mountExpenses(router) {
     const id = ++requestId;
     const params = seasonFilters();
     try {
-      const [summary, list] = await Promise.all([
+      const [summary, list, waiting] = await Promise.all([
         expensesApi.summary(farm.farm_id, params),
         expensesApi.list(farm.farm_id, params),
+        myQueuedItems(),
       ]);
       if (id !== requestId) return;
       rows = list ?? [];
+      queued = waiting.filter((item) => item.kind === 'expense');
       content.hidden = false;
+      showOfflineBanner(view, ...farmAnswers, summary, list);
       renderTotals(summary);
       renderCategories(summary);
       renderTransactions();
     } catch (err) {
       if (id !== requestId || isSessionEnd(err)) return;
-      setStatus(view, MESSAGES.loadFailed, 'error');
+      setStatus(view, loadErrorMessage(err), 'error');
     }
   }
 
@@ -292,6 +330,8 @@ function mountExpenses(router) {
       const loaded = await loadFirstFarm();
       if (id !== requestId) return;
       farm = loaded.farm;
+      farmAnswers = loaded.answers;
+      showOfflineBanner(view, ...farmAnswers);
       const hasFields = Boolean(farm) && loaded.fields.length > 0;
       view.querySelector('.picker-row').hidden = !hasFields;
       recordHarvest.hidden = farm?.role_on_farm !== 'owner';
@@ -302,15 +342,22 @@ function mountExpenses(router) {
         return;
       }
       renderPickers(loaded.fields);
+      // Keep the categories saved on the phone, so Add Expense also works offline.
+      expensesApi.categories().catch(() => {});
       // A message from Add Expense or Harvest Entry.
       if (state?.message) setStatus(view, state.message, 'success');
       await load();
     } catch (err) {
       if (id !== requestId || isSessionEnd(err)) return;
       content.hidden = true;
-      setStatus(view, MESSAGES.loadFailed, 'error');
+      setStatus(view, loadErrorMessage(err), 'error');
     }
   }
+
+  // A queued expense was added, or the queue was sent: show the list as it is now.
+  const refresh = () => { if (!view.hidden && farm) load(); };
+  window.addEventListener('ariseto:queue-changed', refresh);
+  window.addEventListener('ariseto:synced', refresh);
 
   seasonPicker.addEventListener('change', () => {
     filters.seasonKey = seasonPicker.value;
@@ -359,6 +406,7 @@ function mountExpenseForm(router) {
   } = form.elements;
   const seasonField = view.querySelector('[data-season-field]');
   let farm = null;
+  let fields = [];
   let clientUuid = null;
   let seasonTouched = false;
   let categoriesRequest = null;
@@ -489,6 +537,34 @@ function mountExpenseForm(router) {
     }
   }
 
+  /**
+   * What an offline expense needs before it syncs: a name for messages ("Fertilizer ₱2,850
+   * (Jul 5)") and the row the Farm Expenses list shows with "Waiting to sync".
+   */
+  function queueInfo(payload) {
+    const checked = form.querySelector('input[name="category_id"]:checked');
+    const categoryName = checked?.closest('label')?.textContent.trim() ?? '';
+    const field = fields.find((f) => f.current_cycle?.cycle_id === payload.cycle_id) ?? null;
+    const season = field ? cycleSeason(field.current_cycle) : seasonOf(payload.season, payload.season_year);
+    const day = formatShortDate(parseISODate(payload.expense_date));
+    return {
+      label: `${categoryName} ${formatPeso(payload.amount_php)} (${day})`,
+      display: {
+        farm_id: farm.farm_id,
+        season: season.season,
+        season_year: season.year,
+        field_id: field?.field_id ?? null,
+        field_name: field?.field_name ?? null,
+        category_name: categoryName,
+        amount_php: payload.amount_php,
+        expense_date: payload.expense_date,
+        description: payload.description,
+        quantity: payload.quantity,
+        unit: payload.unit,
+      },
+    };
+  }
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (form.getAttribute('aria-busy') === 'true' || !farm) return;
@@ -504,8 +580,14 @@ function mountExpenseForm(router) {
     setBusy(form, true);
     try {
       // A retry after a lost connection resends the same client_uuid, so it is saved once.
-      const saved = await expensesApi.create(farm.farm_id, payload);
+      const info = queueInfo(payload);
+      const saved = await expensesApi.create(farm.farm_id, payload, info);
       clientUuid = null;
+      if (saved?.queued) {
+        showSeasonNext(seasonOf(info.display.season, info.display.season_year));
+        router.navigate('expenses', { replace: true, state: { message: OFFLINE_MESSAGES.savedOffline } });
+        return;
+      }
       showSeasonNext(seasonOf(saved.season, saved.season_year));
       router.navigate('expenses', { replace: true, state: { message: MESSAGES.saved } });
     } catch (err) {
@@ -531,13 +613,14 @@ function mountExpenseForm(router) {
       try {
         const [loaded] = await Promise.all([loadFirstFarm(), renderCategories()]);
         farm = loaded.farm;
+        fields = loaded.fields;
         // Plots: each field's current crop cycle, plus the whole farm.
-        const fields = loaded.fields.filter((f) => f.current_cycle);
+        const planted = loaded.fields.filter((f) => f.current_cycle);
         view.querySelector('[data-empty]').hidden = Boolean(farm && loaded.fields.length);
         form.hidden = !farm || !loaded.fields.length;
         plot.replaceChildren(
           new Option('Select a field', ''),
-          ...fields.map((f) => new Option(
+          ...planted.map((f) => new Option(
             `${f.field_name} · ${f.current_cycle.crop_name}`,
             String(f.current_cycle.cycle_id),
           )),
@@ -545,7 +628,7 @@ function mountExpenseForm(router) {
         );
         syncSeason();
       } catch (err) {
-        if (!isSessionEnd(err)) setStatus(view, MESSAGES.loadFailed, 'error');
+        if (!isSessionEnd(err)) setStatus(view, loadErrorMessage(err), 'error');
       }
     },
   });

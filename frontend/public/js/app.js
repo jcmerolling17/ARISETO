@@ -14,7 +14,6 @@ import { mountAccountPages } from './pages/account.js';
 import { mountLegalPages } from './pages/legal.js';
 import { mountWeatherPage } from './pages/weather.js';
 import { mountDiseasePages } from './pages/disease.js';
-import { mountYieldPage } from './pages/yield.js';
 import { mountChatbotPage } from './pages/chatbot.js';
 import { mountFarmReportPage } from './pages/farm-report.js';
 import { mountAdminPages } from './pages/admin.js';
@@ -22,6 +21,55 @@ import { ADMIN_ROUTES, redirectForRole } from './utils/session.js';
 import { loadJSON } from './utils/store.js';
 import { mountBottomNavs } from './utils/bottom-nav.js';
 import { mountToast } from './utils/toast.js';
+import { dropOtherAccounts, syncQueue } from './utils/sync.js';
+
+/**
+ * Service worker (Phase 14): caches the app so every screen opens offline. When a new
+ * version has downloaded, a bar offers Reload; Reload lets it take over and reloads once.
+ * Browsers run service workers only over HTTPS or on localhost.
+ */
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  const bar = document.querySelector('[data-update-bar]');
+  let reloading = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!reloading) return;
+    window.location.reload();
+  });
+  // Background Sync wakes an open window to send the offline queue.
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'sync') syncQueue();
+  });
+
+  navigator.serviceWorker.register('sw.js').then((registration) => {
+    const offerUpdate = (worker) => {
+      bar.hidden = false;
+      bar.querySelector('[data-update-reload]').onclick = () => {
+        reloading = true;
+        worker.postMessage({ type: 'skip-waiting' });
+      };
+    };
+    // Only an update gets the bar; the first install simply starts caching.
+    if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
+    registration.addEventListener('updatefound', () => {
+      const worker = registration.installing;
+      worker?.addEventListener('statechange', () => {
+        if (worker.state === 'installed' && navigator.serviceWorker.controller) offerUpdate(worker);
+      });
+    });
+  }).catch(() => { /* not over HTTPS or localhost: the app works online only */ });
+}
+
+/** Sends the offline queue now, whenever the phone is online again, and after each login. */
+function startOfflineSync() {
+  window.addEventListener('online', () => syncQueue());
+  window.addEventListener('ariseto:authenticated', async () => {
+    await dropOtherAccounts();
+    syncQueue();
+  });
+  syncQueue();
+}
 
 /** The route named by the current hash, without the '#/' and any query. */
 function hashRoute() {
@@ -106,11 +154,12 @@ function bootstrap() {
   mountLegalPages(router);
   mountWeatherPage(router);
   mountDiseasePages(router);
-  mountYieldPage(router);
   mountChatbotPage(router);
   mountFarmReportPage(router);
   mountAdminPages(router);
   router.start();
+  registerServiceWorker();
+  startOfflineSync();
 }
 
 if (document.readyState === 'loading') {
