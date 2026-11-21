@@ -24,7 +24,7 @@ export class Router {
     for (const [name, config] of Object.entries(routes)) {
       const el = root.querySelector(`[data-view="${name}"]`);
       if (!el) throw new Error(`Router: no element found for view "${name}"`);
-      this.#routes.set(name, { title: config.title ?? name, el, guard: null, onEnter: null, onLeave: null });
+      this.#routes.set(name, { config, el, guard: null, onEnter: null, onLeave: null });
       this.#order.push(name);
     }
     if (!this.#routes.has(defaultRoute)) {
@@ -32,6 +32,11 @@ export class Router {
     }
     this.#defaultRoute = defaultRoute;
     this.#titleSuffix = titleSuffix;
+  }
+
+  /** Shows the current route again (onEnter runs), e.g. after the language changes. */
+  refresh() {
+    this.#resolve({ force: true });
   }
 
   get current() {
@@ -133,7 +138,7 @@ export class Router {
       next.el.classList.add('is-entering');
     }
 
-    document.title = `${next.title} · ${this.#titleSuffix}`;
+    document.title = `${next.config.title ?? name} · ${this.#titleSuffix}`;
     this.#current = name;
 
     next.onEnter?.({ state, from, initial });

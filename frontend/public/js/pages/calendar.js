@@ -32,38 +32,13 @@ import {
 import { loadFirstFarm, newClientUuid } from './expenses.js';
 import { myQueuedItems } from '../utils/sync.js';
 import { OFFLINE_MESSAGES, isOffline, showOfflineBanner, waitingTag } from '../utils/offline-ui.js';
+import { addOptions, messages, t } from '../i18n/i18n.js';
 
 const FINISHED = new Set(['done', 'skipped']);
 const PAGE_SIZE = 200; // GET /farms/{farm_id}/activities allows at most 200 per page
 const NEARBY_WEEKS = 3;
 
-const MESSAGES = {
-  noFarm: 'No fields yet. Set up your farm to get a crop calendar.',
-  noCycle: 'Nothing is planted on this field yet.',
-  noTasks: 'No tasks match.',
-  noCompleted: 'No completed tasks yet.',
-  noTaskFields: 'No crop is planted yet. Set up your farm or add a plot before adding tasks.',
-  loadFailed: 'Your tasks could not be loaded. Check your connection and try again.',
-  saveFailed: 'The task could not be saved. Check your connection and try again.',
-  titleRequired: 'Enter a task name.',
-  fieldRequired: 'Choose the field for this task.',
-  dateRequired: 'Enter the date.',
-  saved: 'Task saved.',
-  done: 'Task marked as done.',
-  undone: 'Task marked as not done.',
-  skipped: 'Task skipped.',
-  deleted: 'Task deleted.',
-  deleteConfirm: (title) => `Delete "${title}"?`,
-  // Error codes of the activity endpoints, as short plain messages.
-  cycle_not_found: 'This crop cycle could not be found. Go back and try again.',
-  activity_not_found: 'This task could not be found. It may have been deleted.',
-  cycle_closed: 'This crop cycle is closed, so its tasks can no longer change.',
-  client_uuid_taken: 'This task could not be saved. Try again.',
-  date_out_of_range: 'Choose a date within 2 years of today.',
-  not_editable: 'Only tasks you added can be renamed or moved to another stage.',
-  generated_task: 'Tasks from the crop guide can be skipped, not deleted.',
-  field_not_in_farm: 'This field is not on your farm.',
-};
+const MESSAGES = messages('calendar');
 
 /** The field chosen on the Crop Calendar, shared with the task form. */
 const shared = { fieldId: null };
@@ -140,7 +115,7 @@ function weekStart(no, sowingISO) {
 }
 
 function weekLabel(no) {
-  return no >= 1 ? `Week ${no}` : 'Before sowing';
+  return no >= 1 ? t('cal.week', { n: no }) : t('cal.beforeSowing');
 }
 
 function fieldOption(field) {
@@ -222,10 +197,10 @@ function mountCalendar() {
   function renderSummary(cycle) {
     const stat = (name) => view.querySelector(`[data-stat="${name}"]`);
     view.querySelector('[data-crop-icon]').setAttribute('href', cropIcon(cycle.crop_name));
-    view.querySelector('[data-schedule-title]').textContent = `${cycle.crop_name} Crop Schedule`;
-    view.querySelector('[data-schedule-season]').textContent = `Season: ${labelOf(SEASONS, cycle.season)}`;
+    view.querySelector('[data-schedule-title]').textContent = t('cal.schedule', { crop: cycle.crop_name });
+    view.querySelector('[data-schedule-season]').textContent = t('cal.season', { season: labelOf(SEASONS, cycle.season) });
     stat('completion').textContent = `${cycle.completion_pct}%`;
-    stat('value').textContent = 'Coming soon'; // needs yield estimation
+    stat('value').textContent = t('cal.comingSoon'); // needs yield estimation
     stat('planted').textContent = formatNumericDate(parseISODate(cycle.planting_date));
     stat('harvest').textContent = formatNumericDate(parseISODate(cycle.expected_harvest_date));
   }
@@ -249,8 +224,8 @@ function mountCalendar() {
   function dayTask(task, { ongoing = false } = {}) {
     const item = tpl('day-task').cloneNode(true);
     const check = item.querySelector('[data-check]');
-    const time = ongoing ? `Until ${formatShortDate(parseISODate(lastDay(task)))}` : formatClock(hhmm(task.scheduled_time));
-    item.querySelector('[data-time]').textContent = time || 'Any time';
+    const time = ongoing ? t('cal.until', { date: formatShortDate(parseISODate(lastDay(task))) }) : formatClock(hhmm(task.scheduled_time));
+    item.querySelector('[data-time]').textContent = time || t('cal.anyTime');
     item.querySelector('[data-title]').textContent = task.title;
     item.classList.toggle('is-done', FINISHED.has(task.status));
     markWaiting(item, task, '[data-title]');
@@ -300,7 +275,7 @@ function mountCalendar() {
     row.querySelector('[data-title]').textContent = task.title;
     row.classList.toggle('is-done', FINISHED.has(task.status));
     tag.hidden = task.status !== 'skipped';
-    tag.textContent = 'Skipped';
+    tag.textContent = t('cal.skipped');
     markWaiting(row, task, '[data-title]');
     bindCheck(check, task, reload, view);
     return row;
@@ -324,7 +299,7 @@ function mountCalendar() {
     const startAt = Math.max(0, Math.min(firstNearby === -1 ? weeks.length : firstNearby, weeks.length - NEARBY_WEEKS));
     const shown = showAllWeeks ? weeks : weeks.slice(startAt, startAt + NEARBY_WEEKS);
     weekMore.hidden = weeks.length <= NEARBY_WEEKS;
-    weekMore.textContent = showAllWeeks ? 'Show fewer weeks' : `Show all ${weeks.length} weeks`;
+    weekMore.textContent = showAllWeeks ? t('cal.fewerWeeks') : t('cal.allWeeks', { n: weeks.length });
     weekMore.setAttribute('aria-expanded', String(showAllWeeks));
 
     weekList.replaceChildren(...shown.map((no) => {
@@ -345,7 +320,7 @@ function mountCalendar() {
       card.querySelector('[data-done-icon]').hidden = pct < 100;
       card.classList.toggle('is-current', no === currentWeek);
       toggle.setAttribute('aria-expanded', String(open));
-      toggle.querySelector('[data-toggle-label]').textContent = open ? 'Hide tasks' : 'Show tasks';
+      toggle.querySelector('[data-toggle-label]').textContent = open ? t('cal.hideTasks') : t('h.show_tasks');
       list.hidden = !open;
       list.replaceChildren(...items.map((task) => checkRow(task)));
       toggle.addEventListener('click', () => {
@@ -490,7 +465,7 @@ function mountTasks(router) {
       showField && cycle ? `${cycle.field_name} · ${cycle.crop_name}` : null,
       week,
       formatClock(hhmm(task.scheduled_time)),
-      task.reminder ? 'Reminder on' : null,
+      task.reminder ? t('cal.reminderOn') : null,
     ];
     const details = [task.description, task.notes].filter(Boolean).join(' · ');
 
@@ -499,18 +474,18 @@ function mountTasks(router) {
     card.querySelector('[data-desc]').textContent = details;
     card.querySelector('[data-desc]').hidden = !details;
     card.querySelector('[data-meta]').textContent = meta.filter(Boolean).join(' · ');
-    card.querySelector('[data-check-label]').textContent = `Mark "${task.title}" as done`;
+    card.querySelector('[data-check-label]').textContent = t('cal.markDone', { title: task.title });
     card.classList.toggle('is-done', FINISHED.has(task.status));
     bindCheck(check, task, reload, view);
     let label = '';
-    if (overdue) label = 'Overdue';
-    else if (task.status === 'skipped') label = 'Skipped';
-    else if (task.status === 'rescheduled') label = 'Rescheduled';
+    if (overdue) label = t('cal.overdue');
+    else if (task.status === 'skipped') label = t('cal.skipped');
+    else if (task.status === 'rescheduled') label = t('cal.rescheduled');
     tag.hidden = !label;
     tag.textContent = label;
     tag.classList.toggle('status-tag--overdue', overdue);
     markWaiting(card, task, '[data-meta]');
-    menuBtn.setAttribute('aria-label', `More actions for "${task.title}"`);
+    menuBtn.setAttribute('aria-label', t('cal.moreActions', { title: task.title }));
 
     const finished = FINISHED.has(task.status);
     card.querySelector('[data-action="done"]').hidden = task.status === 'done';
@@ -584,7 +559,7 @@ function mountTasks(router) {
       || a.activity_id - b.activity_id;
     if (filters.completed) {
       const done = list.filter((t) => FINISHED.has(t.status)).sort((a, b) => byDate(b, a));
-      return done.length ? [{ title: 'Completed Tasks', week: '', entries: done.map((task) => ({ task })) }] : [];
+      return done.length ? [{ title: t('cal.completedTasks'), week: '', entries: done.map((task) => ({ task })) }] : [];
     }
 
     const today = toISODate(philippineToday());
@@ -626,11 +601,11 @@ function mountTasks(router) {
           week = `${weekLabel(no)} · ${formatRange(start, addDays(start, 6))}`;
         }
       }
-      groups.push({ title: 'Current Tasks', week, entries: current });
+      groups.push({ title: t('cal.currentTasks'), week, entries: current });
     }
     [...upcoming.values()]
       .sort((a, b) => a.start - b.start)
-      .forEach((group, index) => groups.push({ ...group, title: index === 0 ? 'Upcoming Tasks' : '' }));
+      .forEach((group, index) => groups.push({ ...group, title: index === 0 ? t('cal.upcomingTasks') : '' }));
     return groups;
   }
 
@@ -639,7 +614,7 @@ function mountTasks(router) {
     empty.hidden = true;
     const planted = fields.filter((field) => field.current_cycle);
 
-    chipField.replaceChildren(new Option('Field', ''), ...planted.map(fieldOption));
+    chipField.replaceChildren(new Option(t('h.field'), ''), ...planted.map(fieldOption));
     if (!planted.some((f) => f.field_id === filters.fieldId)) filters.fieldId = null;
     chipField.value = filters.fieldId == null ? '' : String(filters.fieldId);
     chipAll.setAttribute('aria-pressed', String(filters.fieldId == null));
@@ -775,7 +750,7 @@ function mountTaskForm(router) {
   let fields = [];
   let clientUuid = newClientUuid(); // kept for retries of the same new task
 
-  for (const option of GROWTH_STAGES) stage.add(new Option(option.label, option.value));
+  addOptions(stage, GROWTH_STAGES);
   bindLiveErrorClearing(form);
 
   function cycleFor(fieldId) {
@@ -893,10 +868,10 @@ function mountTaskForm(router) {
   function fill(task, mode) {
     editing = task;
     const generated = task && !task.is_custom;
-    const titles = { reschedule: 'Reschedule Task', edit: 'Edit Farm Task' };
-    heading.textContent = task ? titles[mode] ?? titles.edit : 'New Farm Task';
-    subtitle.textContent = task ? 'Change the date, time, reminder, or notes.' : 'Schedule a new activity for your crop calendar.';
-    saveButton.textContent = task ? 'Save Changes' : 'Save Task';
+    const titles = { reschedule: t('cal.rescheduleTask'), edit: t('cal.editTask') };
+    heading.textContent = task ? titles[mode] ?? titles.edit : t('h.new_farm_task');
+    subtitle.textContent = task ? t('cal.editSubtitle') : t('h.schedule_a_new_activity_for_your');
+    saveButton.textContent = task ? t('cal.saveChanges') : t('h.save_task');
     title.disabled = Boolean(generated);
     stage.disabled = Boolean(generated);
     fieldSelect.disabled = Boolean(task);
@@ -938,7 +913,7 @@ function mountTaskForm(router) {
         showEmpty(view, MESSAGES.noTaskFields);
         return;
       }
-      fieldSelect.replaceChildren(new Option('Select field', ''), ...planted.map(fieldOption));
+      fieldSelect.replaceChildren(new Option(t('cal.selectField'), ''), ...planted.map(fieldOption));
       form.hidden = false;
       fill(state?.task ?? null, state?.mode);
     },

@@ -8,21 +8,9 @@ import { showToast } from '../utils/toast.js';
 import { rememberUser } from '../utils/session.js';
 import { clearOfflineData } from '../utils/offline-store.js';
 import { myQueuedItems } from '../utils/sync.js';
+import { messages, t } from '../i18n/i18n.js';
 
-const MESSAGES = {
-  online: 'Online',
-  offline: 'Offline',
-  loadFailed: 'Your profile could not be loaded. Check your connection and try again.',
-  loggedOut: 'You have logged out.',
-  logoutWaiting: (n) =>
-    `${n} change(s) are still waiting to sync and will be lost if you log out now. Log out anyway?`,
-  deletionHint: 'An MPMPC administrator removes your personal details',
-  deletionRequested: (day) => `Requested on ${day}. An MPMPC administrator will process it.`,
-  deletionConfirm:
-    'Request account deletion?\n\nAn MPMPC administrator will deactivate your account and remove your personal details. Your farm records are kept for cooperative reports.',
-  deletionSent: 'Deletion requested. An MPMPC administrator will process it.',
-  deletionFailed: 'Your request could not be sent. Check your connection and try again.',
-};
+const MESSAGES = messages('profile');
 
 /** '+63 917 123 4567' from '+639171234567'. */
 function formatMobile(mobile) {
@@ -76,7 +64,7 @@ export function mountProfilePage(router) {
   function renderPlots(farm, fields) {
     const active = fields.filter((field) => field.current_cycle?.status === 'active').length;
     const plotCount = view.querySelector('[data-plot-count]');
-    plotCount.textContent = `${active} active ${active === 1 ? 'plot' : 'plots'}`;
+    plotCount.textContent = active === 1 ? t('profile.activePlot') : t('profile.activePlots', { n: active });
     plotCount.hidden = active === 0;
     addPlot.hidden = farm?.role_on_farm !== 'owner';
     view.querySelector('[data-farm-report]').hidden = farm?.role_on_farm !== 'owner';
@@ -87,10 +75,10 @@ export function mountProfilePage(router) {
       const crop = CROPS.find((c) => c.label === cycle?.crop_name);
       card.querySelector('[data-crop-icon]').setAttribute('href', `#${crop?.icon ?? 'icon-seeds'}`);
       card.querySelector('[data-name]').textContent = field.field_name;
-      card.querySelector('[data-meta]').textContent = [cycle?.crop_name ?? 'Not planted', formatHectares(field.area_ha)].join(' · ');
+      card.querySelector('[data-meta]').textContent = [cycle?.crop_name ?? t('profile.notPlanted'), formatHectares(field.area_ha)].join(' · ');
       card.querySelector('[data-place]').textContent = farm.barangay_name;
-      card.querySelector('[data-edit]').setAttribute('aria-label', `Edit ${field.field_name}`);
-      card.querySelector('[data-remove]').setAttribute('aria-label', `Remove ${field.field_name}`);
+      card.querySelector('[data-edit]').setAttribute('aria-label', t('setup.editNamed', { name: field.field_name }));
+      card.querySelector('[data-remove]').setAttribute('aria-label', t('setup.removeNamed', { name: field.field_name }));
       return card;
     }));
     plotsEmpty.hidden = fields.length > 0;

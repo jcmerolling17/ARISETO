@@ -15,42 +15,15 @@ import {
   focusFirstInvalid,
   bindLiveErrorClearing,
 } from '../utils/form.js';
+import { addOptions, messages, t } from '../i18n/i18n.js';
+import { categoryLabel } from '../data/farm-options.js';
 
 const PAGE_SIZE = 5;
 const MAX_AMOUNT = 99999999.99; // EXPENSE.amount_php and quantity NUMERIC(10,2)
 const WHOLE_FARM = 'farm';
 const ALL_FIELDS = '';
 
-const MESSAGES = {
-  noFarm: 'No fields yet. Set up your farm to track its expenses.',
-  loadFailed: 'Your expenses could not be loaded. Check your connection and try again.',
-  noIncomeYet: 'No harvest income yet this season.',
-  categoryRequired: 'Choose an expense category.',
-  amountRequired: 'Enter the amount.',
-  amountInvalid: 'Enter an amount greater than 0, with up to 2 decimals.',
-  amountTooLarge: 'This amount is too large. Check the number.',
-  dateRequired: 'Enter the date.',
-  dateFuture: 'The date cannot be after today.',
-  quantityInvalid: 'Enter a quantity greater than 0, with up to 2 decimals.',
-  plotRequired: 'Choose the plot this expense is for.',
-  seasonRequired: 'Choose the season for this whole-farm expense.',
-  saved: 'Expense saved.',
-  deleteConfirm: (title) => `Delete "${title}"? This cannot be undone.`,
-  deleted: 'Expense deleted.',
-  deleteFailed: 'The expense could not be deleted. Check your connection and try again.',
-  // POST /farms/{farm_id}/expenses error codes, as short plain messages.
-  category_not_found: 'This category is no longer available. Choose another one.',
-  cycle_not_in_farm: 'This field is no longer on your farm. Choose the plot again.',
-  season_required: 'Choose the season for this whole-farm expense.',
-  season_mismatch: 'The season does not match the field’s crop. Choose the plot again.',
-  unit_required: 'Choose a unit for the quantity.',
-  quantity_required: 'Enter the quantity for this unit.',
-  expense_date_in_future: 'The date cannot be after today.',
-  client_uuid_taken: 'This entry could not be saved. Please press Save Expense again.',
-  not_farm_member: 'You are no longer a member of this farm.',
-  not_allowed: 'Only the member who recorded this expense or the farm owner can delete it.',
-  expense_not_found: 'This expense was already deleted.',
-};
+const MESSAGES = messages('expenses');
 
 /** Season and field shown on Farm Expenses; saving an expense or harvest returns to its season. */
 const filters = { seasonKey: null, fieldId: ALL_FIELDS };
@@ -86,7 +59,7 @@ export function seasonChoices(today = philippineToday()) {
 
 function fillSeasons(select, seasons, current) {
   select.replaceChildren(...seasons.map((s) => {
-    const option = new Option(s.key === current?.key ? `${s.short} (current)` : s.short, s.key);
+    const option = new Option(s.key === current?.key ? t('report.current', { 0: s.short }) : s.short, s.key);
     option.setAttribute('aria-label', s.label);
     return option;
   }));
@@ -153,7 +126,7 @@ function mountExpenses(router) {
     seasonPicker.value = chosen.key;
 
     plotPicker.replaceChildren(
-      new Option('All fields', ALL_FIELDS),
+      new Option(t('exp.allFields'), ALL_FIELDS),
       ...fields.map((f) => new Option(
         f.current_cycle ? `${f.field_name} · ${f.current_cycle.crop_name}` : f.field_name,
         String(f.field_id),
@@ -191,7 +164,7 @@ function mountExpenses(router) {
     view.querySelector('[data-category-list]').replaceChildren(...categories.map((category) => {
       const row = tpl('category').cloneNode(true);
       row.querySelector('[data-icon]').setAttribute('href', `#${category.icon}`);
-      row.querySelector('[data-name]').textContent = category.category_name;
+      row.querySelector('[data-name]').textContent = categoryLabel(category.category_name);
       row.querySelector('[data-amount]').textContent = formatPeso(category.amount);
       row.style.setProperty('--category-color', category.color);
       return row;
@@ -224,7 +197,7 @@ function mountExpenses(router) {
       const item = tpl('legend').cloneNode(true);
       const share = spent ? Math.round((category.amount / spent) * 100) : 0;
       item.querySelector('[data-swatch]').style.background = category.color;
-      item.querySelector('[data-name]').textContent = `${category.category_name} ${share}%`;
+      item.querySelector('[data-name]').textContent = `${categoryLabel(category.category_name)} ${share}%`;
       return item;
     }));
   }
@@ -243,18 +216,18 @@ function mountExpenses(router) {
   function renderTransactions() {
     const query = search.value.trim().toLowerCase();
     const shown = [...queuedRows(), ...rows]
-      .filter((e) => !query || `${e.description ?? ''} ${e.category_name}`.toLowerCase().includes(query));
+      .filter((e) => !query || `${e.description ?? ''} ${e.category_name} ${categoryLabel(e.category_name)}`.toLowerCase().includes(query));
 
     txList.replaceChildren(...shown.slice(0, visible).map((e) => {
       const row = tpl('tx').cloneNode(true);
       const quantity = e.quantity ? ` · ${e.quantity} ${e.unit}` : '';
-      const title = e.description || e.category_name;
+      const title = e.description || categoryLabel(e.category_name);
       row.querySelector('[data-title]').textContent = title;
       row.querySelector('[data-date]').textContent = formatShortDate(parseISODate(e.expense_date));
-      row.querySelector('[data-category]').textContent = e.category_name;
+      row.querySelector('[data-category]').textContent = categoryLabel(e.category_name);
       row.querySelector('[data-plot]').textContent = e.queued
-        ? `${e.field_name ?? 'Whole farm'}${quantity}`
-        : `${e.field_name ?? 'Whole farm'}${quantity} · ${e.recorded_by_name}`;
+        ? `${e.field_name ?? t('exp.wholeFarm')}${quantity}`
+        : `${e.field_name ?? t('exp.wholeFarm')}${quantity} · ${e.recorded_by_name}`;
       row.querySelector('[data-amount]').textContent = formatPeso(-e.amount_php);
       if (e.queued) {
         row.classList.add('is-queued');
@@ -262,7 +235,7 @@ function mountExpenses(router) {
       }
       const remove = row.querySelector('[data-delete]');
       remove.hidden = !e.can_delete;
-      remove.setAttribute('aria-label', `Delete ${title}`);
+      remove.setAttribute('aria-label', t('exp.deleteNamed', { name: title }));
       remove.addEventListener('click', () => deleteExpense(e, title));
       return row;
     }));
@@ -435,14 +408,14 @@ function mountExpenseForm(router) {
       icon.append(use);
       const label = Object.assign(document.createElement('span'), {
         className: 'crop-option__label',
-        textContent: category.category_name,
+        textContent: categoryLabel(category.category_name),
       });
       option.append(input, icon, label);
       return option;
     }));
   }
 
-  for (const option of QUANTITY_UNITS) unit.add(new Option(option.label, option.value));
+  addOptions(unit, QUANTITY_UNITS);
 
   /** A whole-farm expense picks its season, suggested from the date until changed by hand. */
   function syncSeason() {
@@ -619,12 +592,12 @@ function mountExpenseForm(router) {
         view.querySelector('[data-empty]').hidden = Boolean(farm && loaded.fields.length);
         form.hidden = !farm || !loaded.fields.length;
         plot.replaceChildren(
-          new Option('Select a field', ''),
+          new Option(t('exp.selectField'), ''),
           ...planted.map((f) => new Option(
             `${f.field_name} · ${f.current_cycle.crop_name}`,
             String(f.current_cycle.cycle_id),
           )),
-          new Option('Whole farm', WHOLE_FARM),
+          new Option(t('exp.wholeFarm'), WHOLE_FARM),
         );
         syncSeason();
       } catch (err) {

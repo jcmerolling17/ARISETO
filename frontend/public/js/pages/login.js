@@ -14,34 +14,13 @@ import {
   focusFirstInvalid,
   bindLiveErrorClearing,
 } from '../utils/form.js';
+import { messages, t } from '../i18n/i18n.js';
 
 const MOBILE_RE = /^\+639\d{9}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MIN_PASSWORD_LENGTH = 8;
 
-const MESSAGES = {
-  identifierRequired: 'Enter your mobile number or email.',
-  mobileRequired: 'Enter your mobile number.',
-  mobileInvalid: 'Enter a valid PH mobile number, e.g. +639171234567.',
-  emailInvalid: 'Enter a valid email address.',
-  passwordRequired: 'Enter your password.',
-  passwordShort: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
-  firstNameRequired: 'Enter your first name.',
-  lastNameRequired: 'Enter your last name.',
-  memberNoRequired: 'Enter your MPMPC member number.',
-  municipalityRequired: 'Choose your municipality.',
-  loginFailed: 'Incorrect mobile number/email or password.',
-  loginSuccess: "Welcome back! You're now signed in.",
-  accountPending: 'Your account is waiting for approval from the MPMPC administrator. Please try again later.',
-  accountDeactivated: 'Your account has been deactivated. Please contact the MPMPC office.',
-  accountExists: 'An account with this mobile number, email, or member number already exists.',
-  mobileTaken: 'This mobile number is already registered.',
-  emailTaken: 'This email is already registered.',
-  memberNoTaken: 'This member number is already registered.',
-  signupSuccess: 'Account created. An MPMPC administrator will review it, and you can log in once it is approved.',
-  termsNotAccepted: 'Please agree to the Terms & Conditions and Privacy Policy to create your account.',
-  farmsFailed: 'You are signed in, but your farm could not be loaded. Check your connection and log in again.',
-};
+const MESSAGES = messages('login');
 
 /**
  * After login, finds the member's farm with GET /farms so Home works on any phone.
@@ -111,7 +90,7 @@ export function bindPasswordToggles(root) {
       const show = input.type === 'password';
       input.type = show ? 'text' : 'password';
       toggle.setAttribute('aria-pressed', String(show));
-      toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      toggle.setAttribute('aria-label', show ? t('login.hidePassword') : t('h.show_password'));
       input.focus({ preventScroll: true });
     });
   });
@@ -122,7 +101,7 @@ export function resetPasswordVisibility(form) {
     const input = document.getElementById(toggle.getAttribute('aria-controls'));
     if (input) input.type = 'password';
     toggle.setAttribute('aria-pressed', 'false');
-    toggle.setAttribute('aria-label', 'Show password');
+    toggle.setAttribute('aria-label', t('h.show_password'));
   });
 }
 
@@ -255,8 +234,8 @@ function mountSignup(router) {
 
   for (const name of MUNICIPALITIES) municipality.add(new Option(name, name));
   const barangayPicker = mountBarangayPicker(municipality, barangay, {
-    placeholder: 'Barangay (optional)',
-    emptyPlaceholder: 'Barangay (choose municipality first)',
+    placeholder: 'h.barangay_optional',
+    emptyPlaceholder: 'h.barangay_choose_municipality_first',
   });
   bindLiveErrorClearing(form);
 

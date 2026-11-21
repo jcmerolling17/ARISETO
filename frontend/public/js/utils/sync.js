@@ -13,13 +13,11 @@
 import { ApiError, currentUserId, request } from '../api/client.js';
 import { dropOtherAnswers, notifyQueueChanged, queuedItems, removeQueued } from './offline-store.js';
 import { showToast } from './toast.js';
+import { messages, t } from '../i18n/i18n.js';
 
 const LONG_TOAST_MS = 7000;
 
-const MESSAGES = {
-  synced: (n) => `${n} offline change(s) synced.`,
-  refused: (n, names) => `${n} offline change(s) couldn't be saved. ${names}`,
-};
+const MESSAGES = messages('sync');
 
 let running = null;
 

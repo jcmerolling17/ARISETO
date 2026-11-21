@@ -9,17 +9,19 @@
 import { ApiError, chat } from '../api/client.js';
 import { TIME_ZONE } from '../api/weather.js';
 import { savedFarm } from '../utils/saved-farm.js';
+import { messages, t } from '../i18n/i18n.js';
 
 // Sent as questions; the team's examples.csv includes these exact phrases.
-const CHIPS = ['Weather Check', "Today's Tasks"];
+// The chatbot understands English only (Phase 15), so a chip sends its English text and
+// shows its label in the current language.
+const CHIPS = [
+  { text: 'Weather Check', key: 'chat.chipWeather' },
+  { text: "Today's Tasks", key: 'chat.chipTasks' },
+];
 const PAGE_SIZE = 200; // the most messages one history request returns
 const MAX_PAGES = 5;
 
-const MESSAGES = {
-  unavailable: 'The chatbot isn’t available yet. Please try again later.',
-  offline: 'The chatbot needs an internet connection. Connect and try again.',
-  loadFailed: 'Your conversation could not be loaded. Check your connection and try again.',
-};
+const MESSAGES = messages('chatbot');
 
 function isSessionEnd(err) {
   return err instanceof ApiError && err.sessionEnded;
@@ -58,11 +60,11 @@ export function mountChatbotPage(router) {
     status.dataset.tone = tone;
   }
 
-  function chipButton(text) {
+  function chipButton({ text, key }) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'chat-chip';
-    button.textContent = text;
+    button.textContent = t(key);
     button.addEventListener('click', () => send(text));
     return button;
   }
@@ -76,7 +78,7 @@ export function mountChatbotPage(router) {
     item.querySelector('[data-time]').textContent = formatClock(message.created_at);
     const source = item.querySelector('[data-source]');
     source.hidden = !(isBot && message.source_reference);
-    if (!source.hidden) source.textContent = `Source: ${message.source_reference}`;
+    if (!source.hidden) source.textContent = t('common.source', { source: message.source_reference });
     // The fallback reply (no intent) suggests the topics.
     if (isBot && message.intent_tag == null) {
       const chips = item.querySelector('[data-msg-chips]');
@@ -89,7 +91,7 @@ export function mountChatbotPage(router) {
   function typingItem() {
     const dots = tpl.cloneNode(true);
     dots.classList.add('chat-msg--bot', 'chat-msg--typing');
-    dots.querySelector('[data-text]').textContent = 'Typing…';
+    dots.querySelector('[data-text]').textContent = t('chat.typing');
     dots.querySelector('[data-time]').hidden = true;
     return dots;
   }
@@ -166,6 +168,7 @@ export function mountChatbotPage(router) {
   }
 
   chipBar.replaceChildren(...CHIPS.map(chipButton));
+  window.addEventListener('ariseto:language', () => chipBar.replaceChildren(...CHIPS.map(chipButton)));
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();

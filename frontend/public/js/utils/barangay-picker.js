@@ -1,14 +1,11 @@
 // frontend/public/js/utils/barangay-picker.js
 
 import { barangays } from '../api/client.js';
+import { messages, t } from '../i18n/i18n.js';
 
 const cache = new Map();
 
-const TEXT = {
-  loading: 'Loading barangays…',
-  failed: 'Could not load the barangay list. Choose the municipality again to retry.',
-  empty: 'No barangays found for this municipality.',
-};
+const TEXT = messages('barangay');
 
 /** Barangays of a municipality from GET /barangays, cached per municipality. */
 function loadBarangays(municipality) {
@@ -25,11 +22,11 @@ function loadBarangays(municipality) {
  * The select's value is barangay_id; selected() returns the full row, including
  * center_latitude/center_longitude used as the farm location fallback.
  *
- * options: { placeholder, emptyPlaceholder, onChange }
+ * options: { placeholder, emptyPlaceholder (strings keys), onChange }
  */
 export function mountBarangayPicker(municipalitySelect, barangaySelect, {
-  placeholder = 'Choose barangay',
-  emptyPlaceholder = 'Choose municipality first',
+  placeholder = 'h.barangay',
+  emptyPlaceholder = 'h.choose_municipality_first',
   onChange,
 } = {}) {
   const hint = barangaySelect.closest('.field')?.querySelector('[data-barangay-hint]');
@@ -44,6 +41,13 @@ export function mountBarangayPicker(municipalitySelect, barangaySelect, {
     barangaySelect.replaceChildren(new Option(text, ''));
   }
 
+  // The first option reads "Choose barangay" in the current language.
+  window.addEventListener('ariseto:language', () => {
+    const first = barangaySelect.options[0];
+    if (!first || first.value) return;
+    first.text = municipalitySelect.value && rows.length ? t(placeholder) : t(emptyPlaceholder);
+  });
+
   async function refresh() {
     const municipality = municipalitySelect.value;
     const id = (requestId += 1);
@@ -52,7 +56,7 @@ export function mountBarangayPicker(municipalitySelect, barangaySelect, {
     setHint('');
 
     if (!municipality) {
-      showPlaceholder(emptyPlaceholder);
+      showPlaceholder(t(emptyPlaceholder));
       onChange?.();
       return;
     }
@@ -62,12 +66,12 @@ export function mountBarangayPicker(municipalitySelect, barangaySelect, {
       const list = await loadBarangays(municipality);
       if (id !== requestId) return;
       rows = list;
-      showPlaceholder(list.length ? placeholder : TEXT.empty);
+      showPlaceholder(list.length ? t(placeholder) : TEXT.empty);
       for (const row of list) barangaySelect.add(new Option(row.barangay_name, String(row.barangay_id)));
       barangaySelect.disabled = !list.length;
     } catch {
       if (id !== requestId) return;
-      showPlaceholder(emptyPlaceholder);
+      showPlaceholder(t(emptyPlaceholder));
       setHint(TEXT.failed);
     }
     onChange?.();
@@ -85,7 +89,7 @@ export function mountBarangayPicker(municipalitySelect, barangaySelect, {
       requestId += 1;
       rows = [];
       barangaySelect.disabled = true;
-      showPlaceholder(emptyPlaceholder);
+      showPlaceholder(t(emptyPlaceholder));
       setHint('');
     },
   };

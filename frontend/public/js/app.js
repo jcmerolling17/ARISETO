@@ -21,6 +21,8 @@ import { ADMIN_ROUTES, redirectForRole } from './utils/session.js';
 import { loadJSON } from './utils/store.js';
 import { mountBottomNavs } from './utils/bottom-nav.js';
 import { mountToast } from './utils/toast.js';
+import { applyI18n, t, tEn } from './i18n/i18n.js';
+import { mountLanguageSwitches } from './utils/language-switch.js';
 import { dropOtherAccounts, syncQueue } from './utils/sync.js';
 
 /**
@@ -93,35 +95,35 @@ function bootstrap() {
     root: document.getElementById('app'),
     defaultRoute: 'welcome',
     routes: {
-      welcome: { title: 'Welcome' },
-      signup: { title: 'Sign Up' },
-      terms: { title: 'Terms and Conditions' },
-      privacy: { title: 'Privacy Policy' },
-      login: { title: 'Login' },
-      setup: { title: 'Set Up Your Farm' },
-      'setup-farm': { title: 'Set up your farm' },
-      'setup-field': { title: 'Farm Details' },
-      'setup-fields': { title: 'Field Setup' },
-      'setup-review': { title: 'Review Your Farm' },
-      'setup-done': { title: 'Farm Set Up' },
-      home: { title: 'Home' },
-      calendar: { title: 'Crop Calendar' },
-      tasks: { title: 'Manage All Tasks' },
-      'task-new': { title: 'New Farm Task' },
-      expenses: { title: 'Farm Expenses' },
-      'expense-new': { title: 'Add Expense' },
-      'harvest-new': { title: 'Harvest Entry' },
-      notifications: { title: 'Notifications' },
-      profile: { title: 'Profile' },
-      'edit-profile': { title: 'Edit Profile' },
-      'change-password': { title: 'Change Password' },
-      'add-plot': { title: 'Add Plot' },
-      weather: { title: 'Weather Tracker' },
-      scan: { title: 'Disease Diagnosis Entries' },
-      'scan-result': { title: 'Detection Results' },
-      yield: { title: 'Yield Estimation' },
-      chatbot: { title: 'Chatbot' },
-      'farm-report': { title: 'Farm Report' },
+      welcome: { get title() { return t('title.welcome'); } },
+      signup: { get title() { return t('title.signup'); } },
+      terms: { get title() { return t('title.terms'); } },
+      privacy: { get title() { return t('title.privacy'); } },
+      login: { get title() { return t('title.login'); } },
+      setup: { get title() { return t('title.setup'); } },
+      'setup-farm': { get title() { return t('title.setup-farm'); } },
+      'setup-field': { get title() { return t('title.setup-field'); } },
+      'setup-fields': { get title() { return t('title.setup-fields'); } },
+      'setup-review': { get title() { return t('title.setup-review'); } },
+      'setup-done': { get title() { return t('title.setup-done'); } },
+      home: { get title() { return t('title.home'); } },
+      calendar: { get title() { return t('title.calendar'); } },
+      tasks: { get title() { return t('title.tasks'); } },
+      'task-new': { get title() { return t('title.task-new'); } },
+      expenses: { get title() { return t('title.expenses'); } },
+      'expense-new': { get title() { return t('title.expense-new'); } },
+      'harvest-new': { get title() { return t('title.harvest-new'); } },
+      notifications: { get title() { return t('title.notifications'); } },
+      profile: { get title() { return t('title.profile'); } },
+      'edit-profile': { get title() { return t('title.edit-profile'); } },
+      'change-password': { get title() { return t('title.change-password'); } },
+      'add-plot': { get title() { return t('title.add-plot'); } },
+      weather: { get title() { return t('title.weather'); } },
+      scan: { get title() { return t('title.scan'); } },
+      'scan-result': { get title() { return t('title.scan-result'); } },
+      yield: { get title() { return t('title.yield'); } },
+      chatbot: { get title() { return t('title.chatbot'); } },
+      'farm-report': { get title() { return t('title.farm-report'); } },
       'admin-login': { title: 'Admin Portal' },
       admin: { title: 'Admin Approval List' },
       'admin-report': { title: 'Cooperative Report' },
@@ -133,13 +135,17 @@ function bootstrap() {
     // The token is already cleared; the saved role (kept on the device) picks the login.
     const wasAdmin = ADMIN_ROUTES.has(router.current) || loadJSON('user')?.role === 'coop_admin';
     const route = wasAdmin ? 'admin-login' : 'login';
-    router.navigate(route, { replace: true, state: { message, tone: 'error' } });
+    // message is a strings key; the Admin Portal stays in English.
+    const text = wasAdmin ? tEn(message) : t(message);
+    router.navigate(route, { replace: true, state: { message: text, tone: 'error' } });
   });
 
   // The Admin Portal and its login use the full window width on a desktop.
   const wide = new Set([...ADMIN_ROUTES, 'admin-login']);
   router.onChange((name) => document.body.classList.toggle('is-wide', wide.has(name)));
 
+  applyI18n(document);
+  mountLanguageSwitches();
   mountBottomNavs();
   mountToast(router);
   mountAuthPages(router);
@@ -158,6 +164,8 @@ function bootstrap() {
   mountFarmReportPage(router);
   mountAdminPages(router);
   router.start();
+  // A new language redraws the screen on show; others pick it up when they open.
+  window.addEventListener('ariseto:language', () => router.refresh());
   registerServiceWorker();
   startOfflineSync();
 }

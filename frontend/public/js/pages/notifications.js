@@ -10,6 +10,7 @@ import { TIME_ZONE } from '../api/weather.js';
 import { formatTimeAgo } from '../utils/dates.js';
 import { setStatus } from '../utils/form.js';
 import { OFFLINE_MESSAGES, isOffline } from '../utils/offline-ui.js';
+import { messages } from '../i18n/i18n.js';
 
 const PAGE_SIZE = 20;
 
@@ -36,16 +37,7 @@ const WEATHER_ICONS = [
   ['Strong wind', 'icon-wind'],
 ];
 
-const MESSAGES = {
-  empty: {
-    all: 'No notifications yet.',
-    unread: 'You’re all caught up. No unread notifications.',
-    alerts: 'No weather alerts for your farm.',
-  },
-  loadFailed: 'Notifications could not be loaded. Check your connection and try again.',
-  markFailed: 'This notification could not be marked as read. Try again.',
-  readAllFailed: 'Notifications could not be marked as read. Try again.',
-};
+const MESSAGES = messages('notifications');
 
 function iconFor(n) {
   if (n.type === 'weather_alert') {
@@ -104,7 +96,7 @@ export function mountNotificationsPage(router) {
 
     list.replaceChildren(...items.map(renderItem));
     empty.hidden = !loaded || items.length > 0;
-    view.querySelector('[data-empty-text]').textContent = MESSAGES.empty[tab];
+    view.querySelector('[data-empty-text]').textContent = MESSAGES[`empty_${tab}`];
 
     // Keep focus on the tapped item; on the Unread tab it disappears, so focus the next one.
     if (focusId != null) {

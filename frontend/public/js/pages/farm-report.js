@@ -9,18 +9,11 @@ import { ApiError, farms } from '../api/client.js';
 import { formatPeso } from '../utils/farm.js';
 import { setStatus } from '../utils/form.js';
 import { seasonChoices } from './expenses.js';
+import { messages, t } from '../i18n/i18n.js';
 
-const MESSAGES = {
-  subtitle: (farmName) => `${farmName}: yield, costs and crop health per field.`,
-  noFarm: 'Set up your farm first.',
-  notOwner: 'Only the farm owner can see the farm report.',
-  noHarvest: 'No harvest yet',
-  none: 'None',
-  wholeFarm: (amount) => `includes ${amount} whole-farm expenses`,
-  current: (short) => `${short} (current)`,
-};
+const MESSAGES = messages('report');
 
-const STATUS_LABELS = { planned: 'Planned', active: 'Active', harvested: 'Harvested', failed: 'Failed' };
+const STATUS_LABELS = messages('report.status');
 
 function formatNumber(value, digits = 2) {
   return Number(value).toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: digits });
@@ -95,35 +88,35 @@ export function mountFarmReportPage(router) {
     status.dataset.status = entry.status;
     const scans = entry.scans;
     fillRows(card.querySelector('[data-rows]'), [
-      { label: 'Area (ha)', value: formatNumber(entry.area_ha, 4) },
-      { label: 'Expenses', value: formatPeso(entry.expenses_php) },
-      { label: 'Harvest (kg)', value: formatNumber(entry.harvest_kg) },
-      { label: 'Income', value: formatPeso(entry.gross_income_php) },
-      { label: 'Net profit', value: formatPeso(entry.net_profit_php), tone: profitTone(entry.net_profit_php) },
+      { label: t('report.areaHa'), value: formatNumber(entry.area_ha, 4) },
+      { label: t('report.expenses'), value: formatPeso(entry.expenses_php) },
+      { label: t('report.harvestKg'), value: formatNumber(entry.harvest_kg) },
+      { label: t('report.income'), value: formatPeso(entry.gross_income_php) },
+      { label: t('report.netProfit'), value: formatPeso(entry.net_profit_php), tone: profitTone(entry.net_profit_php) },
       {
-        label: 'Yield (t/ha)',
+        label: t('report.yield'),
         value: entry.actual_yield_t_ha == null ? MESSAGES.noHarvest : formatNumber(entry.actual_yield_t_ha),
       },
-      { label: 'Tasks done (%)', value: `${entry.task_completion_pct}%` },
-      { label: 'Scans', value: `${scans.diseased} / ${scans.healthy} / ${scans.unrecognized}` },
-      { label: 'Most found', value: entry.top_disease ?? MESSAGES.none },
+      { label: t('report.tasksDone'), value: `${entry.task_completion_pct}%` },
+      { label: t('report.scans'), value: `${scans.diseased} / ${scans.healthy} / ${scans.unrecognized}` },
+      { label: t('report.mostFound'), value: entry.top_disease ?? MESSAGES.none },
     ]);
     return card;
   }
 
   function render(report) {
     subtitle.textContent = MESSAGES.subtitle(report.farm_name);
-    const t = report.totals;
+    const sum = report.totals;
     fillRows(totals, [
-      { label: 'Area', value: `${formatNumber(t.area_ha, 4)} ha` },
+      { label: t('report.area'), value: `${formatNumber(sum.area_ha, 4)} ha` },
       {
-        label: 'Expenses',
-        value: formatPeso(t.expenses_php),
-        note: t.whole_farm_expenses_php > 0 ? MESSAGES.wholeFarm(formatPeso(t.whole_farm_expenses_php)) : '',
+        label: t('report.expenses'),
+        value: formatPeso(sum.expenses_php),
+        note: sum.whole_farm_expenses_php > 0 ? MESSAGES.wholeFarm(formatPeso(sum.whole_farm_expenses_php)) : '',
       },
-      { label: 'Harvest', value: formatKg(t.harvest_kg) },
-      { label: 'Income', value: formatPeso(t.gross_income_php) },
-      { label: 'Net profit', value: formatPeso(t.net_profit_php), tone: profitTone(t.net_profit_php) },
+      { label: t('report.harvest'), value: formatKg(sum.harvest_kg) },
+      { label: t('report.income'), value: formatPeso(sum.gross_income_php) },
+      { label: t('report.netProfit'), value: formatPeso(sum.net_profit_php), tone: profitTone(sum.net_profit_php) },
     ]);
     fieldList.replaceChildren(...report.fields.map(fieldCard));
     noCycles.hidden = report.fields.length > 0;

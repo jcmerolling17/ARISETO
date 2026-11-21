@@ -4,14 +4,9 @@ import { getFarmWeather, formatClock } from '../api/weather.js';
 import { ApiError, notifications } from '../api/client.js';
 import { loadJSON } from '../utils/store.js';
 import { isSavedFarm, savedFarm } from '../utils/saved-farm.js';
+import { messages, t } from '../i18n/i18n.js';
 
-const WEATHER_MESSAGES = {
-  noFarm: 'Set up your farm to see the weather there.',
-  noReading: 'No weather reading for your farm yet. Check back soon.',
-  offline: 'You are offline. Weather will update when you reconnect.',
-  unavailable: 'Weather is unavailable right now.',
-  notMember: 'You are no longer a member of this farm, so its weather is hidden.',
-};
+const WEATHER_MESSAGES = messages('dashboard');
 
 function mountWeather(view) {
   const box = view.querySelector('[data-weather]');
@@ -63,7 +58,7 @@ function mountWeather(view) {
       field('rain').textContent = w.rainChance == null ? '--%' : `${w.rainChance}%`;
       field('wind').textContent = w.wind == null ? '-- km/h' : `${w.wind} km/h`;
       // fetched_at is shown in Philippine time, whatever the phone's time zone.
-      if (w.fetchedAt) field('place').textContent += ` · Updated ${formatClock(w.fetchedAt)}`;
+      if (w.fetchedAt) field('place').textContent += ` · ${t('weather.updatedAt', { time: formatClock(w.fetchedAt) })}`;
       box.dataset.state = 'ready';
     } catch (err) {
       if (id !== requestId) return;
@@ -106,7 +101,7 @@ function mountBell(view) {
   function show(unread) {
     badge.textContent = unread > 9 ? '9+' : String(unread);
     badge.hidden = unread === 0;
-    bell.setAttribute('aria-label', unread ? `Notifications, ${unread} unread` : 'Notifications');
+    bell.setAttribute('aria-label', unread ? t('home.bellUnread', { n: unread }) : t('h.notifications'));
   }
 
   return {

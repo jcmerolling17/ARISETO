@@ -13,50 +13,16 @@ import {
 import { saveJSON } from '../utils/store.js';
 import { mountBarangayPicker } from '../utils/barangay-picker.js';
 import { rememberUser } from '../utils/session.js';
+import { messages, t } from '../i18n/i18n.js';
 
 const MAX_AREA_HA = 999999.9999; // FARM.total_area_ha NUMERIC(10,4)
 const MAX_FIELDS = 20;
 const PLANTING_WINDOW_YEARS = 2; // CROP_CYCLE.planting_date: within 2 years of today
 
-const MESSAGES = {
-  farmNameRequired: 'Enter your farm name.',
-  municipalityRequired: 'Choose the municipality where your farm is.',
-  barangayRequired: 'Choose the barangay where your farm is.',
-  fieldCountRequired: 'Enter how many fields your farm has.',
-  fieldCountInvalid: `Enter a whole number from 1 to ${MAX_FIELDS}.`,
-  seasonRequired: 'Choose the season.',
-  fieldNameRequired: 'Enter a name for this field.',
-  fieldNameTaken: 'You already have a field with this name.',
-  cropRequired: 'Choose what you are planting.',
-  varietyRequired: 'Choose the variety.',
-  varietiesLoading: 'Loading varieties…',
-  varietiesWait: 'Wait for the varieties to load, then choose one.',
-  varietiesNone: 'No varieties for this crop yet',
-  varietiesNoneError: 'There are no varieties for this crop yet. Please contact the MPMPC office.',
-  varietiesFailed: 'Could not load the varieties. Check your connection, then choose the crop again.',
-  sizeRequired: 'Enter the field size in hectares.',
-  sizeInvalid: 'Enter a size greater than 0.',
-  sizeTooSmall: 'This size is too small. Enter at least 0.0001 ha (1 m²).',
-  sizeTooLarge: 'Your fields add up to more than ARISETO can store. Check the size.',
-  plantingDateRequired: 'Enter the sowing date.',
-  plantingDateInvalid: 'Enter a sowing date within two years of today.',
-  removeConfirm: (name) => `Remove ${name} from your farm?`,
-  fieldsNone: 'Add at least one field.',
-  fieldsTooFew: (added, expected) =>
-    `You said your farm has ${plural(expected, 'field')}, but you added ${added}. Add ${plural(expected - added, 'more field')}, or go back and change the number.`,
-  fieldsTooMany: (added, expected) =>
-    `You said your farm has ${plural(expected, 'field')}, but you added ${added}. Remove ${plural(added - expected, 'field')}, or go back and change the number.`,
-  unexpected: 'The server returned an unexpected response. Please try again.',
-};
+const MESSAGES = messages('setup');
 
 /** Messages for the POST /farms error codes (Section 6). Nothing is saved when one occurs. */
-const SAVE_ERRORS = {
-  no_fields: 'Add at least one field before saving your farm.',
-  field_name_taken: 'Two of your fields have the same name. Edit one so each field has its own name.',
-  barangay_not_found: 'We could not find your barangay. Edit your farm details and choose your barangay again.',
-  planting_date_out_of_range: 'A sowing date is more than two years from today. Edit the field and check its sowing date.',
-  variety_not_found: 'A variety you chose is no longer on the list. Edit the field and choose its variety again.',
-};
+const SAVE_ERRORS = messages('setup.save');
 
 /**
  * farm:        step 1 answers { farm_name, barangay_id }, not yet sent
@@ -85,15 +51,20 @@ function fillSelect(select, options) {
   for (const option of options) {
     select.add(typeof option === 'string' ? new Option(option, option) : new Option(option.label, option.value));
   }
+  if (options.some((option) => typeof option !== 'string')) {
+    window.addEventListener('ariseto:language', () => {
+      for (const option of options) {
+        const el = [...select.options].find((o) => o.value === option.value);
+        if (el && typeof option !== 'string') el.text = option.label;
+      }
+    });
+  }
 }
 
 function cleanText(raw) {
   return String(raw).trim().replace(/\s+/g, ' ');
 }
 
-function plural(count, word) {
-  return `${count} ${word}${count === 1 ? '' : 's'}`;
-}
 
 function roundHectares(value) {
   return Math.round(value * 10000) / 10000;
@@ -109,7 +80,7 @@ export function toHectares(raw) {
 export function formatHectares(value, { long = false } = {}) {
   const amount = roundHectares(value).toLocaleString('en-PH', { maximumFractionDigits: 4 });
   if (!long) return `${amount} ha`;
-  return `${amount} ${value === 1 ? 'hectare' : 'hectares'}`;
+  return `${amount} ${value === 1 ? t('setup.hectare') : t('setup.hectares')}`;
 }
 
 function totalAreaHa() {
@@ -184,7 +155,8 @@ function bindHomeButtons(view, router) {
 
 function mountStart(router) {
   const view = document.querySelector('[data-view="setup"]');
-  const nameEl = view.querySelector('[data-user-name]');
+  const greetingEl = view.querySelector('[data-setup-greeting]');
+  let name = '';
 
   bindHomeButtons(view, router);
 
@@ -192,9 +164,10 @@ function mountStart(router) {
     onEnter({ state } = {}) {
       const firstName = state?.user?.first_name;
       if (firstName) {
-        nameEl.textContent = firstName;
+        name = firstName;
         rememberUser({ first_name: firstName });
       }
+      greetingEl.textContent = t('setup.greeting', { name: name || t('setup.there') });
     },
   });
 }
@@ -314,10 +287,10 @@ function mountFieldStep(router) {
   // 'empty' (no crop), 'loading', 'none' (crop has no varieties), 'failed', or 'ready'.
   let varietyState = 'empty';
   const VARIETY_ERRORS = {
-    loading: MESSAGES.varietiesWait,
-    none: MESSAGES.varietiesNoneError,
-    failed: MESSAGES.varietiesFailed,
-    ready: MESSAGES.varietyRequired,
+    loading: 'varietiesWait',
+    none: 'varietiesNoneError',
+    failed: 'varietiesFailed',
+    ready: 'varietyRequired',
   };
 
   function setVarietyPlaceholder(text, state) {
@@ -331,7 +304,7 @@ function mountFieldStep(router) {
   async function fillVarieties(crop, selectedId = null) {
     const id = (varietyRequest += 1);
     if (!crop) {
-      setVarietyPlaceholder('Choose a crop first', 'empty');
+      setVarietyPlaceholder(t('h.choose_a_crop_first'), 'empty');
       return;
     }
     setVarietyPlaceholder(MESSAGES.varietiesLoading, 'loading');
@@ -342,9 +315,9 @@ function mountFieldStep(router) {
         setVarietyPlaceholder(MESSAGES.varietiesNone, 'none');
         return;
       }
-      variety.replaceChildren(new Option('Choose variety', ''));
+      variety.replaceChildren(new Option(t('setup.chooseVariety'), ''));
       for (const item of varieties) {
-        const option = new Option(`${item.variety_name} · ${item.maturity_days} days`, String(item.variety_id));
+        const option = new Option(t('setup.varietyOption', { name: item.variety_name, days: item.maturity_days }), String(item.variety_id));
         option.dataset.name = item.variety_name;
         variety.add(option);
       }
@@ -356,7 +329,7 @@ function mountFieldStep(router) {
     } catch (err) {
       if (id !== varietyRequest) return;
       if (err instanceof ApiError && err.sessionEnded) return;
-      setVarietyPlaceholder('Choose a crop first', 'failed');
+      setVarietyPlaceholder(t('h.choose_a_crop_first'), 'failed');
       setFieldError(variety, MESSAGES.varietiesFailed);
     }
   }
@@ -390,7 +363,7 @@ function mountFieldStep(router) {
       setFieldError(fieldName, MESSAGES.fieldNameTaken);
     }
     if (!crop) setCropError(MESSAGES.cropRequired);
-    else if (!varietyOption) setFieldError(variety, VARIETY_ERRORS[varietyState] ?? MESSAGES.varietyRequired);
+    else if (!varietyOption) setFieldError(variety, MESSAGES[VARIETY_ERRORS[varietyState] ?? 'varietyRequired']);
 
     const areaHa = toHectares(size.value);
     const othersHa = others.reduce((sum, field) => sum + field.area_ha, 0);
@@ -455,7 +428,7 @@ function mountFieldStep(router) {
     guard: fieldStepsGuard,
     onEnter() {
       limitPlantingDate();
-      heading.textContent = draft.editing === null ? 'Add your Field' : 'Edit your Field';
+      heading.textContent = draft.editing === null ? t('h.add_your_field') : t('setup.editField');
       backLink.setAttribute('href', draft.fields.length ? '#/setup-fields' : '#/setup-farm');
     },
     onLeave() {
@@ -494,14 +467,14 @@ function mountFieldsStep(router, fieldStep) {
     q('[data-planted]').textContent = formatDate(parseDate(field.planting_date));
 
     const edit = q('[data-edit]');
-    edit.setAttribute('aria-label', `Edit ${field.field_name}`);
+    edit.setAttribute('aria-label', t('setup.editNamed', { name: field.field_name }));
     edit.addEventListener('click', () => {
       fieldStep.open(field.key);
       router.navigate('setup-field');
     });
 
     const remove = q('[data-remove]');
-    remove.setAttribute('aria-label', `Remove ${field.field_name}`);
+    remove.setAttribute('aria-label', t('setup.removeNamed', { name: field.field_name }));
     remove.addEventListener('click', () => {
       if (!window.confirm(MESSAGES.removeConfirm(field.field_name))) return;
       draft.fields = draft.fields.filter((f) => f.key !== field.key);
@@ -515,7 +488,7 @@ function mountFieldsStep(router, fieldStep) {
     toggle.addEventListener('click', () => {
       more.hidden = !more.hidden;
       toggle.setAttribute('aria-expanded', String(!more.hidden));
-      toggle.querySelector('span').textContent = more.hidden ? 'View details' : 'Hide details';
+      toggle.querySelector('span').textContent = more.hidden ? t('h.view_details') : t('setup.hideDetails');
     });
 
     return item;
@@ -523,7 +496,7 @@ function mountFieldsStep(router, fieldStep) {
 
   function render() {
     list.replaceChildren(...draft.fields.map(card));
-    countEl.textContent = `${draft.fields.length} of ${plural(draft.fieldCount, 'field')} added`;
+    countEl.textContent = MESSAGES.fieldsAdded(draft.fields.length, draft.fieldCount);
   }
 
   addButton.addEventListener('click', () => {
@@ -535,8 +508,8 @@ function mountFieldsStep(router, fieldStep) {
     const added = draft.fields.length;
     const expected = draft.fieldCount;
     if (!added) setStatus(view, MESSAGES.fieldsNone, 'error');
-    else if (added < expected) setStatus(view, MESSAGES.fieldsTooFew(added, expected), 'error');
-    else if (added > expected) setStatus(view, MESSAGES.fieldsTooMany(added, expected), 'error');
+    else if (added < expected) setStatus(view, MESSAGES.fieldsTooFew(expected, added, expected - added), 'error');
+    else if (added > expected) setStatus(view, MESSAGES.fieldsTooMany(expected, added, added - expected), 'error');
     else router.navigate('setup-review');
   });
 

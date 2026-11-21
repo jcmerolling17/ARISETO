@@ -1,6 +1,7 @@
 // frontend/public/js/api/client.js
 
 import { enqueue, queuedItems, readAnswer, saveAnswer } from '../utils/offline-store.js';
+import { t } from '../i18n/i18n.js';
 
 const API_BASE = (
   document.querySelector('meta[name="ariseto-api-base"]')?.content || '/api/v1'
@@ -39,8 +40,6 @@ export function currentUserId() {
 
 /* ---------- Offline reading and the offline queue (Phase 14) ---------- */
 
-const NOT_LOADED_MESSAGE =
-  "You're offline, and this hasn't been opened on this phone yet. Connect once to use it offline.";
 
 // Answers served from the phone instead of the network, mapped to the time they were saved.
 const savedAnswerTimes = new WeakMap();
@@ -107,10 +106,10 @@ export const tokenStore = {
 };
 
 // A protected call answered with one of these ends the session (Section 6): the saved token
-// is cleared and the app goes to Login with the message.
+// is cleared and the app goes to Login with the message (a strings key).
 const SESSION_END_MESSAGES = {
-  '401:not_authenticated': 'Please log in again.',
-  '403:account_deactivated': 'Your account has been deactivated. Contact MPMPC.',
+  '401:not_authenticated': 'session.loginAgain',
+  '403:account_deactivated': 'session.deactivated',
 };
 
 let sessionEndHandler = null;
@@ -148,11 +147,11 @@ function errorMessage(data, status) {
   if (typeof detail === 'string') return detail;
   if (detail && typeof detail === 'object' && typeof detail.message === 'string') return detail.message;
   if (Array.isArray(detail) && detail.length) {
-    return detail.map((item) => item?.msg).filter(Boolean).join(' ') || 'Some fields are invalid.';
+    return detail.map((item) => item?.msg).filter(Boolean).join(' ') || t('api.invalidFields');
   }
-  if (status >= 500) return 'Something went wrong on our side. Please try again shortly.';
-  if (status === 429) return 'Too many attempts. Please wait a moment and try again.';
-  return 'Request failed. Please try again.';
+  if (status >= 500) return t('api.serverError');
+  if (status === 429) return t('api.tooMany');
+  return t('api.failed');
 }
 
 /**
@@ -190,7 +189,7 @@ export async function request(path, { offline = false, queue = null, ...options 
         savedAnswerTimes.set(saved.data, saved.savedAt);
         return saved.data;
       }
-      const notLoaded = new ApiError(NOT_LOADED_MESSAGE, {
+      const notLoaded = new ApiError(t('api.notLoaded'), {
         details: { detail: { code: 'offline_not_loaded' } },
       });
       notLoaded.network = true;
@@ -236,9 +235,9 @@ async function send(path, { method = 'GET', body, headers = {}, auth = true, tim
     return data;
   } catch (err) {
     if (err instanceof ApiError) throw err;
-    let message = 'Unable to reach ARISETO right now. Please try again.';
-    if (err.name === 'AbortError') message = 'The server took too long to respond. Please try again.';
-    else if (navigator.onLine === false) message = 'You appear to be offline. Check your connection and try again.';
+    let message = t('api.unreachable');
+    if (err.name === 'AbortError') message = t('api.timeout');
+    else if (navigator.onLine === false) message = t('api.offline');
     const failure = new ApiError(message);
     failure.network = true;
     throw failure;

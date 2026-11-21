@@ -9,7 +9,7 @@
  * phone then downloads the new files into a new cache, the app offers "Reload", and the
  * old cache is deleted when the new version takes over.
  */
-const VERSION = 5;
+const VERSION = 6;
 const SHELL_CACHE = `ariseto-shell-v${VERSION}`;
 const FONT_CACHE = 'ariseto-fonts';
 const SYNC_TAG = 'ariseto-sync';
@@ -22,6 +22,9 @@ const SHELL = [
   'css/components.css',
   'css/screens.css',
   'js/app.js',
+  'js/i18n/i18n.js',
+  'js/i18n/en.js',
+  'js/i18n/fil.js',
   'js/router.js',
   'js/api/client.js',
   'js/api/weather.js',
@@ -48,6 +51,7 @@ const SHELL = [
   'js/utils/form.js',
   'js/utils/offline-store.js',
   'js/utils/offline-ui.js',
+  'js/utils/language-switch.js',
   'js/utils/saved-farm.js',
   'js/utils/session.js',
   'js/utils/store.js',

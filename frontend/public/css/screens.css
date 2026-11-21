@@ -3620,6 +3620,44 @@ body.is-wide .view--admin-login .brand {
   color: var(--text-strong);
 }
 
+/* ---------- Language switch (Phase 15) ---------- */
+
+.lang-switch {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+}
+
+.lang-switch__btn {
+  min-height: 34px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-muted, #5f6b63);
+  cursor: pointer;
+}
+
+.lang-switch__btn[aria-pressed="true"] {
+  background: var(--primary-green-dark);
+  color: var(--text-on-dark);
+}
+
+.lang-switch--welcome {
+  align-self: flex-end;
+  margin: 0 0 var(--space-2) auto;
+}
+
+.setting-row--lang {
+  cursor: default;
+}
+
 /* ---------- Date and time fields match the other inputs (iPhone Safari) ---------- */
 
 /* Safari draws its own pill for date and time inputs, ignoring the .input box, and centers

@@ -18,31 +18,14 @@ import {
 } from '../utils/form.js';
 import { loadFirstFarm, showSeasonNext } from './expenses.js';
 import { OFFLINE_MESSAGES, isOffline } from '../utils/offline-ui.js';
+import { messages, t } from '../i18n/i18n.js';
 
 const MAX_VALUE = 99999999.99; // quantity_kg and unit_price_php NUMERIC(10,2)
 const MAX_GROSS = 9999999999.99; // gross_income_php NUMERIC(12,2)
 const MONEY_RE = /^\d+(\.\d{1,2})?$/;
 
-const MESSAGES = {
-  noneReady: 'No crop is ready to harvest yet.',
-  noFarm: 'No fields yet. Set up your farm to record harvests.',
-  loadFailed: 'Your crops could not be loaded. Check your connection and try again.',
-  cycleRequired: 'Choose the crop cycle.',
-  dateRequired: 'Enter the harvest date.',
-  dateOutOfRange: 'Enter a date between the sowing date and today.',
-  quantityInvalid: 'Enter the quantity in kg, greater than 0, with up to 2 decimals.',
-  priceInvalid: 'Enter the price per kg, greater than 0, with up to 2 decimals.',
-  grossTooLarge: 'Quantity times price is too large. Check the numbers.',
-  saved: 'Harvest saved.',
-  savedFinal: 'Harvest saved. This crop cycle is now closed.',
-  // POST /cycles/{cycle_id}/harvests error codes, as short plain messages.
-  cycle_not_found: 'This crop cycle could not be found. Go back and try again.',
-  not_farm_owner: 'Only the farm owner can record harvests.',
-  cycle_closed: 'This crop cycle is already closed.',
-  harvest_date_out_of_range: 'Enter a date between the sowing date and today.',
-};
+const MESSAGES = messages('harvest');
 
-const SEASON_NAMES = { wet: 'Wet Season', dry: 'Dry Season' };
 
 function isSessionEnd(err) {
   return err instanceof ApiError && err.sessionEnded;
@@ -198,9 +181,9 @@ export function mountHarvestPage(router) {
       cycles = new Map(ready.map((c) => [c.cycle_id, c]));
       // 'Wet Season - Rice (Field A)', as in the design.
       cyclePicker.replaceChildren(
-        new Option('Choose the crop cycle', ''),
+        new Option(t('harvest.chooseCycle'), ''),
         ...ready.map((c) => new Option(
-          `${SEASON_NAMES[c.season]} - ${c.crop_name} (${c.field_name})`,
+          `${t(`harvest.season.${c.season}`)} - ${c.crop_name} (${c.field_name})`,
           String(c.cycle_id),
         )),
       );

@@ -1,6 +1,7 @@
 // frontend/public/js/api/weather.js
 
 import { farms } from './client.js';
+import { t } from '../i18n/i18n.js';
 
 /**
  * Maps an OpenWeatherMap condition ID (WEATHER_LOG.condition_code) to an illustration kind.
@@ -15,14 +16,10 @@ export function kindFor(code) {
   return 'cloudy';
 }
 
-export const SUMMARIES = {
-  clear: { day: 'Today is a sunny day!', night: 'Clear skies tonight.' },
-  partly: { day: 'Today is a partly sunny day!', night: 'Partly cloudy tonight.' },
-  cloudy: { day: 'Today is a cloudy day.', night: 'Cloudy tonight.' },
-  fog: { day: 'It is hazy or foggy today.', night: 'Hazy or foggy tonight.' },
-  rain: { day: 'Expect rain today.', night: 'Expect rain tonight.' },
-  storm: { day: 'Thunderstorms expected. Stay safe!', night: 'Thunderstorms tonight. Stay safe!' },
-};
+/** Summary line for a weather kind, by day or night: t('weather.summary.<kind>.day|night'). */
+export function summaryFor(kind, isDay) {
+  return t(`weather.summary.${kind}.${isDay ? 'day' : 'night'}`);
+}
 
 /** Weather times are stored in UTC and shown in Philippine time, whatever the phone's zone. */
 export const TIME_ZONE = 'Asia/Manila';
@@ -72,7 +69,7 @@ export async function getFarmWeather(farmId) {
     wind: rounded(reading.wind_speed_mps, 3.6),
     kind,
     isDay,
-    summary: SUMMARIES[kind][isDay ? 'day' : 'night'],
+    summary: summaryFor(kind, isDay),
     fetchedAt: fetchedAt && !Number.isNaN(fetchedAt.getTime()) ? fetchedAt : null,
   };
 }

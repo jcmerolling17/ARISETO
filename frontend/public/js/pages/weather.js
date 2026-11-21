@@ -1,22 +1,16 @@
 // frontend/public/js/pages/weather.js
 
 import { farms, ApiError } from '../api/client.js';
-import { kindFor, SUMMARIES, TIME_ZONE, manilaParts, isDaytime, formatClock, rounded } from '../api/weather.js';
+import { kindFor, summaryFor, TIME_ZONE, manilaParts, isDaytime, formatClock, rounded } from '../api/weather.js';
 import { loadJSON, saveJSON } from '../utils/store.js';
 import { isSavedFarm, savedFarm } from '../utils/saved-farm.js';
 import { formatTimeAgo } from '../utils/dates.js';
+import { messages, t } from '../i18n/i18n.js';
 
 const HOURS_SHOWN = 8; // now + the next 7 three-hour forecast slots (24 hours)
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const MESSAGES = {
-  noFarm: 'Set up your farm to see the weather there.',
-  noReading: 'No weather reading for your farm yet. Check back soon.',
-  loading: 'Loading the weather…',
-  offline: 'You are offline. Weather will update when you reconnect.',
-  unavailable: 'Weather is unavailable right now.',
-  notMember: 'You are no longer a member of this farm, so its weather is hidden.',
-};
+const MESSAGES = messages('weather');
 
 function formatHour(date) {
   return date.toLocaleTimeString('en-PH', { timeZone: TIME_ZONE, hour: 'numeric' });
@@ -65,12 +59,12 @@ export function mountWeatherPage(router) {
     const fetched = new Date(current.fetched_at);
     field('now-icon').setAttribute('href', iconFor(current.condition_code, at));
     field('now-temp').textContent = String(rounded(current.temp_c) ?? '--');
-    field('now-summary').textContent = SUMMARIES[kind][isDaytime(at) ? 'day' : 'night'];
+    field('now-summary').textContent = summaryFor(kind, isDaytime(at));
     field('now-feels').textContent = degrees(rounded(current.feels_like_c));
     field('now-rain').textContent = percent(rounded(current.precip_probability_pct));
     const wind = rounded(current.wind_speed_mps, 3.6); // m/s to km/h
     field('now-wind').textContent = wind == null ? '-- km/h' : `${wind} km/h`;
-    field('updated').textContent = `Updated ${formatTimeAgo(fetched)} · ${formatClock(fetched)}`;
+    field('updated').textContent = `${t('weather.updatedAt', { time: formatTimeAgo(fetched) })} · ${formatClock(fetched)}`;
   }
 
   /** "Now", then the forecast in its 3-hour steps. */
@@ -79,7 +73,7 @@ export function mountWeatherPage(router) {
     field('hours').replaceChildren(...slots.map((reading) => {
       const item = tpl('hour').cloneNode(true);
       const at = reading.now ? new Date() : new Date(reading.forecast_for);
-      const time = reading.now ? 'Now' : formatHour(at);
+      const time = reading.now ? t('weather.now') : formatHour(at);
       const temp = rounded(reading.temp_c);
       const rain = rounded(reading.precip_probability_pct);
       item.classList.toggle('is-now', Boolean(reading.now));
@@ -87,7 +81,7 @@ export function mountWeatherPage(router) {
       item.querySelector('[data-icon]').setAttribute('href', iconFor(reading.condition_code, at));
       item.querySelector('[data-rain]').textContent = percent(rain);
       item.querySelector('[data-time]').textContent = time;
-      item.setAttribute('aria-label', `${time}: ${temp ?? 'unknown'} degrees, ${rain ?? 'unknown'}% chance of rain`);
+      item.setAttribute('aria-label', t('weather.hourLabel', { time, temp: temp ?? '?', rain: rain ?? '?' }));
       return item;
     }));
   }
@@ -96,7 +90,7 @@ export function mountWeatherPage(router) {
   function renderDays(daily) {
     const byDate = new Map(daily.map((day) => [day.date, day]));
     const now = Date.now();
-    const days = [['Yesterday', -1], ['Today', 0], ['Tomorrow', 1]];
+    const days = [[t('weather.yesterday'), -1], [t('h.today'), 0], [t('weather.tomorrow'), 1]];
 
     field('days').replaceChildren(...days.map(([name, offset]) => {
       const day = byDate.get(manilaParts(new Date(now + offset * DAY_MS)).day);
@@ -105,8 +99,8 @@ export function mountWeatherPage(router) {
       item.querySelector('[data-name]').textContent = name;
       item.querySelector('[data-range]').textContent = range;
       item.setAttribute('aria-label', day
-        ? `${name}: ${rounded(day.temp_min_c)} to ${rounded(day.temp_max_c)} degrees`
-        : `${name}: no readings`);
+        ? t('weather.dayLabel', { name, min: rounded(day.temp_min_c), max: rounded(day.temp_max_c) })
+        : t('weather.dayNone', { name }));
       return item;
     }));
   }

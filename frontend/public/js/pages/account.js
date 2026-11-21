@@ -31,45 +31,14 @@ import {
   toISODate,
 } from './setup.js';
 import { rememberUser } from '../utils/session.js';
+import { addOptions, messages, t } from '../i18n/i18n.js';
 
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 128;
 const MAX_AREA_HA = 999999.9999; // FARM.total_area_ha NUMERIC(10,4)
 const MAX_TARGET_T_HA = 9999.99; // CROP_CYCLE.target_yield_t_ha NUMERIC(6,2)
 
-const MESSAGES = {
-  loadFailed: 'Your profile could not be loaded. Check your connection and try again.',
-  firstNameRequired: 'Enter your first name.',
-  lastNameRequired: 'Enter your last name.',
-  mobileRequired: 'Enter your mobile number.',
-  mobileInvalid: 'Enter a valid PH mobile number, e.g. +639171234567.',
-  emailInvalid: 'Enter a valid email address.',
-  currentPasswordRequired: 'Enter your current password to change your mobile number or email.',
-  currentPasswordWrong: 'Your current password is incorrect.',
-  mobileTaken: 'This mobile number is already registered.',
-  emailTaken: 'This email is already registered.',
-  noChanges: 'No changes to save.',
-  profileSaved: 'Profile updated.',
-  passwordRequired: 'Enter your current password.',
-  newPasswordLength: `Use ${MIN_PASSWORD_LENGTH} to ${MAX_PASSWORD_LENGTH} characters.`,
-  confirmMismatch: 'The passwords do not match.',
-  passwordUnchanged: 'Choose a password different from your current one.',
-  passwordSaved: 'Password changed. You were logged out on your other devices.',
-  fieldNameRequired: 'Enter a field name.',
-  fieldNameTaken: 'A field with this name already exists on this farm.',
-  cropRequired: 'Choose a crop.',
-  varietyRequired: 'Choose a variety.',
-  varietiesFailed: 'Varieties could not be loaded. Check your connection and choose the crop again.',
-  varietyNotFound: 'This variety is no longer on the list. Choose the variety again.',
-  sizeInvalid: 'Enter the field size in hectares, e.g. 1.25.',
-  sizeTooLarge: 'The farm would be larger than 999,999.9999 hectares.',
-  dateRequired: 'Enter the sowing date.',
-  dateOutOfRange: 'Enter a sowing date within two years of today.',
-  targetInvalid: 'Enter a target greater than 0, with at most 2 decimals.',
-  notOwner: 'Only the farm owner can add plots.',
-  farmNotFound: 'This farm could not be found. Go back to Profile and try again.',
-  plotSaved: 'Plot added.',
-};
+const MESSAGES = messages('account');
 
 /** 'October 2025' in Philippine time. */
 function formatMonth(value) {
@@ -298,7 +267,7 @@ function mountAddPlot(router) {
   let varietyRequest = 0;
 
   for (const option of CROPS) crop.add(new Option(option.label, option.value));
-  for (const option of SEASONS) season.add(new Option(option.label, option.value));
+  addOptions(season, SEASONS);
   bindLiveErrorClearing(form);
 
   function setVarietyPlaceholder(text) {
@@ -310,21 +279,21 @@ function mountAddPlot(router) {
     const id = ++varietyRequest;
     setFieldError(variety, '');
     if (!value) {
-      setVarietyPlaceholder('Choose a crop first');
+      setVarietyPlaceholder(t('h.choose_a_crop_first'));
       return;
     }
-    setVarietyPlaceholder('Loading varieties…');
+    setVarietyPlaceholder(t('setup.varietiesLoading'));
     try {
       const list = (await loadVarieties()).get(value) ?? [];
       if (id !== varietyRequest) return;
-      variety.replaceChildren(new Option('Choose variety', ''));
+      variety.replaceChildren(new Option(t('setup.chooseVariety'), ''));
       for (const item of list) {
-        variety.add(new Option(`${item.variety_name} · ${item.maturity_days} days`, String(item.variety_id)));
+        variety.add(new Option(t('setup.varietyOption', { name: item.variety_name, days: item.maturity_days }), String(item.variety_id)));
       }
       variety.disabled = list.length === 0;
     } catch (err) {
       if (id !== varietyRequest || isSessionEnd(err)) return;
-      setVarietyPlaceholder('Choose a crop first');
+      setVarietyPlaceholder(t('h.choose_a_crop_first'));
       setFieldError(variety, MESSAGES.varietiesFailed);
     }
   }

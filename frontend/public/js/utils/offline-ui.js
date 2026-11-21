@@ -5,18 +5,9 @@
  * shared by the Crop Calendar and Farm Expenses screens and the screens that need internet.
  */
 import { ApiError, offlineSince } from '../api/client.js';
+import { messages, t } from '../i18n/i18n.js';
 
-export const OFFLINE_MESSAGES = {
-  banner: (time) => `Offline · showing what was loaded ${time}.`,
-  waiting: 'Waiting to sync',
-  savedOffline: "Saved on this phone. It will sync when you're back online.",
-  deleteExpense: 'You need internet to delete this expense.',
-  deleteTask: 'You need internet to delete this task.',
-  recordHarvest: 'You need internet to record a harvest.',
-  renameTask: 'You need internet to rename this task or change its stage.',
-  screen: "You're offline. This screen needs internet.",
-  queuedTask: "This task is waiting to sync. You can change it once it's saved.",
-};
+export const OFFLINE_MESSAGES = messages('offline');
 
 /** 'Nov 20, 1:05 PM' in Philippine time. */
 export function formatSavedTime(ms) {

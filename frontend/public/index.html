@@ -262,20 +262,25 @@
     <main id="app" class="viewport">
       <!-- Welcome -->
       <section class="view view--welcome" data-view="welcome" aria-labelledby="welcome-title">
+        <div class="lang-switch lang-switch--welcome" role="group" aria-label="Language / Wika" data-lang-switch>
+          <button type="button" class="lang-switch__btn" data-lang="en" aria-pressed="true" aria-label="English">EN</button>
+          <button type="button" class="lang-switch__btn" data-lang="fil" aria-pressed="false" aria-label="Filipino">FIL</button>
+        </div>
+
         <div class="brand">
           <img class="brand__logo" src="assets/icons/logo.png" alt="ARISETO" width="236" height="256" decoding="async">
         </div>
 
         <div class="glass-card">
-          <h1 id="welcome-title" class="card__title" tabindex="-1" data-route-focus>
+          <h1 id="welcome-title" class="card__title" tabindex="-1" data-route-focus data-i18n="h.empowering_your_agriculture_journey_with_innovative">
             Empowering Your Agriculture Journey with Innovative AI Solutions
           </h1>
-          <p class="card__text">
+          <p class="card__text" data-i18n="h.harness_the_power_of_technology_to">
             Harness the Power of Technology to Optimize Your Farming Experience and Maximize Crop Yields
           </p>
           <div class="stack">
-            <a href="#/signup" class="btn btn--gradient btn--block">Get started</a>
-            <a href="#/login" class="btn btn--outline btn--block">I have an account</a>
+            <a href="#/signup" class="btn btn--gradient btn--block" data-i18n="h.get_started">Get started</a>
+            <a href="#/login" class="btn btn--outline btn--block" data-i18n="h.i_have_an_account">I have an account</a>
           </div>
         </div>
       </section>
@@ -287,27 +292,27 @@
         </div>
 
         <div class="glass-card">
-          <h1 id="login-title" class="card__title" tabindex="-1" data-route-focus>Welcome Back!</h1>
-          <p class="card__subtitle">Login to your Account</p>
+          <h1 id="login-title" class="card__title" tabindex="-1" data-route-focus data-i18n="h.welcome_back">Welcome Back!</h1>
+          <p class="card__subtitle" data-i18n="h.login_to_your_account">Login to your Account</p>
 
           <form id="login-form" class="form" novalidate>
             <div class="field">
-              <label for="login-identifier" class="field__label">Mobile Number / Email</label>
+              <label for="login-identifier" class="field__label" data-i18n="h.mobile_number_email">Mobile Number / Email</label>
               <input id="login-identifier" name="identifier" class="input" type="text"
                      inputmode="email" autocomplete="username" autocapitalize="off" spellcheck="false"
                      placeholder="+639XXXXXXXXX or name@email.com"
-                     aria-describedby="login-identifier-error" required>
+                     aria-describedby="login-identifier-error" required data-i18n-attr="placeholder:h.639xxxxxxxxx_or_name_email_com">
               <p id="login-identifier-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
-              <label for="login-password" class="field__label">Password</label>
+              <label for="login-password" class="field__label" data-i18n="h.password">Password</label>
               <div class="input-group">
                 <input id="login-password" name="password" class="input" type="password"
                        autocomplete="current-password" placeholder="Enter your password"
-                       aria-describedby="login-password-error" required>
+                       aria-describedby="login-password-error" required data-i18n-attr="placeholder:h.enter_your_password">
                 <button type="button" class="input-group__toggle" data-toggle-password
-                        aria-controls="login-password" aria-label="Show password" aria-pressed="false">
+                        aria-controls="login-password" aria-label="Show password" aria-pressed="false" data-i18n-attr="aria-label:h.show_password">
                   <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
                   <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
                 </button>
@@ -318,15 +323,15 @@
             <p class="form__status" role="status" aria-live="polite" data-form-status></p>
 
             <button type="submit" class="btn btn--solid btn--block">
-              <span class="btn__label">Login</span>
+              <span class="btn__label" data-i18n="h.login">Login</span>
               <span class="spinner" aria-hidden="true"></span>
             </button>
           </form>
 
-          <p class="card__footer">Don't have an account? <a href="#/signup" class="link">Sign up</a></p>
+          <p class="card__footer"><span data-i18n="h.don_t_have_an_account">Don't have an account?</span> <a href="#/signup" class="link" data-i18n="h.sign_up">Sign up</a></p>
         </div>
 
-        <p class="admin-entry"><a href="#/admin-login" class="link">Admin login</a></p>
+        <p class="admin-entry"><a href="#/admin-login" class="link" data-i18n="h.admin_login">Admin login</a></p>
       </section>
 
       <!-- Admin Portal login: the same POST /auth/login; a member who signs in here goes Home -->
@@ -377,66 +382,66 @@
       <!-- Sign up -->
       <section class="view view--plain" data-view="signup" aria-labelledby="signup-title" hidden>
         <header class="plain-header">
-          <a href="#/welcome" class="icon-btn icon-btn--square" aria-label="Back to welcome">
+          <a href="#/welcome" class="icon-btn icon-btn--square" aria-label="Back to welcome" data-i18n-attr="aria-label:h.back_to_welcome">
             <svg aria-hidden="true"><use href="#icon-back"/></svg>
           </a>
-          <p class="plain-header__aside">Already have an account? <a href="#/login" class="link">Log in</a></p>
+          <p class="plain-header__aside"><span data-i18n="h.already_have_an_account">Already have an account?</span> <a href="#/login" class="link" data-i18n="h.log_in">Log in</a></p>
         </header>
 
         <div class="plain-intro">
-          <h1 id="signup-title" class="plain-intro__title" tabindex="-1" data-route-focus>Welcome to ARISETO</h1>
-          <p class="plain-intro__text">Create an account to access ARISETO, and start to set up your farm.</p>
+          <h1 id="signup-title" class="plain-intro__title" tabindex="-1" data-route-focus data-i18n="h.welcome_to_ariseto">Welcome to ARISETO</h1>
+          <p class="plain-intro__text" data-i18n="h.create_an_account_to_access_ariseto">Create an account to access ARISETO, and start to set up your farm.</p>
         </div>
 
         <form id="signup-form" class="form form--plain" novalidate>
           <div class="field">
-            <label for="signup-first-name" class="sr-only">First Name</label>
+            <label for="signup-first-name" class="sr-only" data-i18n="h.first_name">First Name</label>
             <input id="signup-first-name" name="first_name" class="input" type="text" maxlength="60"
                    autocomplete="given-name" autocapitalize="words" placeholder="First Name"
-                   aria-describedby="signup-first-name-error" required>
+                   aria-describedby="signup-first-name-error" required data-i18n-attr="placeholder:h.first_name">
             <p id="signup-first-name-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="signup-last-name" class="sr-only">Last Name</label>
+            <label for="signup-last-name" class="sr-only" data-i18n="h.last_name">Last Name</label>
             <input id="signup-last-name" name="last_name" class="input" type="text" maxlength="60"
                    autocomplete="family-name" autocapitalize="words" placeholder="Last Name"
-                   aria-describedby="signup-last-name-error" required>
+                   aria-describedby="signup-last-name-error" required data-i18n-attr="placeholder:h.last_name">
             <p id="signup-last-name-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="signup-member-no" class="sr-only">MPMPC Member Number</label>
+            <label for="signup-member-no" class="sr-only" data-i18n="h.mpmpc_member_number">MPMPC Member Number</label>
             <input id="signup-member-no" name="member_no" class="input" type="text" maxlength="20"
                    autocomplete="off" autocapitalize="characters" spellcheck="false"
-                   placeholder="MPMPC Member Number" aria-describedby="signup-member-no-error" required>
+                   placeholder="MPMPC Member Number" aria-describedby="signup-member-no-error" required data-i18n-attr="placeholder:h.mpmpc_member_number">
             <p id="signup-member-no-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="signup-mobile" class="sr-only">Mobile Number</label>
+            <label for="signup-mobile" class="sr-only" data-i18n="h.mobile_number">Mobile Number</label>
             <input id="signup-mobile" name="mobile_no" class="input" type="tel"
                    inputmode="tel" autocomplete="tel" placeholder="Mobile Number (+639XXXXXXXXX)"
-                   aria-describedby="signup-mobile-error" required>
+                   aria-describedby="signup-mobile-error" required data-i18n-attr="placeholder:h.mobile_number_639xxxxxxxxx">
             <p id="signup-mobile-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="signup-email" class="sr-only">Email Address (optional)</label>
+            <label for="signup-email" class="sr-only" data-i18n="h.email_address_optional">Email Address (optional)</label>
             <input id="signup-email" name="email" class="input" type="email"
                    inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"
-                   placeholder="Email Address (optional)" aria-describedby="signup-email-error">
+                   placeholder="Email Address (optional)" aria-describedby="signup-email-error" data-i18n-attr="placeholder:h.email_address_optional">
             <p id="signup-email-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="signup-password" class="sr-only">Password</label>
+            <label for="signup-password" class="sr-only" data-i18n="h.password">Password</label>
             <div class="input-group">
               <input id="signup-password" name="password" class="input" type="password"
                      autocomplete="new-password" placeholder="Password (8+ Characters)"
-                     aria-describedby="signup-password-error" required>
+                     aria-describedby="signup-password-error" required data-i18n-attr="placeholder:h.password_8_characters">
               <button type="button" class="input-group__toggle" data-toggle-password
-                      aria-controls="signup-password" aria-label="Show password" aria-pressed="false">
+                      aria-controls="signup-password" aria-label="Show password" aria-pressed="false" data-i18n-attr="aria-label:h.show_password">
                 <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
                 <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
               </button>
@@ -445,28 +450,28 @@
           </div>
 
           <div class="field">
-            <label for="signup-municipality" class="sr-only">Municipality</label>
+            <label for="signup-municipality" class="sr-only" data-i18n="h.municipality">Municipality</label>
             <select id="signup-municipality" name="municipality" class="input select"
                     aria-describedby="signup-municipality-error" required>
-              <option value="">Municipality</option>
+              <option value="" data-i18n="h.municipality">Municipality</option>
             </select>
             <p id="signup-municipality-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="signup-barangay" class="sr-only">Barangay (optional)</label>
+            <label for="signup-barangay" class="sr-only" data-i18n="h.barangay_optional">Barangay (optional)</label>
             <select id="signup-barangay" name="barangay_id" class="input select"
                     aria-describedby="signup-barangay-hint" disabled data-barangay-select>
-              <option value="">Barangay (choose municipality first)</option>
+              <option value="" data-i18n="h.barangay_choose_municipality_first">Barangay (choose municipality first)</option>
             </select>
             <p id="signup-barangay-hint" class="field__hint" data-barangay-hint aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="signup-language" class="sr-only">Preferred language</label>
+            <label for="signup-language" class="sr-only" data-i18n="h.preferred_language">Preferred language</label>
             <select id="signup-language" name="preferred_language" class="input select">
-              <option value="fil" selected>Language: Filipino</option>
-              <option value="en">Language: English</option>
+              <option value="fil" selected data-i18n="h.language_filipino">Language: Filipino</option>
+              <option value="en" data-i18n="h.language_english">Language: English</option>
             </select>
           </div>
 
@@ -475,9 +480,9 @@
               <label class="agree" for="signup-agree">
                 <input id="signup-agree" name="accepted_terms" type="checkbox" class="check" data-agree>
                 <span>
-                  I have read and agree to ARISETO’s
-                  <a href="#/terms" class="link">Terms &amp; Conditions</a>
-                  and <a href="#/privacy" class="link">Privacy Policy</a>.
+                  <span data-i18n="h.i_have_read_and_agree_to">I have read and agree to ARISETO’s</span>
+                  <a href="#/terms" class="link" data-i18n="h.terms_conditions">Terms &amp; Conditions</a>
+                  <span data-i18n="h.and">and</span> <a href="#/privacy" class="link" data-i18n="h.privacy_policy">Privacy Policy</a>.
                 </span>
               </label>
             </div>
@@ -485,7 +490,7 @@
             <p class="form__status" role="status" aria-live="polite" data-form-status></p>
 
             <button type="submit" class="btn btn--gradient btn--block btn--rounded" disabled>
-              <span class="btn__label">Continue</span>
+              <span class="btn__label" data-i18n="h.continue">Continue</span>
               <span class="spinner" aria-hidden="true"></span>
             </button>
           </div>
@@ -505,44 +510,43 @@
           <div class="farm-preview">
             <div class="farm-preview__head">
               <span class="farm-preview__name">
-                Corn Field
+                <span data-i18n="h.corn_field">Corn Field</span>
                 <svg class="farm-preview__edit"><use href="#icon-pencil"/></svg>
               </span>
               <span class="farm-preview__more">
-                More Details
+                <span data-i18n="h.more_details">More Details</span>
                 <svg><use href="#icon-chevron-right"/></svg>
               </span>
             </div>
             <div class="farm-preview__stats">
               <div class="farm-stat farm-stat--good">
-                <span class="farm-stat__label">Crop Health</span>
-                <span class="farm-stat__value">Good</span>
+                <span class="farm-stat__label" data-i18n="h.crop_health">Crop Health</span>
+                <span class="farm-stat__value" data-i18n="h.good">Good</span>
               </div>
               <div class="farm-stat">
-                <span class="farm-stat__label">Planting date</span>
+                <span class="farm-stat__label" data-i18n="h.planting_date">Planting date</span>
                 <span class="farm-stat__value">12/01/2026</span>
               </div>
               <div class="farm-stat">
-                <span class="farm-stat__label">Harvest time</span>
-                <span class="farm-stat__value">~4 Months</span>
+                <span class="farm-stat__label" data-i18n="h.harvest_time">Harvest time</span>
+                <span class="farm-stat__value" data-i18n="h.4_months">~4 Months</span>
               </div>
             </div>
           </div>
         </div>
 
         <div class="setup-start__body">
-          <h1 id="setup-title" class="setup-start__title" tabindex="-1" data-route-focus>Let’s Start Setting Up Your Farm</h1>
-          <p class="setup-start__text">
-            Hi <span data-user-name>there</span>, let’s start working on your farm settings so you can know more
-            about it with the help of AI.
+          <h1 id="setup-title" class="setup-start__title" tabindex="-1" data-route-focus data-i18n="h.let_s_start_setting_up_your">Let’s Start Setting Up Your Farm</h1>
+          <p class="setup-start__text" data-setup-greeting>
+            Hi there, let’s start working on your farm settings so you can know more about it with the help of AI.
           </p>
         </div>
 
         <div class="stack setup-actions">
-          <a href="#/setup-farm" class="btn btn--gradient btn--block btn--rounded">Get started</a>
+          <a href="#/setup-farm" class="btn btn--gradient btn--block btn--rounded" data-i18n="h.get_started">Get started</a>
           <button type="button" class="btn btn--social btn--block btn--rounded btn--center" data-go-home>
             <svg class="btn__icon" aria-hidden="true"><use href="#icon-clock"/></svg>
-            <span>Set up later</span>
+            <span data-i18n="h.set_up_later">Set up later</span>
           </button>
         </div>
       </section>
@@ -550,64 +554,64 @@
       <!-- Farm setup: step 1 of 4 (farm) -->
       <section class="view view--plain" data-view="setup-farm" aria-labelledby="setup-farm-title" hidden>
         <header class="setup-header">
-          <a href="#/setup" class="icon-btn icon-btn--square" aria-label="Back">
+          <a href="#/setup" class="icon-btn icon-btn--square" aria-label="Back" data-i18n-attr="aria-label:h.back">
             <svg aria-hidden="true"><use href="#icon-back"/></svg>
           </a>
-          <h1 id="setup-farm-title" class="setup-header__title" tabindex="-1" data-route-focus>Set up your farm</h1>
+          <h1 id="setup-farm-title" class="setup-header__title" tabindex="-1" data-route-focus data-i18n="h.set_up_your_farm">Set up your farm</h1>
         </header>
         <div class="stepper" aria-hidden="true"><span class="is-active"></span><span></span><span></span><span></span></div>
-        <p class="sr-only">Step 1 of 4</p>
+        <p class="sr-only" data-i18n="h.step_1_of_4">Step 1 of 4</p>
 
         <form id="setup-farm-form" class="form form--plain" novalidate>
           <div class="setup-lead">
-            <h2 class="setup-lead__title">Tell us about your farm</h2>
-            <p class="setup-lead__text">Provide your farm’s location, number of fields, and season to get started.</p>
+            <h2 class="setup-lead__title" data-i18n="h.tell_us_about_your_farm">Tell us about your farm</h2>
+            <p class="setup-lead__text" data-i18n="h.provide_your_farm_s_location_number">Provide your farm’s location, number of fields, and season to get started.</p>
           </div>
 
           <div class="field">
-            <label for="setup-farm-name" class="field__label">Farm Name</label>
+            <label for="setup-farm-name" class="field__label" data-i18n="h.farm_name">Farm Name</label>
             <input id="setup-farm-name" name="farm_name" class="input" type="text" maxlength="100"
                    autocomplete="off" autocapitalize="words" placeholder="e.g. MPMPC Farm"
-                   aria-describedby="setup-farm-name-error" required>
+                   aria-describedby="setup-farm-name-error" required data-i18n-attr="placeholder:h.e_g_mpmpc_farm">
             <p id="setup-farm-name-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="setup-municipality" class="field__label">Location / Municipality</label>
+            <label for="setup-municipality" class="field__label" data-i18n="h.location_municipality">Location / Municipality</label>
             <select id="setup-municipality" name="municipality" class="input select"
                     aria-describedby="setup-municipality-error" required>
-              <option value="">Choose location</option>
+              <option value="" data-i18n="h.choose_location">Choose location</option>
             </select>
             <p id="setup-municipality-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="setup-barangay" class="field__label">Barangay</label>
+            <label for="setup-barangay" class="field__label" data-i18n="h.barangay">Barangay</label>
             <select id="setup-barangay" name="barangay_id" class="input select"
                     aria-describedby="setup-barangay-error setup-barangay-hint" required disabled data-barangay-select>
-              <option value="">Choose municipality first</option>
+              <option value="" data-i18n="h.choose_municipality_first">Choose municipality first</option>
             </select>
             <p id="setup-barangay-error" class="field__error" aria-live="polite"></p>
             <p id="setup-barangay-hint" class="field__hint" data-barangay-hint aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="setup-field-count" class="field__label">Number of Fields</label>
+            <label for="setup-field-count" class="field__label" data-i18n="h.number_of_fields">Number of Fields</label>
             <input id="setup-field-count" name="field_count" class="input" type="number" inputmode="numeric"
                    min="1" step="1" placeholder="e.g. 2" aria-describedby="setup-field-count-error" required>
             <p id="setup-field-count-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="setup-season" class="field__label">Season</label>
+            <label for="setup-season" class="field__label" data-i18n="h.season">Season</label>
             <select id="setup-season" name="season" class="input select" aria-describedby="setup-season-error" required>
-              <option value="">Choose season</option>
+              <option value="" data-i18n="h.choose_season">Choose season</option>
             </select>
             <p id="setup-season-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="form__end">
-            <button type="submit" class="btn btn--gradient btn--block btn--rounded">Continue</button>
+            <button type="submit" class="btn btn--gradient btn--block btn--rounded" data-i18n="h.continue">Continue</button>
           </div>
         </form>
       </section>
@@ -615,61 +619,61 @@
       <!-- Farm setup: step 2 of 4 (add or edit a field) -->
       <section class="view view--plain" data-view="setup-field" aria-labelledby="setup-field-title" hidden>
         <header class="setup-header">
-          <a href="#/setup-farm" class="icon-btn icon-btn--square" aria-label="Back" data-field-back>
+          <a href="#/setup-farm" class="icon-btn icon-btn--square" aria-label="Back" data-field-back data-i18n-attr="aria-label:h.back">
             <svg aria-hidden="true"><use href="#icon-back"/></svg>
           </a>
-          <h1 id="setup-field-title" class="setup-header__title" tabindex="-1" data-route-focus>Farm Details</h1>
+          <h1 id="setup-field-title" class="setup-header__title" tabindex="-1" data-route-focus data-i18n="h.farm_details">Farm Details</h1>
         </header>
         <div class="stepper" aria-hidden="true"><span class="is-active"></span><span class="is-active"></span><span></span><span></span></div>
-        <p class="sr-only">Step 2 of 4</p>
+        <p class="sr-only" data-i18n="h.step_2_of_4">Step 2 of 4</p>
 
         <form id="setup-field-form" class="form form--plain" novalidate>
           <div class="setup-lead">
-            <h2 class="setup-lead__title" data-field-heading>Add your Field</h2>
-            <p class="setup-lead__text">Enter your plot size, crop type, variety, and sowing date.</p>
+            <h2 class="setup-lead__title" data-field-heading data-i18n="h.add_your_field">Add your Field</h2>
+            <p class="setup-lead__text" data-i18n="h.enter_your_plot_size_crop_type">Enter your plot size, crop type, variety, and sowing date.</p>
           </div>
 
           <div class="field">
-            <label for="setup-field-name" class="field__label">Field Name</label>
+            <label for="setup-field-name" class="field__label" data-i18n="h.field_name">Field Name</label>
             <input id="setup-field-name" name="field_name" class="input" type="text" maxlength="50"
                    autocomplete="off" autocapitalize="words" placeholder="e.g. Field A"
-                   aria-describedby="setup-field-name-error" required>
+                   aria-describedby="setup-field-name-error" required data-i18n-attr="placeholder:h.e_g_field_a">
             <p id="setup-field-name-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <fieldset class="field crop-picker" aria-describedby="setup-crop-error">
-            <legend class="field__label">What are you planting?</legend>
+            <legend class="field__label" data-i18n="h.what_are_you_planting">What are you planting?</legend>
             <div class="crop-picker__options" data-crop-options></div>
             <p id="setup-crop-error" class="field__error" aria-live="polite" data-crop-error></p>
           </fieldset>
 
           <div class="field">
-            <label for="setup-variety" class="field__label">Variety</label>
+            <label for="setup-variety" class="field__label" data-i18n="h.variety">Variety</label>
             <select id="setup-variety" name="variety_id" class="input select"
                     aria-describedby="setup-variety-error" required disabled>
-              <option value="">Choose a crop first</option>
+              <option value="" data-i18n="h.choose_a_crop_first">Choose a crop first</option>
             </select>
             <p id="setup-variety-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="field">
-            <label for="setup-size" class="field__label">Size (Ha)</label>
+            <label for="setup-size" class="field__label" data-i18n="h.size_ha">Size (Ha)</label>
             <input id="setup-size" name="area_ha" class="input" type="number" inputmode="decimal"
                    min="0" step="any" placeholder="e.g. 1" aria-describedby="setup-size-error" required>
             <p id="setup-size-error" class="field__error" aria-live="polite"></p>
           </div>
 
-          <h3 class="form__section-title">Planting Status</h3>
+          <h3 class="form__section-title" data-i18n="h.planting_status">Planting Status</h3>
 
           <div class="field">
-            <label for="setup-planting-date" class="field__label">Sowing Date</label>
+            <label for="setup-planting-date" class="field__label" data-i18n="h.sowing_date">Sowing Date</label>
             <input id="setup-planting-date" name="planting_date" class="input" type="date"
                    aria-describedby="setup-planting-date-error" required>
             <p id="setup-planting-date-error" class="field__error" aria-live="polite"></p>
           </div>
 
           <div class="form__end">
-            <button type="submit" class="btn btn--gradient btn--block btn--rounded">Continue</button>
+            <button type="submit" class="btn btn--gradient btn--block btn--rounded" data-i18n="h.continue">Continue</button>
           </div>
         </form>
       </section>
@@ -677,17 +681,17 @@
       <!-- Farm setup: step 3 of 4 (list of fields) -->
       <section class="view view--plain" data-view="setup-fields" aria-labelledby="setup-fields-title" hidden>
         <header class="setup-header">
-          <a href="#/setup-farm" class="icon-btn icon-btn--square" aria-label="Back to farm details">
+          <a href="#/setup-farm" class="icon-btn icon-btn--square" aria-label="Back to farm details" data-i18n-attr="aria-label:h.back_to_farm_details">
             <svg aria-hidden="true"><use href="#icon-back"/></svg>
           </a>
-          <h1 id="setup-fields-title" class="setup-header__title" tabindex="-1" data-route-focus>Field Setup</h1>
+          <h1 id="setup-fields-title" class="setup-header__title" tabindex="-1" data-route-focus data-i18n="h.field_setup">Field Setup</h1>
         </header>
         <div class="stepper" aria-hidden="true"><span class="is-active"></span><span class="is-active"></span><span class="is-active"></span><span></span></div>
-        <p class="sr-only">Step 3 of 4</p>
+        <p class="sr-only" data-i18n="h.step_3_of_4">Step 3 of 4</p>
 
         <div class="setup-lead">
-          <h2 class="setup-lead__title">Your Fields</h2>
-          <p class="setup-lead__text">List all the plots you want to manage. You can add more later in your profile.</p>
+          <h2 class="setup-lead__title" data-i18n="h.your_fields">Your Fields</h2>
+          <p class="setup-lead__text" data-i18n="h.list_all_the_plots_you_want">List all the plots you want to manage. You can add more later in your profile.</p>
           <p class="setup-lead__count" data-field-count aria-live="polite"></p>
         </div>
 
@@ -695,12 +699,12 @@
 
         <button type="button" class="field-add" data-add-field>
           <svg aria-hidden="true"><use href="#icon-plus"/></svg>
-          <span>Add Another Field</span>
+          <span data-i18n="h.add_another_field">Add Another Field</span>
         </button>
 
         <div class="form__end">
           <p class="form__status" role="status" aria-live="polite" data-form-status></p>
-          <button type="button" class="btn btn--gradient btn--block btn--rounded" data-fields-continue>Continue</button>
+          <button type="button" class="btn btn--gradient btn--block btn--rounded" data-fields-continue data-i18n="h.continue">Continue</button>
         </div>
 
         <template data-field-card>
@@ -725,13 +729,13 @@
                   <span data-place></span>
                 </span>
                 <button type="button" class="field-card__details" aria-expanded="false" data-toggle>
-                  <span>View details</span>
+                  <span data-i18n="h.view_details">View details</span>
                   <svg aria-hidden="true"><use href="#icon-arrow-right"/></svg>
                 </button>
               </div>
               <dl class="field-card__more" data-more hidden>
-                <div><dt>Variety</dt><dd data-variety></dd></div>
-                <div><dt>Sown</dt><dd data-planted></dd></div>
+                <div><dt data-i18n="h.variety">Variety</dt><dd data-variety></dd></div>
+                <div><dt data-i18n="h.sown">Sown</dt><dd data-planted></dd></div>
               </dl>
             </div>
           </li>
@@ -741,41 +745,41 @@
       <!-- Farm setup: step 4 of 4 (review and save) -->
       <section class="view view--plain" data-view="setup-review" aria-labelledby="setup-review-title" hidden>
         <header class="setup-header">
-          <a href="#/setup-fields" class="icon-btn icon-btn--square" aria-label="Back to your fields" data-review-back>
+          <a href="#/setup-fields" class="icon-btn icon-btn--square" aria-label="Back to your fields" data-review-back data-i18n-attr="aria-label:h.back_to_your_fields">
             <svg aria-hidden="true"><use href="#icon-back"/></svg>
           </a>
-          <h1 id="setup-review-title" class="setup-header__title" tabindex="-1" data-route-focus>Review Your Farm</h1>
+          <h1 id="setup-review-title" class="setup-header__title" tabindex="-1" data-route-focus data-i18n="h.review_your_farm">Review Your Farm</h1>
         </header>
         <div class="stepper" aria-hidden="true"><span class="is-active"></span><span class="is-active"></span><span class="is-active"></span><span class="is-active"></span></div>
-        <p class="sr-only">Step 4 of 4</p>
+        <p class="sr-only" data-i18n="h.step_4_of_4">Step 4 of 4</p>
 
         <div class="setup-lead">
-          <h2 class="setup-lead__title">Ready to Grow?</h2>
-          <p class="setup-lead__text">Please double-check your farm information. Accurate details ensure better crop insights and yield estimates.</p>
+          <h2 class="setup-lead__title" data-i18n="h.ready_to_grow">Ready to Grow?</h2>
+          <p class="setup-lead__text" data-i18n="h.please_double_check_your_farm_information">Please double-check your farm information. Accurate details ensure better crop insights and yield estimates.</p>
         </div>
 
         <section class="review" aria-labelledby="review-farm-title">
           <div class="review__head">
-            <h3 id="review-farm-title" class="review__title">Farm Details</h3>
+            <h3 id="review-farm-title" class="review__title" data-i18n="h.farm_details">Farm Details</h3>
             <a href="#/setup-farm" class="review__edit" data-review-edit>
               <svg aria-hidden="true"><use href="#icon-pencil"/></svg>
-              <span>Edit</span>
+              <span data-i18n="h.edit">Edit</span>
             </a>
           </div>
           <dl class="review__list">
-            <div class="review__item"><dt>Farm name</dt><dd data-review="farm_name"></dd></div>
-            <div class="review__item"><dt>Location</dt><dd data-review="location"></dd></div>
-            <div class="review__item"><dt>Total area</dt><dd data-review="total_area"></dd></div>
-            <div class="review__item"><dt>Season</dt><dd data-review="season"></dd></div>
+            <div class="review__item"><dt data-i18n="h.farm_name_2">Farm name</dt><dd data-review="farm_name"></dd></div>
+            <div class="review__item"><dt data-i18n="h.location">Location</dt><dd data-review="location"></dd></div>
+            <div class="review__item"><dt data-i18n="h.total_area">Total area</dt><dd data-review="total_area"></dd></div>
+            <div class="review__item"><dt data-i18n="h.season">Season</dt><dd data-review="season"></dd></div>
           </dl>
         </section>
 
         <section class="review" aria-labelledby="review-fields-title">
           <div class="review__head">
-            <h3 id="review-fields-title" class="review__title">Fields and Crops</h3>
+            <h3 id="review-fields-title" class="review__title" data-i18n="h.fields_and_crops">Fields and Crops</h3>
             <a href="#/setup-fields" class="review__edit" data-review-edit>
               <svg aria-hidden="true"><use href="#icon-pencil"/></svg>
-              <span>Edit</span>
+              <span data-i18n="h.edit">Edit</span>
             </a>
           </div>
           <ul class="review__fields" data-review-fields></ul>
@@ -784,7 +788,7 @@
         <form class="form__end" data-review-form novalidate>
           <p class="form__status" role="status" aria-live="polite" data-form-status></p>
           <button type="submit" class="btn btn--gradient btn--block btn--rounded">
-            <span class="btn__label">Continue</span>
+            <span class="btn__label" data-i18n="h.continue">Continue</span>
             <span class="spinner" aria-hidden="true"></span>
           </button>
         </form>
@@ -797,10 +801,10 @@
               <svg class="review-field__check" aria-hidden="true"><use href="#icon-check-circle"/></svg>
             </div>
             <dl class="review-field__stats">
-              <div><dt>Crop type</dt><dd data-crop></dd></div>
-              <div><dt>Area size</dt><dd data-area></dd></div>
+              <div><dt data-i18n="h.crop_type">Crop type</dt><dd data-crop></dd></div>
+              <div><dt data-i18n="h.area_size">Area size</dt><dd data-area></dd></div>
             </dl>
-            <p class="review-field__planted">Planted: <span data-planted></span></p>
+            <p class="review-field__planted"><span data-i18n="h.planted">Planted:</span> <span data-planted></span></p>
           </li>
         </template>
       </section>
@@ -808,7 +812,7 @@
       <!-- Farm setup: done -->
       <section class="view view--plain" data-view="setup-done" aria-labelledby="setup-done-title" hidden>
         <header class="setup-header">
-          <button type="button" class="icon-btn icon-btn--square" aria-label="Close and go to home" data-go-home>
+          <button type="button" class="icon-btn icon-btn--square" aria-label="Close and go to home" data-go-home data-i18n-attr="aria-label:h.close_and_go_to_home">
             <svg aria-hidden="true"><use href="#icon-close"/></svg>
           </button>
         </header>
@@ -818,22 +822,22 @@
             <span class="success-card__logo">
               <img src="assets/icons/logo-badge.png" alt="" width="512" height="512" decoding="async">
             </span>
-            <h1 id="setup-done-title" class="success-card__title" tabindex="-1" data-route-focus>Farm set up successful</h1>
-            <p class="success-card__text">
+            <h1 id="setup-done-title" class="success-card__title" tabindex="-1" data-route-focus data-i18n="h.farm_set_up_successful">Farm set up successful</h1>
+            <p class="success-card__text" data-i18n="h.farm_has_been_setup_you_can">
               Farm has been setup! You can now start using ARISETO, your Integrated Farm Management System
             </p>
           </div>
           <div class="success-card__farm">
             <span class="success-card__farm-name" data-farm-name></span>
-            <span class="success-card__farm-label">Farm name</span>
+            <span class="success-card__farm-label" data-i18n="h.farm_name_2">Farm name</span>
           </div>
         </div>
 
         <div class="stack setup-actions">
-          <button type="button" class="btn btn--gradient btn--block btn--rounded" data-open-farm>Open your farm</button>
+          <button type="button" class="btn btn--gradient btn--block btn--rounded" data-open-farm data-i18n="h.open_your_farm">Open your farm</button>
           <button type="button" class="btn btn--social btn--block btn--rounded btn--center" data-go-home>
             <svg class="btn__icon" aria-hidden="true"><use href="#icon-home"/></svg>
-            <span>Go to Home</span>
+            <span data-i18n="h.go_to_home">Go to Home</span>
           </button>
         </div>
       </section>
@@ -852,21 +856,21 @@
               <img src="assets/icons/logo-horizontal.png" alt="ARISETO" width="720" height="185" decoding="async">
             </span>
             <div class="home-header__actions">
-              <a href="#/notifications" class="home-icon-btn" aria-label="Notifications" data-bell>
+              <a href="#/notifications" class="home-icon-btn" aria-label="Notifications" data-bell data-i18n-attr="aria-label:h.notifications">
                 <svg aria-hidden="true"><use href="#icon-bell"/></svg>
                 <span class="home-icon-btn__badge" data-bell-badge aria-hidden="true" hidden></span>
               </a>
-              <a href="#/profile" class="avatar" aria-label="Profile">
+              <a href="#/profile" class="avatar" aria-label="Profile" data-i18n-attr="aria-label:h.profile">
                 <span class="avatar__initial" data-avatar-initial hidden></span>
                 <svg class="avatar__icon" aria-hidden="true"><use href="#icon-user"/></svg>
               </a>
             </div>
           </header>
 
-          <h1 id="home-title" class="sr-only" tabindex="-1" data-route-focus>Home</h1>
+          <h1 id="home-title" class="sr-only" tabindex="-1" data-route-focus data-i18n="h.home">Home</h1>
 
           <a href="#/weather" class="weather" data-weather data-state="loading" aria-live="polite" aria-describedby="home-weather-hint">
-            <span id="home-weather-hint" class="sr-only">Opens the Weather Tracker.</span>
+            <span id="home-weather-hint" class="sr-only" data-i18n="h.opens_the_weather_tracker">Opens the Weather Tracker.</span>
             <svg class="weather__art" data-kind="partly" viewBox="0 0 120 108" aria-hidden="true">
               <defs>
                 <radialGradient id="wa-sun-fill" cx="40%" cy="35%" r="70%">
@@ -889,77 +893,77 @@
               <path class="wa-fog" d="M30 96h64M42 103h48" stroke="#b0bec5" stroke-width="3" stroke-linecap="round"/>
             </svg>
             <p class="weather__temp"><span data-w="temp">--</span>°</p>
-            <p class="weather__summary" data-w="summary">Loading today’s weather…</p>
+            <p class="weather__summary" data-w="summary" data-i18n="h.loading_today_s_weather">Loading today’s weather…</p>
             <p class="weather__place" data-w="place"></p>
 
             <dl class="weather-stats weather-stats--four">
               <div class="weather-stat">
-                <dt><svg class="weather-stat__icon weather-stat__icon--heat" aria-hidden="true"><use href="#icon-thermometer"/></svg><span>Feels Like</span></dt>
+                <dt><svg class="weather-stat__icon weather-stat__icon--heat" aria-hidden="true"><use href="#icon-thermometer"/></svg><span data-i18n="h.feels_like">Feels Like</span></dt>
                 <dd data-w="feels">--°</dd>
               </div>
               <div class="weather-stat">
-                <dt><svg class="weather-stat__icon weather-stat__icon--rain" aria-hidden="true"><use href="#icon-humidity"/></svg><span>Humidity</span></dt>
+                <dt><svg class="weather-stat__icon weather-stat__icon--rain" aria-hidden="true"><use href="#icon-humidity"/></svg><span data-i18n="h.humidity">Humidity</span></dt>
                 <dd data-w="humidity">--%</dd>
               </div>
               <div class="weather-stat">
-                <dt><svg class="weather-stat__icon weather-stat__icon--rain" aria-hidden="true"><use href="#icon-rain"/></svg><span>Rain</span></dt>
+                <dt><svg class="weather-stat__icon weather-stat__icon--rain" aria-hidden="true"><use href="#icon-rain"/></svg><span data-i18n="h.rain">Rain</span></dt>
                 <dd data-w="rain">--%</dd>
               </div>
               <div class="weather-stat">
-                <dt><svg class="weather-stat__icon" aria-hidden="true"><use href="#icon-wind"/></svg><span>Wind</span></dt>
-                <dd data-w="wind">-- km/h</dd>
+                <dt><svg class="weather-stat__icon" aria-hidden="true"><use href="#icon-wind"/></svg><span data-i18n="h.wind">Wind</span></dt>
+                <dd data-w="wind" data-i18n="h.km_h">-- km/h</dd>
               </div>
             </dl>
           </a>
         </div>
 
         <div class="home-body">
-          <h2 class="home-section__title">Quick Actions</h2>
+          <h2 class="home-section__title" data-i18n="h.quick_actions">Quick Actions</h2>
           <ul class="quick-actions">
             <li><a href="#/scan" class="quick-action">
-              <svg aria-hidden="true"><use href="#icon-scan"/></svg><span>Disease Detection</span>
+              <svg aria-hidden="true"><use href="#icon-scan"/></svg><span data-i18n="h.disease_detection">Disease Detection</span>
             </a></li>
             <li><a href="#/yield" class="quick-action">
-              <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield Estimation</span>
+              <svg aria-hidden="true"><use href="#icon-chart"/></svg><span data-i18n="h.yield_estimation">Yield Estimation</span>
             </a></li>
             <li><a href="#/chatbot" class="quick-action">
-              <svg aria-hidden="true"><use href="#icon-chat"/></svg><span>AI Chatbot</span>
+              <svg aria-hidden="true"><use href="#icon-chat"/></svg><span data-i18n="h.ai_chatbot">AI Chatbot</span>
             </a></li>
             <li><a href="#/weather" class="quick-action">
-              <svg aria-hidden="true"><use href="#icon-weather"/></svg><span>Weather Tracker</span>
+              <svg aria-hidden="true"><use href="#icon-weather"/></svg><span data-i18n="h.weather_tracker">Weather Tracker</span>
             </a></li>
             <li><a href="#/expenses" class="quick-action">
-              <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Farm Expenses</span>
+              <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span data-i18n="h.farm_expenses">Farm Expenses</span>
             </a></li>
             <li><a href="#/calendar" class="quick-action">
-              <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span>Crop Calendar</span>
+              <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span data-i18n="h.crop_calendar">Crop Calendar</span>
             </a></li>
           </ul>
 
-          <h2 class="home-section__title">Today’s Reminders</h2>
+          <h2 class="home-section__title" data-i18n="h.today_s_reminders">Today’s Reminders</h2>
           <div class="reminders-empty">
             <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
-            <p>No reminders for today.</p>
+            <p data-i18n="h.no_reminders_for_today">No reminders for today.</p>
           </div>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="home"></nav>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="home" data-i18n-attr="aria-label:h.main"></nav>
       </section>
 
       <!-- Crop Calendar (GET /farms/{farm_id}/fields, GET /cycles/{cycle_id}/activities) -->
       <section class="view view--app" data-view="calendar" aria-labelledby="calendar-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/home" class="app-header__back" aria-label="Back to home">
+            <a href="#/home" class="app-header__back" aria-label="Back to home" data-i18n-attr="aria-label:h.back_to_home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="calendar-title" class="app-header__title" tabindex="-1" data-route-focus>Crop Calendar</h1>
-              <p class="app-header__subtitle">Manage your farm tasks and timelines.</p>
+              <h1 id="calendar-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.crop_calendar">Crop Calendar</h1>
+              <p class="app-header__subtitle" data-i18n="h.manage_your_farm_tasks_and_timelines">Manage your farm tasks and timelines.</p>
             </div>
           </div>
           <label class="field-picker">
-            <span class="field-picker__label">Field</span>
+            <span class="field-picker__label" data-i18n="h.field">Field</span>
             <select class="field-picker__select" data-field-picker></select>
           </label>
         </header>
@@ -970,7 +974,7 @@
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
             <p data-empty-text></p>
-            <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
+            <a href="#/setup" class="link" data-empty-setup data-i18n="h.set_up_your_farm">Set up your farm</a>
           </div>
 
           <div class="app-stack" data-content hidden>
@@ -983,51 +987,51 @@
                 </div>
               </div>
               <dl class="stat-grid">
-                <div class="stat"><dt>Season completion</dt><dd data-stat="completion"></dd></div>
-                <div class="stat"><dt>Expected value</dt><dd data-stat="value"></dd></div>
-                <div class="stat"><dt>Sowing date</dt><dd data-stat="planted"></dd></div>
-                <div class="stat"><dt>Expected harvest</dt><dd data-stat="harvest"></dd></div>
+                <div class="stat"><dt data-i18n="h.season_completion">Season completion</dt><dd data-stat="completion"></dd></div>
+                <div class="stat"><dt data-i18n="h.expected_value">Expected value</dt><dd data-stat="value"></dd></div>
+                <div class="stat"><dt data-i18n="h.sowing_date_2">Sowing date</dt><dd data-stat="planted"></dd></div>
+                <div class="stat"><dt data-i18n="h.expected_harvest">Expected harvest</dt><dd data-stat="harvest"></dd></div>
               </dl>
             </section>
 
             <section aria-labelledby="daily-title">
-              <h2 id="daily-title" class="section-title">Daily Schedule</h2>
+              <h2 id="daily-title" class="section-title" data-i18n="h.daily_schedule">Daily Schedule</h2>
               <div class="card daily">
                 <div class="daily__toolbar">
-                  <label class="sr-only" for="calendar-month">Month</label>
+                  <label class="sr-only" for="calendar-month" data-i18n="h.month">Month</label>
                   <select id="calendar-month" class="daily__month" data-month></select>
-                  <a href="#/tasks" class="icon-plain" aria-label="Search all tasks" data-search-tasks>
+                  <a href="#/tasks" class="icon-plain" aria-label="Search all tasks" data-search-tasks data-i18n-attr="aria-label:h.search_all_tasks">
                     <svg aria-hidden="true"><use href="#icon-search"/></svg>
                   </a>
                 </div>
-                <div class="day-strip" data-day-strip aria-label="Days of the week"></div>
+                <div class="day-strip" data-day-strip aria-label="Days of the week" data-i18n-attr="aria-label:h.days_of_the_week"></div>
                 <ol class="day-list" data-day-list aria-live="polite"></ol>
-                <p class="day-ongoing__title" data-ongoing-title hidden>Ongoing</p>
+                <p class="day-ongoing__title" data-ongoing-title hidden data-i18n="h.ongoing">Ongoing</p>
                 <ol class="day-list day-list--ongoing" data-ongoing-list></ol>
-                <p class="muted-note" data-day-empty hidden>No tasks on this day.</p>
+                <p class="muted-note" data-day-empty hidden data-i18n="h.no_tasks_on_this_day">No tasks on this day.</p>
               </div>
             </section>
 
-            <a href="#/tasks" class="btn btn--gradient btn--block btn--rounded">Manage All Tasks</a>
+            <a href="#/tasks" class="btn btn--gradient btn--block btn--rounded" data-i18n="h.manage_all_tasks">Manage All Tasks</a>
 
             <section aria-labelledby="timeline-title">
               <div class="section-head">
-                <h2 id="timeline-title" class="section-title">Weekly Timeline</h2>
-                <a href="#/tasks" class="section-link">View all</a>
+                <h2 id="timeline-title" class="section-title" data-i18n="h.weekly_timeline">Weekly Timeline</h2>
+                <a href="#/tasks" class="section-link" data-i18n="h.view_all">View all</a>
               </div>
               <ol class="week-list" data-week-list></ol>
-              <button type="button" class="link-plain week-more" aria-expanded="false" data-week-more hidden>Show all weeks</button>
-              <p class="muted-note" data-week-empty hidden>No tasks for this field yet. Add one from Manage All Tasks.</p>
+              <button type="button" class="link-plain week-more" aria-expanded="false" data-week-more hidden data-i18n="h.show_all_weeks">Show all weeks</button>
+              <p class="muted-note" data-week-empty hidden data-i18n="h.no_tasks_for_this_field_yet">No tasks for this field yet. Add one from Manage All Tasks.</p>
             </section>
 
             <a href="#/chatbot" class="chat-link">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
-              <span>Ask the chatbot about this</span>
+              <span data-i18n="h.ask_the_chatbot_about_this">Ask the chatbot about this</span>
             </a>
           </div>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar" data-i18n-attr="aria-label:h.main"></nav>
 
         <template data-day-tpl>
           <button type="button" class="day-chip" aria-pressed="false">
@@ -1055,10 +1059,10 @@
               </div>
               <svg class="week-card__done" aria-hidden="true" data-done-icon hidden><use href="#icon-check-circle"/></svg>
             </div>
-            <div class="progress-label"><span>Completion</span><span data-pct></span></div>
+            <div class="progress-label"><span data-i18n="h.completion">Completion</span><span data-pct></span></div>
             <div class="progress" aria-hidden="true"><span class="progress__bar" data-bar></span></div>
             <button type="button" class="week-card__toggle" aria-expanded="false" data-toggle>
-              <span class="sr-only" data-toggle-label>Show tasks</span>
+              <span class="sr-only" data-toggle-label data-i18n="h.show_tasks">Show tasks</span>
               <svg aria-hidden="true"><use href="#icon-chevron-down"/></svg>
             </button>
             <ul class="week-card__tasks" data-tasks hidden></ul>
@@ -1079,11 +1083,11 @@
       <section class="view view--app" data-view="tasks" aria-labelledby="tasks-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/calendar" class="app-header__back" aria-label="Back to crop calendar">
+            <a href="#/calendar" class="app-header__back" aria-label="Back to crop calendar" data-i18n-attr="aria-label:h.back_to_crop_calendar">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="tasks-title" class="app-header__title" tabindex="-1" data-route-focus>Manage All Tasks</h1>
+              <h1 id="tasks-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.manage_all_tasks">Manage All Tasks</h1>
             </div>
           </div>
         </header>
@@ -1092,17 +1096,17 @@
           <p class="offline-banner" role="status" data-offline-banner hidden></p>
           <label class="search-box">
             <svg aria-hidden="true"><use href="#icon-search"/></svg>
-            <span class="sr-only">Search tasks</span>
-            <input type="search" class="search-box__input" placeholder="Search" data-task-search>
+            <span class="sr-only" data-i18n="h.search_tasks">Search tasks</span>
+            <input type="search" class="search-box__input" placeholder="Search" data-task-search data-i18n-attr="placeholder:h.search">
           </label>
 
           <div class="chip-row" data-chips>
-            <button type="button" class="chip" aria-pressed="true" data-chip-all>All Plots</button>
+            <button type="button" class="chip" aria-pressed="true" data-chip-all data-i18n="h.all_plots">All Plots</button>
             <label class="chip chip--select">
-              <span class="sr-only">Field</span>
+              <span class="sr-only" data-i18n="h.field">Field</span>
               <select data-chip-field></select>
             </label>
-            <button type="button" class="chip" aria-pressed="false" data-chip-completed>Completed</button>
+            <button type="button" class="chip" aria-pressed="false" data-chip-completed data-i18n="h.completed">Completed</button>
           </div>
 
           <p class="form__status" role="status" aria-live="polite" data-form-status></p>
@@ -1111,13 +1115,13 @@
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
             <p data-empty-text></p>
-            <a href="#/setup" class="link" data-empty-setup hidden>Set up your farm</a>
+            <a href="#/setup" class="link" data-empty-setup hidden data-i18n="h.set_up_your_farm">Set up your farm</a>
           </div>
 
-          <a href="#/task-new" class="btn btn--gradient btn--block btn--rounded" data-add-task>Add a New Task</a>
+          <a href="#/task-new" class="btn btn--gradient btn--block btn--rounded" data-add-task data-i18n="h.add_a_new_task">Add a New Task</a>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar" data-i18n-attr="aria-label:h.main"></nav>
 
         <template data-group-tpl>
           <section class="task-group">
@@ -1148,12 +1152,12 @@
                 <svg aria-hidden="true"><use href="#icon-more"/></svg>
               </button>
               <ul class="task-menu__list" role="menu" data-menu hidden>
-                <li role="none"><button type="button" role="menuitem" data-action="done">Mark as done</button></li>
-                <li role="none"><button type="button" role="menuitem" data-action="undo">Mark as not done</button></li>
-                <li role="none"><button type="button" role="menuitem" data-action="skip">Skip</button></li>
-                <li role="none"><button type="button" role="menuitem" data-action="reschedule">Reschedule</button></li>
-                <li role="none"><button type="button" role="menuitem" data-action="edit">Edit</button></li>
-                <li role="none"><button type="button" role="menuitem" class="is-danger" data-action="delete">Delete</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="done" data-i18n="h.mark_as_done">Mark as done</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="undo" data-i18n="h.mark_as_not_done">Mark as not done</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="skip" data-i18n="h.skip">Skip</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="reschedule" data-i18n="h.reschedule">Reschedule</button></li>
+                <li role="none"><button type="button" role="menuitem" data-action="edit" data-i18n="h.edit">Edit</button></li>
+                <li role="none"><button type="button" role="menuitem" class="is-danger" data-action="delete" data-i18n="h.delete">Delete</button></li>
               </ul>
             </div>
           </li>
@@ -1164,12 +1168,12 @@
       <section class="view view--app" data-view="task-new" aria-labelledby="task-new-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/tasks" class="app-header__back" aria-label="Back to all tasks">
+            <a href="#/tasks" class="app-header__back" aria-label="Back to all tasks" data-i18n-attr="aria-label:h.back_to_all_tasks">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="task-new-title" class="app-header__title" tabindex="-1" data-route-focus data-form-title>New Farm Task</h1>
-              <p class="app-header__subtitle" data-form-sub>Schedule a new activity for your crop calendar.</p>
+              <h1 id="task-new-title" class="app-header__title" tabindex="-1" data-route-focus data-form-title data-i18n="h.new_farm_task">New Farm Task</h1>
+              <p class="app-header__subtitle" data-form-sub data-i18n="h.schedule_a_new_activity_for_your">Schedule a new activity for your crop calendar.</p>
             </div>
           </div>
         </header>
@@ -1177,23 +1181,23 @@
         <div class="app-body">
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
-            <p data-empty-text>No fields yet. Set up your farm before adding tasks.</p>
-            <a href="#/setup" class="link">Set up your farm</a>
+            <p data-empty-text data-i18n="h.no_fields_yet_set_up_your">No fields yet. Set up your farm before adding tasks.</p>
+            <a href="#/setup" class="link" data-i18n="h.set_up_your_farm">Set up your farm</a>
           </div>
 
           <form id="task-form" class="form app-form" novalidate>
             <div class="field">
               <label for="task-title" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-note"/></svg>Task Name
+                <svg aria-hidden="true"><use href="#icon-note"/></svg><span data-i18n="h.task_name">Task Name</span>
               </label>
               <input id="task-title" name="title" class="input" type="text" maxlength="100"
-                     autocomplete="off" placeholder="e.g. Apply Fertilizer" aria-describedby="task-title-error" required>
+                     autocomplete="off" placeholder="e.g. Apply Fertilizer" aria-describedby="task-title-error" required data-i18n-attr="placeholder:h.e_g_apply_fertilizer">
               <p id="task-title-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
               <label for="task-field" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-pin"/></svg>Field
+                <svg aria-hidden="true"><use href="#icon-pin"/></svg><span data-i18n="h.field">Field</span>
               </label>
               <select id="task-field" name="field_id" class="input select" aria-describedby="task-field-error" required></select>
               <p id="task-field-error" class="field__error" aria-live="polite"></p>
@@ -1201,10 +1205,10 @@
 
             <div class="field">
               <label for="task-stage" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-tag"/></svg>Crop Stage
+                <svg aria-hidden="true"><use href="#icon-tag"/></svg><span data-i18n="h.crop_stage">Crop Stage</span>
               </label>
               <select id="task-stage" name="growth_stage" class="input select" aria-describedby="task-stage-error">
-                <option value="">Select growth stage</option>
+                <option value="" data-i18n="h.select_growth_stage">Select growth stage</option>
               </select>
               <p id="task-stage-error" class="field__error" aria-live="polite"></p>
             </div>
@@ -1212,14 +1216,14 @@
             <div class="field-row">
               <div class="field">
                 <label for="task-date" class="field__label field__label--icon">
-                  <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Date
+                  <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span data-i18n="h.date">Date</span>
                 </label>
                 <input id="task-date" name="scheduled_date" class="input" type="date" aria-describedby="task-date-error" required>
                 <p id="task-date-error" class="field__error" aria-live="polite"></p>
               </div>
               <div class="field">
                 <label for="task-time" class="field__label field__label--icon">
-                  <svg aria-hidden="true"><use href="#icon-clock"/></svg>Start Time
+                  <svg aria-hidden="true"><use href="#icon-clock"/></svg><span data-i18n="h.start_time">Start Time</span>
                 </label>
                 <input id="task-time" name="scheduled_time" class="input" type="time" aria-describedby="task-time-error">
                 <p id="task-time-error" class="field__error" aria-live="polite"></p>
@@ -1229,51 +1233,51 @@
             <div class="field">
               <label for="task-reminder" class="task-reminder">
                 <span class="field__label field__label--icon">
-                  <svg aria-hidden="true"><use href="#icon-bell"/></svg>Remind me
+                  <svg aria-hidden="true"><use href="#icon-bell"/></svg><span data-i18n="h.remind_me">Remind me</span>
                 </span>
                 <input id="task-reminder" name="reminder" type="checkbox" class="switch" role="switch"
                        aria-describedby="task-reminder-hint">
               </label>
-              <p id="task-reminder-hint" class="field__hint">A notification on the task&rsquo;s date, at its start time or at 6:00 AM.</p>
+              <p id="task-reminder-hint" class="field__hint" data-i18n="h.a_notification_on_the_task_s">A notification on the task&rsquo;s date, at its start time or at 6:00 AM.</p>
             </div>
 
             <div class="field">
               <label for="task-notes" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-note"/></svg>Additional Notes
+                <svg aria-hidden="true"><use href="#icon-note"/></svg><span data-i18n="h.additional_notes">Additional Notes</span>
               </label>
               <textarea id="task-notes" name="notes" class="input input--textarea" rows="4" maxlength="500"
-                        placeholder="Add any specific observations or details here…"></textarea>
+                        placeholder="Add any specific observations or details here…" data-i18n-attr="placeholder:h.add_any_specific_observations_or_details"></textarea>
             </div>
 
             <p class="form__status" role="status" aria-live="polite" data-form-status></p>
             <div class="form__end app-form__end">
-              <button type="submit" class="btn btn--gradient btn--block btn--rounded" data-save-label>Save Task</button>
-              <button type="button" class="link-plain" data-cancel>Cancel and go back</button>
+              <button type="submit" class="btn btn--gradient btn--block btn--rounded" data-save-label data-i18n="h.save_task">Save Task</button>
+              <button type="button" class="link-plain" data-cancel data-i18n="h.cancel_and_go_back">Cancel and go back</button>
             </div>
           </form>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar"></nav>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="calendar" data-i18n-attr="aria-label:h.main"></nav>
       </section>
       <!-- Farm Expenses (GET /farms/{farm_id}/summary and /expenses) -->
       <section class="view view--app" data-view="expenses" aria-labelledby="expenses-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/home" class="app-header__back" aria-label="Back to home">
+            <a href="#/home" class="app-header__back" aria-label="Back to home" data-i18n-attr="aria-label:h.back_to_home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="expenses-title" class="app-header__title" tabindex="-1" data-route-focus>Farm Expense Tracker</h1>
-              <p class="app-header__subtitle">Monitor your farm’s budget and spending.</p>
+              <h1 id="expenses-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.farm_expense_tracker">Farm Expense Tracker</h1>
+              <p class="app-header__subtitle" data-i18n="h.monitor_your_farm_s_budget_and">Monitor your farm’s budget and spending.</p>
             </div>
           </div>
           <div class="picker-row">
             <label class="field-picker">
-              <span class="field-picker__label">Season</span>
+              <span class="field-picker__label" data-i18n="h.season">Season</span>
               <select class="field-picker__select" data-season-picker></select>
             </label>
             <label class="field-picker">
-              <span class="field-picker__label">Field</span>
+              <span class="field-picker__label" data-i18n="h.field">Field</span>
               <select class="field-picker__select" data-field-filter></select>
             </label>
           </div>
@@ -1284,7 +1288,7 @@
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-wallet"/></svg>
             <p data-empty-text></p>
-            <a href="#/setup" class="link" data-empty-setup>Set up your farm</a>
+            <a href="#/setup" class="link" data-empty-setup data-i18n="h.set_up_your_farm">Set up your farm</a>
           </div>
 
           <p class="form__status" role="status" aria-live="polite" data-form-status></p>
@@ -1292,43 +1296,43 @@
           <div class="app-stack" data-content>
             <div class="money-grid">
               <div class="money-card">
-                <p class="money-card__label"><svg class="money-card__icon money-card__icon--down" aria-hidden="true"><use href="#icon-trend-down"/></svg>Total expense</p>
+                <p class="money-card__label"><svg class="money-card__icon money-card__icon--down" aria-hidden="true"><use href="#icon-trend-down"/></svg><span data-i18n="h.total_expense">Total expense</span></p>
                 <p class="money-card__value" data-total="expense"></p>
               </div>
               <div class="money-card">
-                <p class="money-card__label"><svg class="money-card__icon" aria-hidden="true"><use href="#icon-trend-up"/></svg>Total income</p>
+                <p class="money-card__label"><svg class="money-card__icon" aria-hidden="true"><use href="#icon-trend-up"/></svg><span data-i18n="h.total_income">Total income</span></p>
                 <p class="money-card__value" data-total="income"></p>
               </div>
               <div class="money-card money-card--wide">
-                <p class="money-card__label"><svg class="money-card__icon" aria-hidden="true"><use href="#icon-wallet"/></svg>Net profit</p>
+                <p class="money-card__label"><svg class="money-card__icon" aria-hidden="true"><use href="#icon-wallet"/></svg><span data-i18n="h.net_profit">Net profit</span></p>
                 <p class="money-card__value money-card__value--lg" data-total="net"></p>
                 <p class="money-card__note" data-net-note></p>
               </div>
             </div>
 
-            <a href="#/expense-new" class="btn btn--gradient btn--block btn--rounded">Add Expense</a>
-            <a href="#/harvest-new" class="btn btn--outline btn--block btn--rounded" data-record-harvest hidden>Record Harvest</a>
-            <a href="#/farm-report" class="btn btn--outline btn--block btn--rounded" data-farm-report hidden>Farm report</a>
+            <a href="#/expense-new" class="btn btn--gradient btn--block btn--rounded" data-i18n="h.add_expense">Add Expense</a>
+            <a href="#/harvest-new" class="btn btn--outline btn--block btn--rounded" data-record-harvest hidden data-i18n="h.record_harvest">Record Harvest</a>
+            <a href="#/farm-report" class="btn btn--outline btn--block btn--rounded" data-farm-report hidden data-i18n="h.farm_report">Farm report</a>
 
             <section aria-labelledby="breakdown-title">
-              <h2 id="breakdown-title" class="section-title">Category Breakdown</h2>
+              <h2 id="breakdown-title" class="section-title" data-i18n="h.category_breakdown">Category Breakdown</h2>
               <ul class="category-list" data-category-list></ul>
               <p class="whole-farm-line" data-whole-farm hidden>
-                <span>Whole-farm expenses</span>
+                <span data-i18n="h.whole_farm_expenses">Whole-farm expenses</span>
                 <strong data-whole-farm-amount></strong>
               </p>
             </section>
 
             <section class="card" aria-labelledby="spend-title">
               <div class="section-head">
-                <h2 id="spend-title" class="section-title">Spend Distribution</h2>
-                <span class="pill-label">All expenses</span>
+                <h2 id="spend-title" class="section-title" data-i18n="h.spend_distribution">Spend Distribution</h2>
+                <span class="pill-label" data-i18n="h.all_expenses">All expenses</span>
               </div>
               <div class="donut">
                 <svg class="donut__chart" viewBox="0 0 42 42" aria-hidden="true" data-donut></svg>
                 <div class="donut__center">
                   <p class="donut__value" data-donut-value></p>
-                  <p class="donut__label">Net profit</p>
+                  <p class="donut__label" data-i18n="h.net_profit">Net profit</p>
                 </div>
               </div>
               <ul class="legend" data-legend></ul>
@@ -1336,29 +1340,29 @@
 
             <section aria-labelledby="history-title">
               <div class="section-head">
-                <h2 id="history-title" class="section-title">Transaction History</h2>
-                <button type="button" class="section-link section-link--button" data-view-all>View all</button>
+                <h2 id="history-title" class="section-title" data-i18n="h.transaction_history">Transaction History</h2>
+                <button type="button" class="section-link section-link--button" data-view-all data-i18n="h.view_all">View all</button>
               </div>
               <div class="card tx-card">
                 <label class="search-box">
                   <svg aria-hidden="true"><use href="#icon-search"/></svg>
-                  <span class="sr-only">Search transactions</span>
-                  <input type="search" class="search-box__input" placeholder="Search" data-tx-search>
+                  <span class="sr-only" data-i18n="h.search_transactions">Search transactions</span>
+                  <input type="search" class="search-box__input" placeholder="Search" data-tx-search data-i18n-attr="placeholder:h.search">
                 </label>
                 <ul class="tx-list" data-tx-list aria-live="polite"></ul>
-                <p class="muted-note" data-tx-empty hidden>No transactions.</p>
-                <button type="button" class="link-plain tx-more" data-tx-more hidden>View more</button>
+                <p class="muted-note" data-tx-empty hidden data-i18n="h.no_transactions">No transactions.</p>
+                <button type="button" class="link-plain tx-more" data-tx-more hidden data-i18n="h.view_more">View more</button>
               </div>
             </section>
 
             <a href="#/chatbot" class="chat-link">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
-              <span>Ask the chatbot about this</span>
+              <span data-i18n="h.ask_the_chatbot_about_this">Ask the chatbot about this</span>
             </a>
           </div>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses"></nav>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses" data-i18n-attr="aria-label:h.main"></nav>
 
         <template data-category-tpl>
           <li class="category-row">
@@ -1393,12 +1397,12 @@
       <section class="view view--app" data-view="expense-new" aria-labelledby="expense-new-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/expenses" class="app-header__back" aria-label="Back to farm expenses">
+            <a href="#/expenses" class="app-header__back" aria-label="Back to farm expenses" data-i18n-attr="aria-label:h.back_to_farm_expenses">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="expense-new-title" class="app-header__title" tabindex="-1" data-route-focus>Add Expenses</h1>
-              <p class="app-header__subtitle">Log a new farm expense.</p>
+              <h1 id="expense-new-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.add_expenses">Add Expenses</h1>
+              <p class="app-header__subtitle" data-i18n="h.log_a_new_farm_expense">Log a new farm expense.</p>
             </div>
           </div>
         </header>
@@ -1406,19 +1410,19 @@
         <div class="app-body">
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-wallet"/></svg>
-            <p>No fields yet. Set up your farm before recording expenses.</p>
-            <a href="#/setup" class="link">Set up your farm</a>
+            <p data-i18n="h.no_fields_yet_set_up_your_2">No fields yet. Set up your farm before recording expenses.</p>
+            <a href="#/setup" class="link" data-i18n="h.set_up_your_farm">Set up your farm</a>
           </div>
 
           <form id="expense-form" class="form app-form" novalidate>
             <fieldset class="field crop-picker" aria-describedby="expense-category-error">
-              <legend class="section-title">Expense Category</legend>
+              <legend class="section-title" data-i18n="h.expense_category">Expense Category</legend>
               <div class="cat-picker" data-category-options></div>
               <p id="expense-category-error" class="field__error" aria-live="polite" data-category-error></p>
             </fieldset>
 
             <div class="field">
-              <label for="expense-amount" class="section-title">Transaction Amount</label>
+              <label for="expense-amount" class="section-title" data-i18n="h.transaction_amount">Transaction Amount</label>
               <div class="amount-input">
                 <span class="amount-input__peso" aria-hidden="true">₱</span>
                 <input id="expense-amount" name="amount_php" class="input amount-input__field" type="text"
@@ -1427,33 +1431,33 @@
               <p id="expense-amount-error" class="field__error" aria-live="polite"></p>
             </div>
 
-            <h2 class="section-title section-title--flush">Expense Details</h2>
+            <h2 class="section-title section-title--flush" data-i18n="h.expense_details">Expense Details</h2>
 
             <div class="field">
               <label for="expense-description" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-note"/></svg>Description
+                <svg aria-hidden="true"><use href="#icon-note"/></svg><span data-i18n="h.description">Description</span>
               </label>
               <input id="expense-description" name="description" class="input" type="text" maxlength="255"
-                     autocomplete="off" placeholder="e.g. 50kg bags of urea" aria-describedby="expense-description-error">
+                     autocomplete="off" placeholder="e.g. 50kg bags of urea" aria-describedby="expense-description-error" data-i18n-attr="placeholder:h.e_g_50kg_bags_of_urea">
               <p id="expense-description-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field-row">
               <div class="field">
                 <label for="expense-date" class="field__label field__label--icon">
-                  <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Date
+                  <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span data-i18n="h.date">Date</span>
                 </label>
                 <input id="expense-date" name="expense_date" class="input" type="date" aria-describedby="expense-date-error" required>
                 <p id="expense-date-error" class="field__error" aria-live="polite"></p>
               </div>
               <div class="field">
                 <label for="expense-quantity" class="field__label field__label--icon">
-                  <svg aria-hidden="true"><use href="#icon-chart"/></svg>Quantity
+                  <svg aria-hidden="true"><use href="#icon-chart"/></svg><span data-i18n="h.quantity">Quantity</span>
                 </label>
                 <div class="qty-input">
                   <input id="expense-quantity" name="quantity" class="input" type="number" inputmode="decimal"
                          min="0" step="any" placeholder="e.g. 2" aria-describedby="expense-quantity-error">
-                  <select name="unit" class="input select qty-input__unit" aria-label="Unit"></select>
+                  <select name="unit" class="input select qty-input__unit" aria-label="Unit" data-i18n-attr="aria-label:h.unit"></select>
                 </div>
                 <p id="expense-quantity-error" class="field__error" aria-live="polite"></p>
               </div>
@@ -1461,7 +1465,7 @@
 
             <div class="field">
               <label for="expense-plot" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-pin"/></svg>Linked Plot
+                <svg aria-hidden="true"><use href="#icon-pin"/></svg><span data-i18n="h.linked_plot">Linked Plot</span>
               </label>
               <select id="expense-plot" name="plot" class="input select" aria-describedby="expense-plot-error" required></select>
               <p id="expense-plot-error" class="field__error" aria-live="polite"></p>
@@ -1469,10 +1473,10 @@
 
             <div class="field" data-season-field hidden>
               <label for="expense-season" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Season
+                <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span data-i18n="h.season">Season</span>
               </label>
               <select id="expense-season" name="season_key" class="input select" aria-describedby="expense-season-hint expense-season-error"></select>
-              <p id="expense-season-hint" class="field__hint">Suggested from the date. Whole-farm expenses count in this season.</p>
+              <p id="expense-season-hint" class="field__hint" data-i18n="h.suggested_from_the_date_whole_farm">Suggested from the date. Whole-farm expenses count in this season.</p>
               <p id="expense-season-error" class="field__error" aria-live="polite"></p>
             </div>
 
@@ -1480,26 +1484,26 @@
 
             <div class="form__end app-form__end">
               <button type="submit" class="btn btn--gradient btn--block btn--rounded">
-                <span class="btn__label">Save Expense</span>
+                <span class="btn__label" data-i18n="h.save_expense">Save Expense</span>
                 <span class="spinner" aria-hidden="true"></span>
               </button>
-              <button type="button" class="link-plain" data-cancel>Cancel and go back</button>
+              <button type="button" class="link-plain" data-cancel data-i18n="h.cancel_and_go_back">Cancel and go back</button>
             </div>
           </form>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses"></nav>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="expenses" data-i18n-attr="aria-label:h.main"></nav>
       </section>
       <!-- Harvest Entry (POST /cycles/{cycle_id}/harvests; farm owners only) -->
       <section class="view view--app" data-view="harvest-new" aria-labelledby="harvest-new-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/expenses" class="app-header__back" aria-label="Back to farm expenses">
+            <a href="#/expenses" class="app-header__back" aria-label="Back to farm expenses" data-i18n-attr="aria-label:h.back_to_farm_expenses">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="harvest-new-title" class="app-header__title" tabindex="-1" data-route-focus>Harvest Entry</h1>
-              <p class="app-header__subtitle">Record yield details for your active crop cycle.</p>
+              <h1 id="harvest-new-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.harvest_entry">Harvest Entry</h1>
+              <p class="app-header__subtitle" data-i18n="h.record_yield_details_for_your_active">Record yield details for your active crop cycle.</p>
             </div>
           </div>
         </header>
@@ -1515,7 +1519,7 @@
           <form id="harvest-form" class="form app-form" novalidate hidden>
             <div class="field">
               <label for="harvest-cycle" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-seeds"/></svg>Crop Cycle
+                <svg aria-hidden="true"><use href="#icon-seeds"/></svg><span data-i18n="h.crop_cycle">Crop Cycle</span>
               </label>
               <select id="harvest-cycle" name="cycle_id" class="input select" aria-describedby="harvest-cycle-error" required></select>
               <p id="harvest-cycle-error" class="field__error" aria-live="polite"></p>
@@ -1523,7 +1527,7 @@
 
             <div class="field">
               <label for="harvest-date" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-calendar"/></svg>Harvest Date
+                <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span data-i18n="h.harvest_date">Harvest Date</span>
               </label>
               <input id="harvest-date" name="harvest_date" class="input" type="date" aria-describedby="harvest-date-error" required>
               <p id="harvest-date-error" class="field__error" aria-live="polite"></p>
@@ -1532,7 +1536,7 @@
             <div class="field-row">
               <div class="field">
                 <label for="harvest-quantity" class="field__label field__label--icon">
-                  <svg aria-hidden="true"><use href="#icon-chart"/></svg>Quantity (kg)
+                  <svg aria-hidden="true"><use href="#icon-chart"/></svg><span data-i18n="h.quantity_kg">Quantity (kg)</span>
                 </label>
                 <input id="harvest-quantity" name="quantity_kg" class="input" type="text" inputmode="decimal"
                        autocomplete="off" placeholder="kg" aria-describedby="harvest-quantity-error" required>
@@ -1540,7 +1544,7 @@
               </div>
               <div class="field">
                 <label for="harvest-price" class="field__label field__label--icon">
-                  <svg aria-hidden="true"><use href="#icon-wallet"/></svg>Price / kg (₱)
+                  <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span data-i18n="h.price_kg">Price / kg (₱)</span>
                 </label>
                 <input id="harvest-price" name="unit_price_php" class="input" type="text" inputmode="decimal"
                        autocomplete="off" placeholder="₱" aria-describedby="harvest-price-error" required>
@@ -1550,7 +1554,7 @@
 
             <div class="field">
               <label for="harvest-gross" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-note"/></svg>Calculated Gross Income
+                <svg aria-hidden="true"><use href="#icon-note"/></svg><span data-i18n="h.calculated_gross_income">Calculated Gross Income</span>
               </label>
               <input id="harvest-gross" class="input" type="text" readonly tabindex="-1" placeholder="₱" data-gross>
             </div>
@@ -1558,7 +1562,7 @@
             <div class="field">
               <label class="agree" for="harvest-final">
                 <input id="harvest-final" name="final_harvest" type="checkbox" class="check">
-                <span>Final harvest? This closes the crop cycle, so no more harvests can be added to it.</span>
+                <span data-i18n="h.final_harvest_this_closes_the_crop">Final harvest? This closes the crop cycle, so no more harvests can be added to it.</span>
               </label>
             </div>
 
@@ -1566,10 +1570,10 @@
 
             <div class="form__end app-form__end">
               <button type="submit" class="btn btn--gradient btn--block btn--rounded">
-                <span class="btn__label">Save Harvest</span>
+                <span class="btn__label" data-i18n="h.save_harvest">Save Harvest</span>
                 <span class="spinner" aria-hidden="true"></span>
               </button>
-              <button type="button" class="link-plain" data-clear>Cancel and clear form</button>
+              <button type="button" class="link-plain" data-clear data-i18n="h.cancel_and_clear_form">Cancel and clear form</button>
             </div>
           </form>
         </div>
@@ -1578,30 +1582,30 @@
       <section class="view view--app" data-view="notifications" aria-labelledby="notifications-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/home" class="app-header__back" aria-label="Back to home">
+            <a href="#/home" class="app-header__back" aria-label="Back to home" data-i18n-attr="aria-label:h.back_to_home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="notifications-title" class="app-header__title" tabindex="-1" data-route-focus>Notifications</h1>
+              <h1 id="notifications-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.notifications">Notifications</h1>
             </div>
           </div>
         </header>
 
         <div class="app-body">
           <div class="notice-toolbar">
-            <div class="chip-row" role="group" aria-label="Show">
-              <button type="button" class="chip" aria-pressed="true" data-tab="all">All</button>
-              <button type="button" class="chip" aria-pressed="false" data-tab="unread">Unread <span class="chip__count" data-unread-count></span></button>
-              <button type="button" class="chip" aria-pressed="false" data-tab="alerts">Farm Alerts</button>
+            <div class="chip-row" role="group" aria-label="Show" data-i18n-attr="aria-label:h.show">
+              <button type="button" class="chip" aria-pressed="true" data-tab="all" data-i18n="h.all">All</button>
+              <button type="button" class="chip" aria-pressed="false" data-tab="unread"><span data-i18n="h.unread">Unread</span> <span class="chip__count" data-unread-count></span></button>
+              <button type="button" class="chip" aria-pressed="false" data-tab="alerts" data-i18n="h.farm_alerts">Farm Alerts</button>
             </div>
-            <button type="button" class="section-link section-link--button notice-toolbar__read-all" data-read-all hidden>Mark all as read</button>
+            <button type="button" class="section-link section-link--button notice-toolbar__read-all" data-read-all hidden data-i18n="h.mark_all_as_read">Mark all as read</button>
           </div>
 
           <p class="form__status" role="status" aria-live="polite" data-form-status></p>
 
           <ul class="notice-list" data-notice-list aria-live="polite"></ul>
 
-          <button type="button" class="btn btn--outline notice-more" data-more hidden>Show more</button>
+          <button type="button" class="btn btn--outline notice-more" data-more hidden data-i18n="h.show_more">Show more</button>
 
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-bell"/></svg>
@@ -1629,17 +1633,17 @@
       <section class="view view--app" data-view="profile" aria-labelledby="profile-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/home" class="app-header__back" aria-label="Back to home">
+            <a href="#/home" class="app-header__back" aria-label="Back to home" data-i18n-attr="aria-label:h.back_to_home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="profile-title" class="app-header__title" tabindex="-1" data-route-focus>Profile</h1>
+              <h1 id="profile-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.profile">Profile</h1>
             </div>
           </div>
         </header>
 
         <div class="app-body">
-          <section class="card profile-card" aria-label="Account">
+          <section class="card profile-card" aria-label="Account" data-i18n-attr="aria-label:h.account">
             <div class="profile-card__top">
               <span class="profile-card__avatar" aria-hidden="true" data-initials></span>
               <div class="profile-card__who">
@@ -1653,21 +1657,21 @@
                 <svg aria-hidden="true"><use href="#icon-wifi"/></svg>
                 <strong data-online-title></strong>
               </p>
-              <a href="#/edit-profile" class="profile-card__edit">Edit Profile</a>
+              <a href="#/edit-profile" class="profile-card__edit" data-i18n="h.edit_profile">Edit Profile</a>
             </div>
           </section>
 
           <p class="form__status" role="status" aria-live="polite" data-form-status></p>
 
           <section aria-labelledby="security-title">
-            <h2 id="security-title" class="section-title">Account Security</h2>
+            <h2 id="security-title" class="section-title" data-i18n="h.account_security">Account Security</h2>
             <div class="setting-list">
               <a href="#/edit-profile" class="setting-row">
-                <span class="setting-row__text"><span class="setting-row__label">Mobile number</span><span class="setting-row__value" data-mobile></span></span>
+                <span class="setting-row__text"><span class="setting-row__label" data-i18n="h.mobile_number_2">Mobile number</span><span class="setting-row__value" data-mobile></span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </a>
               <a href="#/change-password" class="setting-row">
-                <span class="setting-row__text"><span class="setting-row__label">Password</span><span class="setting-row__value" aria-label="Hidden">••••••••••</span></span>
+                <span class="setting-row__text"><span class="setting-row__label" data-i18n="h.password">Password</span><span class="setting-row__value" aria-label="Hidden" data-i18n-attr="aria-label:h.hidden">••••••••••</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </a>
             </div>
@@ -1675,87 +1679,90 @@
 
           <section aria-labelledby="plots-title">
             <div class="section-head">
-              <h2 id="plots-title" class="section-title">Farm and Plots</h2>
+              <h2 id="plots-title" class="section-title" data-i18n="h.farm_and_plots">Farm and Plots</h2>
               <button type="button" class="add-link" data-add-plot hidden>
-                <svg aria-hidden="true"><use href="#icon-plus"/></svg>Add Plot
+                <svg aria-hidden="true"><use href="#icon-plus"/></svg><span data-i18n="h.add_plot">Add Plot</span>
               </button>
             </div>
             <ul class="field-list" data-plot-list></ul>
             <div class="setting-list" data-farm-report hidden>
               <a href="#/farm-report" class="setting-row">
                 <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-chart"/></svg>
-                <span class="setting-row__text"><span class="setting-row__title">Farm report</span></span>
+                <span class="setting-row__text"><span class="setting-row__title" data-i18n="h.farm_report">Farm report</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </a>
             </div>
             <div class="app-empty" data-plots-empty hidden>
               <svg aria-hidden="true"><use href="#icon-pin"/></svg>
-              <p>No plots yet. Set up your farm to add your fields.</p>
-              <a href="#/setup" class="link">Set up your farm</a>
+              <p data-i18n="h.no_plots_yet_set_up_your">No plots yet. Set up your farm to add your fields.</p>
+              <a href="#/setup" class="link" data-i18n="h.set_up_your_farm">Set up your farm</a>
             </div>
           </section>
 
           <section aria-labelledby="language-title">
-            <h2 id="language-title" class="section-title">Language</h2>
-            <label class="setting-row setting-row--toggle" data-soon="Translate">
+            <h2 id="language-title" class="section-title">Language / Wika</h2>
+            <div class="setting-row setting-row--lang">
               <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-translate"/></svg>
-              <span class="setting-row__text"><span class="setting-row__title">Translate</span><span class="setting-row__hint">Translate to Filipino</span></span>
-              <input type="checkbox" class="switch" role="switch" disabled>
-            </label>
+              <span class="setting-row__text"><span class="setting-row__title" data-i18n="profile.languageTitle">App language</span><span class="setting-row__hint" data-i18n="profile.languageHint">Saved on this phone</span></span>
+              <div class="lang-switch" role="group" aria-labelledby="language-title" data-lang-switch>
+                <button type="button" class="lang-switch__btn" data-lang="en" aria-pressed="true">English</button>
+                <button type="button" class="lang-switch__btn" data-lang="fil" aria-pressed="false">Filipino</button>
+              </div>
+            </div>
           </section>
 
           <section aria-labelledby="sync-title">
-            <h2 id="sync-title" class="section-title">Sync and Offline</h2>
+            <h2 id="sync-title" class="section-title" data-i18n="h.sync_and_offline">Sync and Offline</h2>
             <button type="button" class="setting-row" data-install-app hidden>
               <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-download"/></svg>
-              <span class="setting-row__text"><span class="setting-row__title">Install app</span><span class="setting-row__hint">Add ARISETO to your home screen</span></span>
+              <span class="setting-row__text"><span class="setting-row__title" data-i18n="h.install_app">Install app</span><span class="setting-row__hint" data-i18n="h.add_ariseto_to_your_home_screen">Add ARISETO to your home screen</span></span>
               <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
             </button>
           </section>
 
           <section aria-labelledby="privacy-title">
-            <h2 id="privacy-title" class="section-title">Privacy and Data</h2>
+            <h2 id="privacy-title" class="section-title" data-i18n="h.privacy_and_data">Privacy and Data</h2>
             <div class="setting-list">
               <button type="button" class="setting-row" data-soon="Export Farm Data">
                 <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-download"/></svg>
-                <span class="setting-row__text"><span class="setting-row__title">Export Farm Data</span><span class="setting-row__hint">Download as CSV or JSON</span></span>
+                <span class="setting-row__text"><span class="setting-row__title" data-i18n="h.export_farm_data">Export Farm Data</span><span class="setting-row__hint" data-i18n="h.download_as_csv_or_json">Download as CSV or JSON</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </button>
               <button type="button" class="setting-row" data-request-deletion>
                 <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-user-x"/></svg>
-                <span class="setting-row__text"><span class="setting-row__title">Request account deletion</span><span class="setting-row__hint" data-deletion-hint></span></span>
+                <span class="setting-row__text"><span class="setting-row__title" data-i18n="h.request_account_deletion">Request account deletion</span><span class="setting-row__hint" data-deletion-hint></span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </button>
               <a href="#/terms" class="setting-row">
                 <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-note"/></svg>
-                <span class="setting-row__text"><span class="setting-row__title">Terms &amp; Conditions</span></span>
+                <span class="setting-row__text"><span class="setting-row__title" data-i18n="h.terms_conditions">Terms &amp; Conditions</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </a>
               <a href="#/privacy" class="setting-row">
                 <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-shield"/></svg>
-                <span class="setting-row__text"><span class="setting-row__title">Privacy Policy</span></span>
+                <span class="setting-row__text"><span class="setting-row__title" data-i18n="h.privacy_policy">Privacy Policy</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </a>
             </div>
           </section>
 
           <section aria-labelledby="help-title">
-            <h2 id="help-title" class="section-title">Help and Support</h2>
+            <h2 id="help-title" class="section-title" data-i18n="h.help_and_support">Help and Support</h2>
             <div class="setting-list">
               <button type="button" class="setting-row" data-soon="Frequently Asked Questions">
                 <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-help"/></svg>
-                <span class="setting-row__text"><span class="setting-row__title">Frequently Asked Questions</span></span>
+                <span class="setting-row__text"><span class="setting-row__title" data-i18n="h.frequently_asked_questions">Frequently Asked Questions</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </button>
               <a href="#/chatbot" class="setting-row">
                 <svg class="setting-row__icon" aria-hidden="true"><use href="#icon-chat"/></svg>
-                <span class="setting-row__text"><span class="setting-row__title">Ask the Chatbot</span></span>
+                <span class="setting-row__text"><span class="setting-row__title" data-i18n="h.ask_the_chatbot">Ask the Chatbot</span></span>
                 <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
               </a>
             </div>
           </section>
 
-          <button type="button" class="btn btn--gradient btn--block btn--rounded" data-logout>Log Out</button>
+          <button type="button" class="btn btn--gradient btn--block btn--rounded" data-logout data-i18n="h.log_out">Log Out</button>
         </div>
 
         <template data-plot-tpl>
@@ -1780,7 +1787,7 @@
                   <span data-place></span>
                 </span>
                 <button type="button" class="field-card__details" data-soon="Plot details">
-                  <span>View details</span>
+                  <span data-i18n="h.view_details">View details</span>
                   <svg aria-hidden="true"><use href="#icon-arrow-right"/></svg>
                 </button>
               </div>
@@ -1792,11 +1799,11 @@
       <section class="view view--app" data-view="edit-profile" aria-labelledby="edit-profile-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/profile" class="app-header__back" aria-label="Back to profile">
+            <a href="#/profile" class="app-header__back" aria-label="Back to profile" data-i18n-attr="aria-label:h.back_to_profile">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="edit-profile-title" class="app-header__title" tabindex="-1" data-route-focus>Edit Profile</h1>
+              <h1 id="edit-profile-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.edit_profile">Edit Profile</h1>
             </div>
           </div>
         </header>
@@ -1804,88 +1811,88 @@
         <div class="app-body">
           <div class="profile-photo">
             <span class="profile-photo__avatar" aria-hidden="true" data-initials></span>
-            <button type="button" class="profile-photo__edit" data-soon="Profile photo" aria-label="Change profile photo">
+            <button type="button" class="profile-photo__edit" data-soon="Profile photo" aria-label="Change profile photo" data-i18n-attr="aria-label:h.change_profile_photo">
               <svg aria-hidden="true"><use href="#icon-pencil"/></svg>
             </button>
           </div>
 
           <form id="edit-profile-form" class="form app-form" novalidate>
-            <h2 class="section-title section-title--flush">Personal Information</h2>
+            <h2 class="section-title section-title--flush" data-i18n="h.personal_information">Personal Information</h2>
 
             <div class="field">
               <label for="edit-first-name" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-user"/></svg>First Name
+                <svg aria-hidden="true"><use href="#icon-user"/></svg><span data-i18n="h.first_name">First Name</span>
               </label>
               <input id="edit-first-name" name="first_name" class="input" type="text" maxlength="60"
                      autocomplete="given-name" autocapitalize="words" placeholder="Enter first name"
-                     aria-describedby="edit-first-name-error" required>
+                     aria-describedby="edit-first-name-error" required data-i18n-attr="placeholder:h.enter_first_name">
               <p id="edit-first-name-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
               <label for="edit-last-name" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-user"/></svg>Last Name
+                <svg aria-hidden="true"><use href="#icon-user"/></svg><span data-i18n="h.last_name">Last Name</span>
               </label>
               <input id="edit-last-name" name="last_name" class="input" type="text" maxlength="60"
                      autocomplete="family-name" autocapitalize="words" placeholder="Enter last name"
-                     aria-describedby="edit-last-name-error" required>
+                     aria-describedby="edit-last-name-error" required data-i18n-attr="placeholder:h.enter_last_name">
               <p id="edit-last-name-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
               <label for="edit-email" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-mail"/></svg>Email Address
+                <svg aria-hidden="true"><use href="#icon-mail"/></svg><span data-i18n="h.email_address">Email Address</span>
               </label>
               <input id="edit-email" name="email" class="input" type="email" inputmode="email"
                      autocomplete="email" autocapitalize="off" spellcheck="false"
-                     placeholder="Enter email address (optional)" aria-describedby="edit-email-error">
+                     placeholder="Enter email address (optional)" aria-describedby="edit-email-error" data-i18n-attr="placeholder:h.enter_email_address_optional">
               <p id="edit-email-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
               <label for="edit-mobile" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-phone"/></svg>Mobile Number
+                <svg aria-hidden="true"><use href="#icon-phone"/></svg><span data-i18n="h.mobile_number">Mobile Number</span>
               </label>
               <input id="edit-mobile" name="mobile_no" class="input" type="tel" inputmode="tel"
-                     autocomplete="tel" placeholder="Enter phone number" aria-describedby="edit-mobile-error" required>
+                     autocomplete="tel" placeholder="Enter phone number" aria-describedby="edit-mobile-error" required data-i18n-attr="placeholder:h.enter_phone_number">
               <p id="edit-mobile-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field" data-current-password hidden>
               <label for="edit-current-password" class="field__label field__label--icon">
-                <svg aria-hidden="true"><use href="#icon-shield"/></svg>Current Password
+                <svg aria-hidden="true"><use href="#icon-shield"/></svg><span data-i18n="h.current_password">Current Password</span>
               </label>
               <div class="input-group">
                 <input id="edit-current-password" name="current_password" class="input" type="password"
                        autocomplete="current-password" placeholder="Enter current password"
-                       aria-describedby="edit-current-password-hint edit-current-password-error">
+                       aria-describedby="edit-current-password-hint edit-current-password-error" data-i18n-attr="placeholder:h.enter_current_password">
                 <button type="button" class="input-group__toggle" data-toggle-password
-                        aria-controls="edit-current-password" aria-label="Show password" aria-pressed="false">
+                        aria-controls="edit-current-password" aria-label="Show password" aria-pressed="false" data-i18n-attr="aria-label:h.show_password">
                   <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
                   <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
                 </button>
               </div>
-              <p id="edit-current-password-hint" class="field__hint">Needed to change your mobile number or email.</p>
+              <p id="edit-current-password-hint" class="field__hint" data-i18n="h.needed_to_change_your_mobile_number">Needed to change your mobile number or email.</p>
               <p id="edit-current-password-error" class="field__error" aria-live="polite"></p>
             </div>
 
-            <h2 class="section-title section-title--flush">Security</h2>
+            <h2 class="section-title section-title--flush" data-i18n="h.security">Security</h2>
             <a href="#/change-password" class="setting-row">
               <svg class="setting-row__icon setting-row__icon--green" aria-hidden="true"><use href="#icon-shield"/></svg>
-              <span class="setting-row__text"><span class="setting-row__label">Change Password</span><span class="setting-row__hint">Update your login credentials</span></span>
+              <span class="setting-row__text"><span class="setting-row__label" data-i18n="h.change_password">Change Password</span><span class="setting-row__hint" data-i18n="h.update_your_login_credentials">Update your login credentials</span></span>
               <svg class="setting-row__chevron" aria-hidden="true"><use href="#icon-chevron-right"/></svg>
             </a>
 
             <p class="note-card" data-member-since hidden>
               <svg aria-hidden="true"><use href="#icon-calendar"/></svg>
-              <span>Member since <strong data-since></strong>. Your data is protected under ARISETO’s privacy guidelines for local farmers.</span>
+              <span><span data-i18n="h.member_since">Member since</span> <strong data-since></strong><span data-i18n="h.your_data_is_protected_under_ariseto">. Your data is protected under ARISETO’s privacy guidelines for local farmers.</span></span>
             </p>
 
             <p class="form__status" role="status" aria-live="polite" data-form-status></p>
 
             <div class="form__end app-form__end">
               <button type="submit" class="btn btn--gradient btn--block btn--rounded">
-                <span class="btn__label">Update Changes</span>
+                <span class="btn__label" data-i18n="h.update_changes">Update Changes</span>
                 <span class="spinner" aria-hidden="true"></span>
               </button>
             </div>
@@ -1896,27 +1903,27 @@
       <section class="view view--app" data-view="change-password" aria-labelledby="change-password-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/profile" class="app-header__back" aria-label="Back to profile">
+            <a href="#/profile" class="app-header__back" aria-label="Back to profile" data-i18n-attr="aria-label:h.back_to_profile">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="change-password-title" class="app-header__title" tabindex="-1" data-route-focus>Change Password</h1>
+              <h1 id="change-password-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.change_password">Change Password</h1>
             </div>
           </div>
         </header>
 
         <div class="app-body">
           <form id="change-password-form" class="form app-form" novalidate>
-            <h2 class="section-title section-title--flush">Keep your farm data secure with a strong password</h2>
+            <h2 class="section-title section-title--flush" data-i18n="h.keep_your_farm_data_secure_with">Keep your farm data secure with a strong password</h2>
 
             <div class="field">
-              <label for="password-current" class="field__label">Current Password</label>
+              <label for="password-current" class="field__label" data-i18n="h.current_password">Current Password</label>
               <div class="input-group">
                 <input id="password-current" name="current_password" class="input" type="password"
                        autocomplete="current-password" placeholder="Enter current password"
-                       aria-describedby="password-current-error" required>
+                       aria-describedby="password-current-error" required data-i18n-attr="placeholder:h.enter_current_password">
                 <button type="button" class="input-group__toggle" data-toggle-password
-                        aria-controls="password-current" aria-label="Show password" aria-pressed="false">
+                        aria-controls="password-current" aria-label="Show password" aria-pressed="false" data-i18n-attr="aria-label:h.show_password">
                   <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
                   <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
                 </button>
@@ -1924,16 +1931,16 @@
               <p id="password-current-error" class="field__error" aria-live="polite"></p>
             </div>
 
-            <p class="form-divider">Set new Password</p>
+            <p class="form-divider" data-i18n="h.set_new_password">Set new Password</p>
 
             <div class="field">
-              <label for="password-new" class="field__label">Password</label>
+              <label for="password-new" class="field__label" data-i18n="h.password">Password</label>
               <div class="input-group">
                 <input id="password-new" name="new_password" class="input" type="password" maxlength="128"
                        autocomplete="new-password" placeholder="Enter new password"
-                       aria-describedby="password-hint password-new-error" required>
+                       aria-describedby="password-hint password-new-error" required data-i18n-attr="placeholder:h.enter_new_password">
                 <button type="button" class="input-group__toggle" data-toggle-password
-                        aria-controls="password-new" aria-label="Show password" aria-pressed="false">
+                        aria-controls="password-new" aria-label="Show password" aria-pressed="false" data-i18n-attr="aria-label:h.show_password">
                   <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
                   <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
                 </button>
@@ -1942,26 +1949,26 @@
             </div>
 
             <div class="field">
-              <label for="password-confirm" class="field__label">Confirm New Password</label>
+              <label for="password-confirm" class="field__label" data-i18n="h.confirm_new_password">Confirm New Password</label>
               <div class="input-group">
                 <input id="password-confirm" name="confirm_password" class="input" type="password" maxlength="128"
                        autocomplete="new-password" placeholder="Repeat new password"
-                       aria-describedby="password-hint password-confirm-error" required>
+                       aria-describedby="password-hint password-confirm-error" required data-i18n-attr="placeholder:h.repeat_new_password">
                 <button type="button" class="input-group__toggle" data-toggle-password
-                        aria-controls="password-confirm" aria-label="Show password" aria-pressed="false">
+                        aria-controls="password-confirm" aria-label="Show password" aria-pressed="false" data-i18n-attr="aria-label:h.show_password">
                   <svg class="icon-show" aria-hidden="true"><use href="#icon-eye"/></svg>
                   <svg class="icon-hide" aria-hidden="true"><use href="#icon-eye-off"/></svg>
                 </button>
               </div>
               <p id="password-confirm-error" class="field__error" aria-live="polite"></p>
-              <p id="password-hint" class="field__hint">Use 8 to 128 characters.</p>
+              <p id="password-hint" class="field__hint" data-i18n="h.use_8_to_128_characters">Use 8 to 128 characters.</p>
             </div>
 
             <p class="form__status" role="status" aria-live="polite" data-form-status></p>
 
             <div class="form__end app-form__end">
               <button type="submit" class="btn btn--gradient btn--block btn--rounded">
-                <span class="btn__label">Change Password</span>
+                <span class="btn__label" data-i18n="h.change_password">Change Password</span>
                 <span class="spinner" aria-hidden="true"></span>
               </button>
             </div>
@@ -1972,11 +1979,11 @@
       <section class="view view--app" data-view="add-plot" aria-labelledby="add-plot-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/profile" class="app-header__back" aria-label="Back to profile">
+            <a href="#/profile" class="app-header__back" aria-label="Back to profile" data-i18n-attr="aria-label:h.back_to_profile">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="add-plot-title" class="app-header__title" tabindex="-1" data-route-focus>Add Plot</h1>
+              <h1 id="add-plot-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.add_plot">Add Plot</h1>
               <p class="app-header__subtitle" data-farm-name></p>
             </div>
           </div>
@@ -1985,51 +1992,51 @@
         <div class="app-body">
           <form id="add-plot-form" class="form app-form" novalidate>
             <div class="field">
-              <label for="plot-name" class="field__label">Field Name</label>
+              <label for="plot-name" class="field__label" data-i18n="h.field_name">Field Name</label>
               <input id="plot-name" name="field_name" class="input" type="text" maxlength="50"
                      autocomplete="off" autocapitalize="words" placeholder="e.g. Field C"
-                     aria-describedby="plot-name-error" required>
+                     aria-describedby="plot-name-error" required data-i18n-attr="placeholder:h.e_g_field_c">
               <p id="plot-name-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
-              <label for="plot-crop" class="field__label">Crop</label>
+              <label for="plot-crop" class="field__label" data-i18n="h.crop">Crop</label>
               <select id="plot-crop" name="crop" class="input select" aria-describedby="plot-crop-error" required>
-                <option value="">Choose a crop</option>
+                <option value="" data-i18n="h.choose_a_crop">Choose a crop</option>
               </select>
               <p id="plot-crop-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
-              <label for="plot-variety" class="field__label">Variety</label>
+              <label for="plot-variety" class="field__label" data-i18n="h.variety">Variety</label>
               <select id="plot-variety" name="variety_id" class="input select"
                       aria-describedby="plot-variety-error" required disabled>
-                <option value="">Choose a crop first</option>
+                <option value="" data-i18n="h.choose_a_crop_first">Choose a crop first</option>
               </select>
               <p id="plot-variety-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
-              <label for="plot-size" class="field__label">Size (Ha)</label>
+              <label for="plot-size" class="field__label" data-i18n="h.size_ha">Size (Ha)</label>
               <input id="plot-size" name="area_ha" class="input" type="number" inputmode="decimal"
                      min="0" step="any" placeholder="e.g. 1" aria-describedby="plot-size-error" required>
               <p id="plot-size-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
-              <label for="plot-season" class="field__label">Season</label>
+              <label for="plot-season" class="field__label" data-i18n="h.season">Season</label>
               <select id="plot-season" name="season" class="input select" required></select>
             </div>
 
             <div class="field">
-              <label for="plot-planting-date" class="field__label">Sowing Date</label>
+              <label for="plot-planting-date" class="field__label" data-i18n="h.sowing_date">Sowing Date</label>
               <input id="plot-planting-date" name="planting_date" class="input" type="date"
                      aria-describedby="plot-planting-date-error" required>
               <p id="plot-planting-date-error" class="field__error" aria-live="polite"></p>
             </div>
 
             <div class="field">
-              <label for="plot-target" class="field__label">Target Yield (t/ha, optional)</label>
+              <label for="plot-target" class="field__label" data-i18n="h.target_yield_t_ha_optional">Target Yield (t/ha, optional)</label>
               <input id="plot-target" name="target_yield_t_ha" class="input" type="number" inputmode="decimal"
                      min="0" step="0.01" placeholder="e.g. 4.5" aria-describedby="plot-target-error">
               <p id="plot-target-error" class="field__error" aria-live="polite"></p>
@@ -2039,7 +2046,7 @@
 
             <div class="form__end app-form__end">
               <button type="submit" class="btn btn--gradient btn--block btn--rounded">
-                <span class="btn__label">Add Plot</span>
+                <span class="btn__label" data-i18n="h.add_plot">Add Plot</span>
                 <span class="spinner" aria-hidden="true"></span>
               </button>
             </div>
@@ -2050,61 +2057,61 @@
       <section class="view view--app" data-view="terms" aria-labelledby="terms-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/welcome" class="app-header__back" aria-label="Back" data-legal-back>
+            <a href="#/welcome" class="app-header__back" aria-label="Back" data-legal-back data-i18n-attr="aria-label:h.back">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 class="app-header__title">Terms and Conditions</h1>
+              <h1 class="app-header__title" data-i18n="h.terms_and_conditions">Terms and Conditions</h1>
             </div>
           </div>
         </header>
 
         <div class="app-body">
           <article class="card legal">
-            <h2 id="terms-title" class="legal__title" tabindex="-1" data-route-focus>Terms &amp; Conditions</h2>
-            <p class="legal__updated"><strong>Last Updated:</strong> October 28, 2026</p>
-            <p>Welcome to <strong>ARISETO</strong>, a Progressive Web Application (PWA) developed for small-scale farmers and farm owners of the Mindoro Progressive Multi-Purpose Cooperative (MPMPC) in Occidental Mindoro. By registering for or using ARISETO, you agree to these Terms &amp; Conditions.</p>
+            <h2 id="terms-title" class="legal__title" tabindex="-1" data-route-focus data-i18n="h.terms_conditions">Terms &amp; Conditions</h2>
+            <p class="legal__updated"><strong data-i18n="h.last_updated">Last Updated:</strong> <span data-i18n="h.october_28_2026">October 28, 2026</span></p>
+            <p><span data-i18n="h.welcome_to">Welcome to</span> <strong>ARISETO</strong><span data-i18n="h.a_progressive_web_application_pwa_developed">, a Progressive Web Application (PWA) developed for small-scale farmers and farm owners of the Mindoro Progressive Multi-Purpose Cooperative (MPMPC) in Occidental Mindoro. By registering for or using ARISETO, you agree to these Terms &amp; Conditions.</span></p>
 
-            <h3>1. Account Creation &amp; Approval</h3>
+            <h3 data-i18n="h.1_account_creation_approval">1. Account Creation &amp; Approval</h3>
             <ul>
-              <li><strong>Registration Requirements:</strong> You must provide your first and last name, required mobile number, MPMPC member number, and municipality/barangay. Providing an email address is optional.</li>
-              <li><strong>Admin Approval:</strong> New accounts are set to a pending status upon registration. You can only access the app after an MPMPC Cooperative Administrator approves your account.</li>
-              <li><strong>Account Security:</strong> Passwords must be 8 to 128 characters. You are responsible for keeping your credentials safe; login details must not be shared.</li>
+              <li><strong data-i18n="h.registration_requirements">Registration Requirements:</strong> <span data-i18n="h.you_must_provide_your_first_and">You must provide your first and last name, required mobile number, MPMPC member number, and municipality/barangay. Providing an email address is optional.</span></li>
+              <li><strong data-i18n="h.admin_approval">Admin Approval:</strong> <span data-i18n="h.new_accounts_are_set_to_a">New accounts are set to a pending status upon registration. You can only access the app after an MPMPC Cooperative Administrator approves your account.</span></li>
+              <li><strong data-i18n="h.account_security_2">Account Security:</strong> <span data-i18n="h.passwords_must_be_8_to_128">Passwords must be 8 to 128 characters. You are responsible for keeping your credentials safe; login details must not be shared.</span></li>
             </ul>
 
-            <h3>2. User Roles &amp; Farm Management</h3>
+            <h3 data-i18n="h.2_user_roles_farm_management">2. User Roles &amp; Farm Management</h3>
             <ul>
-              <li><strong>Account Types:</strong> There are two account types: <strong>Member</strong> (Farmer/Farm Owner) and <strong>Cooperative Administrator</strong>.</li>
-              <li><strong>Farm Ownership:</strong> Members can register farms and assign fields. The person who registers a farm becomes its Owner and can grant access to other farmers/workers.</li>
+              <li><strong data-i18n="h.account_types">Account Types:</strong> <span data-i18n="h.there_are_two_account_types">There are two account types:</span> <strong data-i18n="h.member">Member</strong> <span data-i18n="h.farmer_farm_owner_and">(Farmer/Farm Owner) and</span> <strong data-i18n="h.cooperative_administrator">Cooperative Administrator</strong>.</li>
+              <li><strong data-i18n="h.farm_ownership">Farm Ownership:</strong> <span data-i18n="h.members_can_register_farms_and_assign">Members can register farms and assign fields. The person who registers a farm becomes its Owner and can grant access to other farmers/workers.</span></li>
             </ul>
 
-            <h3>3. Online &amp; Offline Capabilities</h3>
+            <h3 data-i18n="h.3_online_offline_capabilities">3. Online &amp; Offline Capabilities</h3>
             <ul>
-              <li><strong>Offline Features:</strong> The Crop Calendar (task schedule) and Expense Tracker are planned to work offline. Planned auto-sync features will transmit tasks or expenses logged offline once your device reconnects to the internet.</li>
-              <li><strong>Online Features:</strong> AI Leaf Disease Detection, Yield Estimation, Advisory Chatbot, and Weather Alerts require an active internet connection.</li>
+              <li><strong data-i18n="h.offline_features">Offline Features:</strong> <span data-i18n="h.the_crop_calendar_task_schedule_and">The Crop Calendar (task schedule) and Expense Tracker are planned to work offline. Planned auto-sync features will transmit tasks or expenses logged offline once your device reconnects to the internet.</span></li>
+              <li><strong data-i18n="h.online_features">Online Features:</strong> <span data-i18n="h.ai_leaf_disease_detection_yield_estimation">AI Leaf Disease Detection, Yield Estimation, Advisory Chatbot, and Weather Alerts require an active internet connection.</span></li>
             </ul>
 
-            <h3>4. AI Features &amp; Advisory Disclaimer</h3>
+            <h3 data-i18n="h.4_ai_features_advisory_disclaimer">4. AI Features &amp; Advisory Disclaimer</h3>
             <ul>
-              <li><strong>Crop Disease Detection &amp; Advisory Chatbot:</strong> Recommendations provided by the AI disease scanner and chatbot are based on standard agricultural guides (such as PhilRice and Department of Agriculture sources).</li>
-              <li><strong>No Guarantee of Results:</strong> AI analyses are automated guidance tools. Users should use their best judgment and consult cooperative agricultural technicians for severe crop issues.</li>
+              <li><strong data-i18n="h.crop_disease_detection_advisory_chatbot">Crop Disease Detection &amp; Advisory Chatbot:</strong> <span data-i18n="h.recommendations_provided_by_the_ai_disease">Recommendations provided by the AI disease scanner and chatbot are based on standard agricultural guides (such as PhilRice and Department of Agriculture sources).</span></li>
+              <li><strong data-i18n="h.no_guarantee_of_results">No Guarantee of Results:</strong> <span data-i18n="h.ai_analyses_are_automated_guidance_tools">AI analyses are automated guidance tools. Users should use their best judgment and consult cooperative agricultural technicians for severe crop issues.</span></li>
             </ul>
 
-            <h3>5. Weather Information &amp; Notifications</h3>
+            <h3 data-i18n="h.5_weather_information_notifications">5. Weather Information &amp; Notifications</h3>
             <ul>
-              <li>Weather forecasts and push alerts rely on your selected barangay center coordinates rather than exact GPS tracking.</li>
-              <li>Planned push notifications pass through your browser's push service to alert you regarding weather-sensitive farming tasks (e.g., fertilization).</li>
+              <li data-i18n="h.weather_forecasts_and_push_alerts_rely">Weather forecasts and push alerts rely on your selected barangay center coordinates rather than exact GPS tracking.</li>
+              <li data-i18n="h.planned_push_notifications_pass_through_your">Planned push notifications pass through your browser's push service to alert you regarding weather-sensitive farming tasks (e.g., fertilization).</li>
             </ul>
 
-            <h3>6. Account Deactivation &amp; Requests</h3>
+            <h3 data-i18n="h.6_account_deactivation_requests">6. Account Deactivation &amp; Requests</h3>
             <ul>
-              <li>MPMPC Administrators reserve the right to deactivate accounts that breach cooperative policies.</li>
-              <li>You may submit a request for account deletion at any time via your profile. Upon administrator processing, your personal details will be removed, while anonymized farm performance records are kept for cooperative reporting.</li>
+              <li data-i18n="h.mpmpc_administrators_reserve_the_right_to">MPMPC Administrators reserve the right to deactivate accounts that breach cooperative policies.</li>
+              <li data-i18n="h.you_may_submit_a_request_for">You may submit a request for account deletion at any time via your profile. Upon administrator processing, your personal details will be removed, while anonymized farm performance records are kept for cooperative reporting.</li>
             </ul>
 
             <div class="legal__actions" data-legal-actions hidden>
-              <button type="button" class="btn btn--gradient btn--block btn--rounded" data-legal-accept>Accept</button>
-              <button type="button" class="btn btn--outline btn--block btn--rounded" data-legal-decline>Decline</button>
+              <button type="button" class="btn btn--gradient btn--block btn--rounded" data-legal-accept data-i18n="h.accept">Accept</button>
+              <button type="button" class="btn btn--outline btn--block btn--rounded" data-legal-decline data-i18n="h.decline">Decline</button>
             </div>
           </article>
         </div>
@@ -2113,72 +2120,72 @@
       <section class="view view--app" data-view="privacy" aria-labelledby="privacy-policy-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/welcome" class="app-header__back" aria-label="Back" data-legal-back>
+            <a href="#/welcome" class="app-header__back" aria-label="Back" data-legal-back data-i18n-attr="aria-label:h.back">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 class="app-header__title">Privacy Policy</h1>
+              <h1 class="app-header__title" data-i18n="h.privacy_policy">Privacy Policy</h1>
             </div>
           </div>
         </header>
 
         <div class="app-body">
           <article class="card legal">
-            <h2 id="privacy-policy-title" class="legal__title" tabindex="-1" data-route-focus>Privacy Policy</h2>
-            <p class="legal__updated"><strong>Last Updated:</strong> October 28, 2026</p>
-            <p>ARISETO respects your privacy and is committed to protecting your personal data in accordance with the <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong> of the Philippines.</p>
+            <h2 id="privacy-policy-title" class="legal__title" tabindex="-1" data-route-focus data-i18n="h.privacy_policy">Privacy Policy</h2>
+            <p class="legal__updated"><strong data-i18n="h.last_updated">Last Updated:</strong> <span data-i18n="h.october_28_2026">October 28, 2026</span></p>
+            <p><span data-i18n="h.ariseto_respects_your_privacy_and_is">ARISETO respects your privacy and is committed to protecting your personal data in accordance with the</span> <strong data-i18n="h.data_privacy_act_of_2012_republic">Data Privacy Act of 2012 (Republic Act No. 10173)</strong> <span data-i18n="h.of_the_philippines">of the Philippines.</span></p>
 
-            <h3>1. Information We Collect</h3>
-            <p>We collect the following information when you use ARISETO:</p>
+            <h3 data-i18n="h.1_information_we_collect">1. Information We Collect</h3>
+            <p data-i18n="h.we_collect_the_following_information_when">We collect the following information when you use ARISETO:</p>
             <ul>
-              <li><strong>Personal &amp; Account Data:</strong> First and last name, required mobile number, optional email address, MPMPC member number, municipality, and barangay.</li>
-              <li><strong>Farm &amp; Crop Data:</strong> Farm names, field sizes, planted crops/varieties, sowing dates, recorded activities, and farm expenses/harvest income.</li>
-              <li><strong>Photos:</strong> Leaf images uploaded for crop disease diagnosis.</li>
-              <li><strong>Push Notification Subscriptions:</strong> Web push tokens used to route weather and task alerts through your browser's push service.</li>
+              <li><strong data-i18n="h.personal_account_data">Personal &amp; Account Data:</strong> <span data-i18n="h.first_and_last_name_required_mobile">First and last name, required mobile number, optional email address, MPMPC member number, municipality, and barangay.</span></li>
+              <li><strong data-i18n="h.farm_crop_data">Farm &amp; Crop Data:</strong> <span data-i18n="h.farm_names_field_sizes_planted_crops">Farm names, field sizes, planted crops/varieties, sowing dates, recorded activities, and farm expenses/harvest income.</span></li>
+              <li><strong data-i18n="h.photos">Photos:</strong> <span data-i18n="h.leaf_images_uploaded_for_crop_disease">Leaf images uploaded for crop disease diagnosis.</span></li>
+              <li><strong data-i18n="h.push_notification_subscriptions">Push Notification Subscriptions:</strong> <span data-i18n="h.web_push_tokens_used_to_route">Web push tokens used to route weather and task alerts through your browser's push service.</span></li>
             </ul>
 
-            <h3>2. How We Use Your Information</h3>
-            <p>Your data is used to:</p>
+            <h3 data-i18n="h.2_how_we_use_your_information">2. How We Use Your Information</h3>
+            <p data-i18n="h.your_data_is_used_to">Your data is used to:</p>
             <ul>
-              <li>Verify your identity and MPMPC membership.</li>
-              <li>Provide crop activity calendars, yield estimates, and financial expense tracking.</li>
-              <li>Process leaf photos for disease identification and display treatment steps.</li>
-              <li>Deliver weather forecasts and weather-sensitive task alerts tailored to your barangay.</li>
-              <li>Generate aggregated crop health and yield summary reports for MPMPC administrators.</li>
+              <li data-i18n="h.verify_your_identity_and_mpmpc_membership">Verify your identity and MPMPC membership.</li>
+              <li data-i18n="h.provide_crop_activity_calendars_yield_estimates">Provide crop activity calendars, yield estimates, and financial expense tracking.</li>
+              <li data-i18n="h.process_leaf_photos_for_disease_identification">Process leaf photos for disease identification and display treatment steps.</li>
+              <li data-i18n="h.deliver_weather_forecasts_and_weather_sensitive">Deliver weather forecasts and weather-sensitive task alerts tailored to your barangay.</li>
+              <li data-i18n="h.generate_aggregated_crop_health_and_yield">Generate aggregated crop health and yield summary reports for MPMPC administrators.</li>
             </ul>
 
-            <h3>3. Location Data Handling</h3>
-            <p>ARISETO <strong>does not</strong> track your real-time GPS location. The system uses only the center coordinates of your selected <strong>barangay</strong> to retrieve localized weather forecasts.</p>
+            <h3 data-i18n="h.3_location_data_handling">3. Location Data Handling</h3>
+            <p>ARISETO <strong data-i18n="h.does_not">does not</strong> <span data-i18n="h.track_your_real_time_gps_location">track your real-time GPS location. The system uses only the center coordinates of your selected</span> <strong data-i18n="h.barangay_2">barangay</strong> <span data-i18n="h.to_retrieve_localized_weather_forecasts">to retrieve localized weather forecasts.</span></p>
 
-            <h3>4. Third-Party Data Sharing &amp; Data Security</h3>
+            <h3 data-i18n="h.4_third_party_data_sharing_data">4. Third-Party Data Sharing &amp; Data Security</h3>
             <ul>
-              <li><strong>Third-Party Services:</strong> We do not sell your personal data to advertisers. External services receive data strictly to power application features:
+              <li><strong data-i18n="h.third_party_services">Third-Party Services:</strong> <span data-i18n="h.we_do_not_sell_your_personal">We do not sell your personal data to advertisers. External services receive data strictly to power application features:</span>
                 <ul>
-                  <li><strong>OpenWeatherMap:</strong> Receives only your barangay's center coordinates to fetch weather reports.</li>
-                  <li><strong>Browser Push Service:</strong> Handles token transmission to deliver web push alerts to your device.</li>
+                  <li><strong data-i18n="h.openweathermap">OpenWeatherMap:</strong> <span data-i18n="h.receives_only_your_barangay_s_center">Receives only your barangay's center coordinates to fetch weather reports.</span></li>
+                  <li><strong data-i18n="h.browser_push_service">Browser Push Service:</strong> <span data-i18n="h.handles_token_transmission_to_deliver_web">Handles token transmission to deliver web push alerts to your device.</span></li>
                 </ul>
               </li>
-              <li><strong>Cooperative Administration &amp; Reports:</strong> MPMPC Cooperative Administrators can see your name, mobile number, email address (if provided), member number, municipality, and barangay to approve and manage accounts. They also access farm yields and disease reports to track crop health across the cooperative.</li>
-              <li><strong>Data Security:</strong> Your password is stored only as a one-way Argon2id hash and is never saved in plain text. Uploaded photos are stored securely in dedicated file storage.</li>
+              <li><strong data-i18n="h.cooperative_administration_reports">Cooperative Administration &amp; Reports:</strong> <span data-i18n="h.mpmpc_cooperative_administrators_can_see_your">MPMPC Cooperative Administrators can see your name, mobile number, email address (if provided), member number, municipality, and barangay to approve and manage accounts. They also access farm yields and disease reports to track crop health across the cooperative.</span></li>
+              <li><strong data-i18n="h.data_security">Data Security:</strong> <span data-i18n="h.your_password_is_stored_only_as">Your password is stored only as a one-way Argon2id hash and is never saved in plain text. Uploaded photos are stored securely in dedicated file storage.</span></li>
             </ul>
 
-            <h3>5. Data Retention</h3>
-            <p>Personal information is retained as long as your account remains active. When an account deletion request is processed by an MPMPC Administrator, personal identifying details are removed from the system, while anonymized farm performance and yield data are retained for historical cooperative reporting.</p>
+            <h3 data-i18n="h.5_data_retention">5. Data Retention</h3>
+            <p data-i18n="h.personal_information_is_retained_as_long">Personal information is retained as long as your account remains active. When an account deletion request is processed by an MPMPC Administrator, personal identifying details are removed from the system, while anonymized farm performance and yield data are retained for historical cooperative reporting.</p>
 
-            <h3>6. Your Rights as a Data Subject</h3>
-            <p>Under the Data Privacy Act of 2012, you have the right to:</p>
+            <h3 data-i18n="h.6_your_rights_as_a_data">6. Your Rights as a Data Subject</h3>
+            <p data-i18n="h.under_the_data_privacy_act_of">Under the Data Privacy Act of 2012, you have the right to:</p>
             <ul>
-              <li><strong>Access &amp; Correct:</strong> View and correct your personal details in the app; to correct farm records, contact the MPMPC administrator until field editing is available.</li>
-              <li><strong>Request Erasure:</strong> Submit a formal request for account deletion.</li>
-              <li><strong>Lodge Complaints:</strong> File a complaint with the <strong>National Privacy Commission (NPC)</strong> if you feel your data privacy rights have been violated.</li>
+              <li><strong data-i18n="h.access_correct">Access &amp; Correct:</strong> <span data-i18n="h.view_and_correct_your_personal_details">View and correct your personal details in the app; to correct farm records, contact the MPMPC administrator until field editing is available.</span></li>
+              <li><strong data-i18n="h.request_erasure">Request Erasure:</strong> <span data-i18n="h.submit_a_formal_request_for_account">Submit a formal request for account deletion.</span></li>
+              <li><strong data-i18n="h.lodge_complaints">Lodge Complaints:</strong> <span data-i18n="h.file_a_complaint_with_the">File a complaint with the</span> <strong data-i18n="h.national_privacy_commission_npc">National Privacy Commission (NPC)</strong> <span data-i18n="h.if_you_feel_your_data_privacy">if you feel your data privacy rights have been violated.</span></li>
             </ul>
 
-            <h3>7. Contact &amp; Privacy Inquiries</h3>
-            <p>For privacy concerns, data correction requests, or account deletion inquiries, please contact the MPMPC administrator handling privacy requests or visit the MPMPC Main Office, Occidental Mindoro.</p>
+            <h3 data-i18n="h.7_contact_privacy_inquiries">7. Contact &amp; Privacy Inquiries</h3>
+            <p data-i18n="h.for_privacy_concerns_data_correction_requests">For privacy concerns, data correction requests, or account deletion inquiries, please contact the MPMPC administrator handling privacy requests or visit the MPMPC Main Office, Occidental Mindoro.</p>
 
             <div class="legal__actions" data-legal-actions hidden>
-              <button type="button" class="btn btn--gradient btn--block btn--rounded" data-legal-accept>Accept</button>
-              <button type="button" class="btn btn--outline btn--block btn--rounded" data-legal-decline>Decline</button>
+              <button type="button" class="btn btn--gradient btn--block btn--rounded" data-legal-accept data-i18n="h.accept">Accept</button>
+              <button type="button" class="btn btn--outline btn--block btn--rounded" data-legal-decline data-i18n="h.decline">Decline</button>
             </div>
           </article>
         </div>
@@ -2187,10 +2194,10 @@
       <section class="view view--app view--weather" data-view="weather" aria-labelledby="weather-title" hidden>
         <header class="weather-top">
           <div class="app-header__row">
-            <a href="#/home" class="app-header__back" aria-label="Back to home">
+            <a href="#/home" class="app-header__back" aria-label="Back to home" data-i18n-attr="aria-label:h.back_to_home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
-            <h1 id="weather-title" class="weather-top__title" tabindex="-1" data-route-focus>Weather Tracker</h1>
+            <h1 id="weather-title" class="weather-top__title" tabindex="-1" data-route-focus data-i18n="h.weather_tracker">Weather Tracker</h1>
           </div>
           <p class="weather-top__place" data-place></p>
           <p class="weather-top__sub" data-place-sub></p>
@@ -2199,25 +2206,25 @@
         <div class="app-body">
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-weather"/></svg>
-            <p data-empty-text>No weather reading for your farm yet. Check back soon.</p>
+            <p data-empty-text data-i18n="h.no_weather_reading_for_your_farm">No weather reading for your farm yet. Check back soon.</p>
           </div>
 
           <div class="app-stack" data-content hidden>
-            <section class="wx-panel wx-now" aria-label="Current weather">
+            <section class="wx-panel wx-now" aria-label="Current weather" data-i18n-attr="aria-label:h.current_weather">
               <svg class="wx-now__icon" aria-hidden="true"><use data-now-icon href=""/></svg>
               <p class="wx-now__temp"><span data-now-temp></span>°</p>
               <p class="wx-now__summary" data-now-summary></p>
               <dl class="weather-stats wx-now__stats">
                 <div class="weather-stat">
-                  <dt><svg class="weather-stat__icon weather-stat__icon--heat" aria-hidden="true"><use href="#icon-thermometer"/></svg><span>Feels Like</span></dt>
+                  <dt><svg class="weather-stat__icon weather-stat__icon--heat" aria-hidden="true"><use href="#icon-thermometer"/></svg><span data-i18n="h.feels_like">Feels Like</span></dt>
                   <dd data-now-feels></dd>
                 </div>
                 <div class="weather-stat">
-                  <dt><svg class="weather-stat__icon weather-stat__icon--rain" aria-hidden="true"><use href="#icon-rain"/></svg><span>Rain</span></dt>
+                  <dt><svg class="weather-stat__icon weather-stat__icon--rain" aria-hidden="true"><use href="#icon-rain"/></svg><span data-i18n="h.rain">Rain</span></dt>
                   <dd data-now-rain></dd>
                 </div>
                 <div class="weather-stat">
-                  <dt><svg class="weather-stat__icon" aria-hidden="true"><use href="#icon-wind"/></svg><span>Wind</span></dt>
+                  <dt><svg class="weather-stat__icon" aria-hidden="true"><use href="#icon-wind"/></svg><span data-i18n="h.wind">Wind</span></dt>
                   <dd data-now-wind></dd>
                 </div>
               </dl>
@@ -2226,14 +2233,14 @@
 
             <section class="wx-panel" aria-labelledby="wx-today-title">
               <div class="section-head">
-                <h2 id="wx-today-title" class="section-title">Today</h2>
+                <h2 id="wx-today-title" class="section-title" data-i18n="h.today">Today</h2>
                 <p class="wx-panel__date" data-today-date></p>
               </div>
-              <ol class="wx-hours" data-hours aria-label="Next 24 hours, every 3 hours"></ol>
+              <ol class="wx-hours" data-hours aria-label="Next 24 hours, every 3 hours" data-i18n-attr="aria-label:h.next_24_hours_every_3_hours"></ol>
             </section>
 
             <section class="wx-panel" aria-labelledby="wx-summary-title">
-              <h2 id="wx-summary-title" class="section-title">Weather Summary</h2>
+              <h2 id="wx-summary-title" class="section-title" data-i18n="h.weather_summary">Weather Summary</h2>
               <ul class="wx-days" data-days></ul>
             </section>
           </div>
@@ -2258,12 +2265,12 @@
       <section class="view view--app view--scan" data-view="scan" aria-labelledby="scan-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/home" class="app-header__back" aria-label="Back to home">
+            <a href="#/home" class="app-header__back" aria-label="Back to home" data-i18n-attr="aria-label:h.back_to_home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="scan-title" class="app-header__title" tabindex="-1" data-route-focus>Disease Diagnosis Entries</h1>
-              <p class="app-header__subtitle">Keep tabs on past scans and plant health records</p>
+              <h1 id="scan-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.disease_diagnosis_entries">Disease Diagnosis Entries</h1>
+              <p class="app-header__subtitle" data-i18n="h.keep_tabs_on_past_scans_and">Keep tabs on past scans and plant health records</p>
             </div>
           </div>
         </header>
@@ -2271,28 +2278,28 @@
         <div class="scan-body">
           <section class="scan-check" aria-labelledby="scan-check-title">
             <h2 id="scan-check-title" class="scan-check__title">
-              <svg aria-hidden="true"><use href="#icon-camera"/></svg>New Health Check
+              <svg aria-hidden="true"><use href="#icon-camera"/></svg><span data-i18n="h.new_health_check">New Health Check</span>
             </h2>
-            <p class="scan-check__text">Take a clear photo of the affected plant leaf to identify the problem.</p>
+            <p class="scan-check__text" data-i18n="h.take_a_clear_photo_of_the">Take a clear photo of the affected plant leaf to identify the problem.</p>
 
             <label class="scan-picker" data-pick="field" hidden>
-              <span class="scan-picker__label">Field</span>
+              <span class="scan-picker__label" data-i18n="h.field">Field</span>
               <select class="scan-picker__select" data-scan-field></select>
             </label>
             <label class="scan-picker" data-pick="crop" hidden>
-              <span class="scan-picker__label">Crop</span>
+              <span class="scan-picker__label" data-i18n="h.crop">Crop</span>
               <select class="scan-picker__select" data-scan-crop></select>
             </label>
 
             <div class="scan-actions">
               <label class="scan-action scan-action--camera">
                 <svg aria-hidden="true"><use href="#icon-camera"/></svg>
-                <span>Open Camera</span>
+                <span data-i18n="h.open_camera">Open Camera</span>
                 <input type="file" class="sr-only" accept="image/*" capture="environment" data-camera>
               </label>
               <label class="scan-action scan-action--upload">
                 <svg aria-hidden="true"><use href="#icon-upload"/></svg>
-                <span>Upload Image</span>
+                <span data-i18n="h.upload_image">Upload Image</span>
                 <input type="file" class="sr-only" accept="image/*" data-upload>
               </label>
             </div>
@@ -2301,15 +2308,15 @@
 
           <section class="scan-history" aria-labelledby="scan-history-title">
             <div class="scan-history__head">
-              <h2 id="scan-history-title" class="scan-history__title">Recent Scans</h2>
-              <button type="button" class="scan-history__all" data-more hidden>View All</button>
+              <h2 id="scan-history-title" class="scan-history__title" data-i18n="h.recent_scans">Recent Scans</h2>
+              <button type="button" class="scan-history__all" data-more hidden data-i18n="h.view_all_2">View All</button>
             </div>
             <ul class="scan-list" data-scan-list></ul>
             <p class="scan-history__note" role="status" aria-live="polite" data-history-status></p>
           </section>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="scan"></nav>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="scan" data-i18n-attr="aria-label:h.main"></nav>
 
         <template data-scan-tpl>
           <li>
@@ -2335,25 +2342,25 @@
       <section class="view view--app view--result" data-view="scan-result" aria-labelledby="result-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/scan" class="app-header__back" aria-label="Back to diagnosis entries">
+            <a href="#/scan" class="app-header__back" aria-label="Back to diagnosis entries" data-i18n-attr="aria-label:h.back_to_diagnosis_entries">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <p class="app-header__title">Detection Results</p>
+              <p class="app-header__title" data-i18n="h.detection_results">Detection Results</p>
             </div>
           </div>
         </header>
 
         <div class="result-photo">
-          <img alt="Your leaf photo" data-result-img hidden>
+          <img alt="Your leaf photo" data-result-img hidden data-i18n-attr="alt:h.your_leaf_photo">
           <svg class="result-photo__placeholder" aria-hidden="true" data-result-placeholder><use href="#icon-leaf"/></svg>
         </div>
 
         <div class="result-sheet">
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-scan"/></svg>
-            <p data-empty-text>No scan yet. Take a photo of a leaf to check it.</p>
-            <a href="#/scan" class="link">Scan a leaf</a>
+            <p data-empty-text data-i18n="h.no_scan_yet_take_a_photo">No scan yet. Take a photo of a leaf to check it.</p>
+            <a href="#/scan" class="link" data-i18n="h.scan_a_leaf">Scan a leaf</a>
           </div>
 
           <div class="result-content" data-content hidden>
@@ -2363,37 +2370,37 @@
             <p class="result-for" data-result-for></p>
 
             <section class="result-block" data-block="description">
-              <h2 class="result-block__title result-block__title--muted">Description</h2>
+              <h2 class="result-block__title result-block__title--muted" data-i18n="h.description">Description</h2>
               <p class="result-block__text" data-description></p>
             </section>
 
             <section class="result-block" data-block="signs">
               <h2 class="result-block__title result-block__title--warn">
-                <svg aria-hidden="true"><use href="#icon-alert"/></svg><span>Warning Signs</span>
+                <svg aria-hidden="true"><use href="#icon-alert"/></svg><span data-i18n="h.warning_signs">Warning Signs</span>
               </h2>
               <ul class="result-list" data-signs></ul>
             </section>
 
             <section class="result-block" data-block="actions">
               <h2 class="result-block__title result-block__title--ok">
-                <svg aria-hidden="true"><use href="#icon-check-circle"/></svg><span data-actions-title>Recommended Actions</span>
+                <svg aria-hidden="true"><use href="#icon-check-circle"/></svg><span data-actions-title data-i18n="h.recommended_actions">Recommended Actions</span>
               </h2>
               <ol class="result-list result-list--numbered" data-actions></ol>
             </section>
 
             <section class="result-why" data-block="why">
-              <h2 class="result-why__title"><svg aria-hidden="true"><use href="#icon-alert"/></svg>Why this matters</h2>
+              <h2 class="result-why__title"><svg aria-hidden="true"><use href="#icon-alert"/></svg><span data-i18n="h.why_this_matters">Why this matters</span></h2>
               <p data-why></p>
             </section>
 
             <a href="#/chatbot" class="chat-link">
               <svg aria-hidden="true"><use href="#icon-chat"/></svg>
-              <span>Ask the chatbot about this</span>
+              <span data-i18n="h.ask_the_chatbot_about_this">Ask the chatbot about this</span>
             </a>
 
             <div class="stack">
-              <a href="#/scan" class="btn btn--outline btn--block btn--rounded result-retake" data-retake hidden>Retake photo</a>
-              <a href="#/home" class="btn btn--gradient btn--block btn--rounded">Done</a>
+              <a href="#/scan" class="btn btn--outline btn--block btn--rounded result-retake" data-retake hidden data-i18n="h.retake_photo">Retake photo</a>
+              <a href="#/home" class="btn btn--gradient btn--block btn--rounded" data-i18n="h.done">Done</a>
             </div>
           </div>
         </div>
@@ -2402,11 +2409,11 @@
       <section class="view view--app" data-view="yield" aria-labelledby="yield-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/home" class="app-header__back" aria-label="Back to home">
+            <a href="#/home" class="app-header__back" aria-label="Back to home" data-i18n-attr="aria-label:h.back_to_home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="yield-title" class="app-header__title" tabindex="-1" data-route-focus>Yield Estimation</h1>
+              <h1 id="yield-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.yield_estimation">Yield Estimation</h1>
             </div>
           </div>
         </header>
@@ -2414,48 +2421,48 @@
         <div class="app-body">
           <div class="app-empty">
             <svg aria-hidden="true"><use href="#icon-chart"/></svg>
-            <p>Yield estimation isn't available yet. It needs past harvest records to learn from.</p>
+            <p data-i18n="h.yield_estimation_isn_t_available_yet">Yield estimation isn't available yet. It needs past harvest records to learn from.</p>
           </div>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="yield"></nav>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="yield" data-i18n-attr="aria-label:h.main"></nav>
       </section>
       <!-- Chatbot -->
       <section class="view view--app view--chat" data-view="chatbot" aria-labelledby="chat-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/home" class="app-header__back" aria-label="Back to home">
+            <a href="#/home" class="app-header__back" aria-label="Back to home" data-i18n-attr="aria-label:h.back_to_home">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="chat-title" class="app-header__title" tabindex="-1" data-route-focus>Chatbot</h1>
-              <p class="app-header__subtitle">Get instant answers to your farming questions.</p>
+              <h1 id="chat-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.chatbot">Chatbot</h1>
+              <p class="app-header__subtitle" data-i18n="h.get_instant_answers_to_your_farming">Get instant answers to your farming questions.</p>
             </div>
           </div>
         </header>
 
         <div class="chat-body">
-          <ol class="chat-log" data-chat-log aria-live="polite" aria-label="Conversation"></ol>
-          <p class="chat-empty" data-chat-empty hidden>Ask a question about your farm, or tap a topic below.</p>
+          <ol class="chat-log" data-chat-log aria-live="polite" aria-label="Conversation" data-i18n-attr="aria-label:h.conversation"></ol>
+          <p class="chat-empty" data-chat-empty hidden data-i18n="h.ask_a_question_about_your_farm">Ask a question about your farm, or tap a topic below.</p>
           <p class="chat-status" role="status" aria-live="polite" data-chat-status></p>
         </div>
 
         <div class="chat-compose">
-          <div class="chat-chips" role="group" aria-label="Quick questions" data-chips></div>
+          <div class="chat-chips" role="group" aria-label="Quick questions" data-chips data-i18n-attr="aria-label:h.quick_questions"></div>
           <form class="chat-form" data-chat-form>
-            <a href="#/scan" class="chat-form__camera" aria-label="Scan a leaf with the camera">
+            <a href="#/scan" class="chat-form__camera" aria-label="Scan a leaf with the camera" data-i18n-attr="aria-label:h.scan_a_leaf_with_the_camera">
               <svg aria-hidden="true"><use href="#icon-scan"/></svg>
             </a>
-            <label class="sr-only" for="chat-input">Message</label>
+            <label class="sr-only" for="chat-input" data-i18n="h.message">Message</label>
             <input id="chat-input" class="chat-form__input" type="text" maxlength="500" autocomplete="off"
-                   placeholder="Type a message" data-chat-input>
-            <button type="submit" class="chat-form__send" aria-label="Send">
+                   placeholder="Type a message" data-chat-input data-i18n-attr="placeholder:h.type_a_message">
+            <button type="submit" class="chat-form__send" aria-label="Send" data-i18n-attr="aria-label:h.send">
               <svg aria-hidden="true"><use href="#icon-send"/></svg>
             </button>
           </form>
         </div>
 
-        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="chatbot"></nav>
+        <nav class="bottom-nav" aria-label="Main" data-bottom-nav="chatbot" data-i18n-attr="aria-label:h.main"></nav>
 
         <template data-message-tpl>
           <li class="chat-msg">
@@ -2474,17 +2481,17 @@
       <section class="view view--app" data-view="farm-report" aria-labelledby="farm-report-title" hidden>
         <header class="app-header">
           <div class="app-header__row">
-            <a href="#/expenses" class="app-header__back" aria-label="Back to Farm Expenses">
+            <a href="#/expenses" class="app-header__back" aria-label="Back to Farm Expenses" data-i18n-attr="aria-label:h.back_to_farm_expenses_2">
               <svg aria-hidden="true"><use href="#icon-back"/></svg>
             </a>
             <div class="app-header__text">
-              <h1 id="farm-report-title" class="app-header__title" tabindex="-1" data-route-focus>Farm Report</h1>
+              <h1 id="farm-report-title" class="app-header__title" tabindex="-1" data-route-focus data-i18n="h.farm_report_2">Farm Report</h1>
               <p class="app-header__subtitle" data-report-subtitle></p>
             </div>
           </div>
           <div class="picker-row">
             <label class="field-picker">
-              <span class="field-picker__label">Season</span>
+              <span class="field-picker__label" data-i18n="h.season">Season</span>
               <select class="field-picker__select" data-season-picker></select>
             </label>
           </div>
@@ -2494,17 +2501,17 @@
           <div class="app-empty" data-empty hidden>
             <svg aria-hidden="true"><use href="#icon-chart"/></svg>
             <p data-empty-text></p>
-            <a href="#/setup" class="link" data-empty-setup hidden>Set up your farm</a>
+            <a href="#/setup" class="link" data-empty-setup hidden data-i18n="h.set_up_your_farm">Set up your farm</a>
           </div>
 
           <p class="form__status" role="status" aria-live="polite" data-form-status></p>
 
           <div class="app-stack" data-content hidden>
             <section class="card report-card" aria-labelledby="report-totals-title">
-              <h2 id="report-totals-title" class="section-title">Season totals</h2>
+              <h2 id="report-totals-title" class="section-title" data-i18n="h.season_totals">Season totals</h2>
               <dl class="report-rows" data-totals></dl>
             </section>
-            <p class="muted-note" data-no-cycles hidden>No crop cycles in this season.</p>
+            <p class="muted-note" data-no-cycles hidden data-i18n="h.no_crop_cycles_in_this_season">No crop cycles in this season.</p>
             <div class="report-list" data-field-list></div>
           </div>
         </div>
@@ -2732,32 +2739,32 @@
     <p class="toast" role="status" aria-live="polite" data-app-toast hidden></p>
 
     <div class="update-bar" role="status" data-update-bar hidden>
-      <span>A new version of ARISETO is ready.</span>
-      <button type="button" class="update-bar__button" data-update-reload>Reload</button>
+      <span data-i18n="h.a_new_version_of_ariseto_is">A new version of ARISETO is ready.</span>
+      <button type="button" class="update-bar__button" data-update-reload data-i18n="h.reload">Reload</button>
     </div>
 
     <!-- Bottom navigation shared by Home and the feature screens (js/utils/bottom-nav.js) -->
     <template id="bottom-nav-template">
       <a href="#/home" class="bottom-nav__item" data-nav-item="home">
-        <svg aria-hidden="true"><use href="#icon-home"/></svg><span>Home</span>
+        <svg aria-hidden="true"><use href="#icon-home"/></svg><span data-i18n="h.home">Home</span>
       </a>
       <a href="#/yield" class="bottom-nav__item" data-nav-item="yield">
-        <svg aria-hidden="true"><use href="#icon-chart"/></svg><span>Yield</span>
+        <svg aria-hidden="true"><use href="#icon-chart"/></svg><span data-i18n="h.yield">Yield</span>
       </a>
-      <a href="#/scan" class="bottom-nav__fab" data-nav-item="scan" aria-label="Scan a crop for disease">
+      <a href="#/scan" class="bottom-nav__fab" data-nav-item="scan" aria-label="Scan a crop for disease" data-i18n-attr="aria-label:h.scan_a_crop_for_disease">
         <svg aria-hidden="true"><use href="#icon-scan"/></svg>
       </a>
       <a href="#/calendar" class="bottom-nav__item" data-nav-item="calendar">
-        <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span>Calendar</span>
+        <svg aria-hidden="true"><use href="#icon-calendar"/></svg><span data-i18n="h.calendar">Calendar</span>
       </a>
       <a href="#/expenses" class="bottom-nav__item" data-nav-item="expenses">
-        <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span>Expenses</span>
+        <svg aria-hidden="true"><use href="#icon-wallet"/></svg><span data-i18n="h.expenses">Expenses</span>
       </a>
     </template>
   </div>
 
   <noscript>
-    <p class="noscript">ARISETO needs JavaScript enabled to sign you in.</p>
+    <p class="noscript" data-i18n="h.ariseto_needs_javascript_enabled_to_sign">ARISETO needs JavaScript enabled to sign you in.</p>
   </noscript>
-</body>
+/body>
 </html>

@@ -1,5 +1,7 @@
 // frontend/public/js/utils/dates.js
 
+import { t } from '../i18n/i18n.js';
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Today's calendar date in the Philippines (fixed UTC+8), whatever the phone's time zone. */
@@ -66,13 +68,13 @@ export function formatRange(start, end) {
 /** 'Just now', '20m ago', '5h ago', '3d ago', '2w ago', or 'Mar 4' for older times. */
 export function formatTimeAgo(date, now = new Date()) {
   const minutes = Math.max(0, Math.floor((now - date) / 60000));
-  if (minutes < 2) return 'Just now';
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 2) return t('ago.now');
+  if (minutes < 60) return t('ago.minutes', { n: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t('ago.hours', { n: hours });
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  if (days < 35) return `${Math.floor(days / 7)}w ago`;
+  if (days < 7) return t('ago.days', { n: days });
+  if (days < 35) return t('ago.weeks', { n: Math.floor(days / 7) });
   return formatShortDate(date);
 }
 

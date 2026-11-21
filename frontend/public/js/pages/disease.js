@@ -10,53 +10,33 @@
 import { ApiError, crops, diagnoses, farms, users } from '../api/client.js';
 import { TIME_ZONE } from '../api/weather.js';
 import { savedFarm } from '../utils/saved-farm.js';
+import { messages, t } from '../i18n/i18n.js';
 
 const PAGE_SIZE = 20;
 const MAX_SIDE = 1024; // longest side sent to the server
 const JPEG_QUALITY = 0.9;
 
-const MESSAGES = {
-  checking: 'Checking the leaf…',
-  offline: 'Scanning needs an internet connection. Connect and try again.',
-  unavailable: 'Disease detection isn’t available yet. Please try again later.',
-  unreadable: 'This photo can’t be read. Choose a JPG or PNG photo.',
-  tooLarge: 'This photo is too large. Choose a smaller one.',
-  tooSmall: 'This photo is too small. Take a closer photo of the leaf.',
-  fieldGone: 'That field is no longer available. Choose another one.',
-  noCrop: 'Choose the crop first.',
-  loadFailed: 'Your scans could not be loaded. Check your connection and try again.',
-  resultFailed: 'This scan could not be loaded. Check your connection and try again.',
-  noScans: 'No scans yet. Your scans will appear here.',
-  pickerFailed: 'Your fields could not be loaded. Check your connection and try again.',
-};
+const MESSAGES = messages('disease');
 
+// Error codes of POST /diagnoses mapped to MESSAGES entries (read when shown).
 const SCAN_ERRORS = {
-  model_unavailable: MESSAGES.unavailable,
-  image_too_large: MESSAGES.tooLarge,
-  unsupported_image_type: MESSAGES.unreadable,
-  image_unreadable: MESSAGES.unreadable,
-  image_too_small: MESSAGES.tooSmall,
-  cycle_not_found: MESSAGES.fieldGone,
-  crop_required: MESSAGES.noCrop,
-  crop_not_found: MESSAGES.noCrop,
-  crop_mismatch: MESSAGES.fieldGone,
+  model_unavailable: 'unavailable',
+  image_too_large: 'tooLarge',
+  unsupported_image_type: 'unreadable',
+  image_unreadable: 'unreadable',
+  image_too_small: 'tooSmall',
+  cycle_not_found: 'fieldGone',
+  crop_required: 'noCrop',
+  crop_not_found: 'noCrop',
+  crop_mismatch: 'fieldGone',
 };
 
-const STATUS_TEXT = {
-  diseased: 'Infection Detected',
-  healthy: 'Healthy',
-  unrecognized: 'Not recognized',
-};
+const STATUS_TEXT = messages('disease.status');
 
-const TITLES = { healthy: 'Healthy Leaf', unrecognized: 'Leaf Not Recognized' };
+const TITLES = messages('disease.title');
 
 // Photo instructions for a retake (not farming advice).
-const RETAKE_TIPS = [
-  'Take the photo in daylight, out of harsh direct sun.',
-  'Fill the frame with one leaf and keep the affected spots in view.',
-  'Hold the phone steady so the photo is not blurry.',
-  'Only rice, corn, and onion leaves can be checked.',
-];
+const RETAKE_TIPS = ['disease.tip1', 'disease.tip2', 'disease.tip3', 'disease.tip4'];
 
 /** The member's preferred language, looked up once ('en' when it can't be read). */
 let languagePromise = null;
@@ -84,8 +64,8 @@ function scanTime(iso) {
   const yesterday = new Date(Date.now() - 86400000);
   const time = when.toLocaleTimeString('en-PH', { timeZone: TIME_ZONE, hour: 'numeric', minute: '2-digit' });
   let label = when.toLocaleDateString('en-PH', { timeZone: TIME_ZONE, month: 'short', day: 'numeric' });
-  if (day(when) === day(new Date())) label = 'Today';
-  else if (day(when) === day(yesterday)) label = 'Yesterday';
+  if (day(when) === day(new Date())) label = t('h.today');
+  else if (day(when) === day(yesterday)) label = t('weather.yesterday');
   return `${label}, ${time}`;
 }
 
@@ -265,7 +245,7 @@ function mountHub(router) {
       });
     } catch (err) {
       if (isSessionEnd(err)) return;
-      const message = navigator.onLine === false ? MESSAGES.offline : SCAN_ERRORS[err.code] ?? err.message;
+      const message = navigator.onLine === false ? MESSAGES.offline : MESSAGES[SCAN_ERRORS[err.code]] ?? err.message;
       setStatus(message, 'error');
       if (err.code === 'cycle_not_found') loadPicker(generation);
     } finally {
@@ -329,7 +309,7 @@ function mountResults(router) {
       if (source) {
         const cite = document.createElement('span');
         cite.className = 'result-step-source';
-        cite.textContent = `Source: ${source}`;
+        cite.textContent = t('common.source', { source });
         li.append(cite);
       }
       return li;
@@ -346,10 +326,10 @@ function mountResults(router) {
     field('result-title').textContent = status === 'diseased' ? disease.disease_name : TITLES[status];
     const local = status === 'diseased' ? disease.local_name?.trim() : '';
     field('result-local').hidden = !local;
-    field('result-local').textContent = local ? `Local name: ${local}` : '';
+    field('result-local').textContent = local ? t('disease.localName', { name: local }) : '';
     // No percentage for "Not recognized": it was below the model team's threshold.
     field('result-confidence').hidden = status === 'unrecognized';
-    field('result-confidence').textContent = `${Math.round(result.confidence * 100)}% confidence`;
+    field('result-confidence').textContent = t('disease.confidence', { pct: Math.round(result.confidence * 100) });
     field('result-for').textContent = [result.crop_name, fieldName, scanTime(result.created_at)]
       .filter(Boolean).join(' · ');
     field('retake').hidden = status !== 'unrecognized';
@@ -366,14 +346,13 @@ function mountResults(router) {
         source: t.source_reference,
       }));
       why = localized(lang, disease.impact_fil, disease.impact_en) ?? '';
-      field('actions-title').textContent = 'Recommended Actions';
+      field('actions-title').textContent = t('h.recommended_actions');
     } else if (status === 'healthy') {
-      description = `No disease was found on this ${result.crop_name.toLowerCase()} leaf.`;
+      description = t('disease.healthyText', { crop: result.crop_name.toLowerCase() });
     } else {
-      description = 'ARISETO could not identify a disease in this photo. It may be blurry or dark, '
-        + 'or show a condition the model was not trained on.';
-      actions = RETAKE_TIPS.map((text) => ({ text }));
-      field('actions-title').textContent = 'Retake tips';
+      description = t('disease.unrecognizedText');
+      actions = RETAKE_TIPS.map((key) => ({ text: t(key) }));
+      field('actions-title').textContent = t('disease.retakeTips');
     }
 
     field('description').textContent = description;
@@ -402,7 +381,7 @@ function mountResults(router) {
     const diagnosisId = state?.diagnosisId ?? lastResult?.result.diagnosis_id;
     if (!diagnosisId) {
       setPhoto(null);
-      return showEmpty('No scan yet. Take a photo of a leaf to check it.');
+      return showEmpty(t('h.no_scan_yet_take_a_photo'));
     }
     setPhoto(null);
     field('content').hidden = true;
@@ -416,7 +395,7 @@ function mountResults(router) {
       loadPhoto(diagnosisId, gen);
     } catch (err) {
       if (gen !== generation || isSessionEnd(err)) return;
-      showEmpty(err.code === 'diagnosis_not_found' ? 'This scan could not be found.' : MESSAGES.resultFailed);
+      showEmpty(err.code === 'diagnosis_not_found' ? t('disease.notFound') : MESSAGES.resultFailed);
     }
   }
 

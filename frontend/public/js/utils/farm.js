@@ -1,6 +1,7 @@
 // frontend/public/js/utils/farm.js
 
 import { SEASONS } from '../data/farm-options.js';
+import { t } from '../i18n/i18n.js';
 
 /** The cycle growing on a field now ('planned' or 'active'), or null. */
 export function currentCycle(farm, fieldId) {
@@ -20,7 +21,7 @@ export function fieldLabel(farm, field) {
  */
 export function seasonOf(season, year) {
   const name = SEASONS.find((s) => s.value === season)?.label ?? season;
-  return { key: `${season}-${year}`, season, year, label: `${name} ${year}`, short: `${name.split(' ')[0]} ${year}` };
+  return { key: `${season}-${year}`, season, year, label: `${name} ${year}`, short: `${t(`season.short.${season}`)} ${year}` };
 }
 
 /** The season a date falls in: wet June to November, dry December to May. */

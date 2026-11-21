@@ -1,5 +1,7 @@
 // frontend/public/js/data/farm-options.js
 
+import { t, hasText } from '../i18n/i18n.js';
+
 /** The 11 Occidental Mindoro municipalities (users.municipality, BARANGAY.municipality). */
 export const MUNICIPALITIES = [
   'Abra de Ilog',
@@ -17,8 +19,8 @@ export const MUNICIPALITIES = [
 
 /** CROP_CYCLE.season */
 export const SEASONS = [
-  { value: 'wet', label: 'Wet season' },
-  { value: 'dry', label: 'Dry season' },
+  { value: 'wet', get label() { return t('season.wet'); } },
+  { value: 'dry', get label() { return t('season.dry'); } },
 ];
 
 /** The season the app suggests (Section 4): 'wet' from June to November, 'dry' otherwise. */
@@ -36,11 +38,11 @@ export const CROPS = [
 
 /** Growth stage of a crop calendar task, in season order (headings of the weekly timeline). */
 export const GROWTH_STAGES = [
-  { value: 'land_preparation', label: 'Land Preparation' },
-  { value: 'seed_sowing', label: 'Seed Sowing' },
-  { value: 'vegetative', label: 'Vegetative Phase' },
-  { value: 'reproductive', label: 'Reproductive Phase' },
-  { value: 'harvest', label: 'Harvest' },
+  { value: 'land_preparation', get label() { return t('stage.land_preparation'); } },
+  { value: 'seed_sowing', get label() { return t('stage.seed_sowing'); } },
+  { value: 'vegetative', get label() { return t('stage.vegetative'); } },
+  { value: 'reproductive', get label() { return t('stage.reproductive'); } },
+  { value: 'harvest', get label() { return t('stage.harvest'); } },
 ];
 
 /** EXPENSE_CATEGORY rows; icon is the sprite symbol id, color the chart color. */
@@ -54,11 +56,16 @@ export const EXPENSE_CATEGORIES = [
   { category_id: 7, category_name: 'Others', icon: 'icon-others', color: '#f39233' },
 ];
 
+/** An expense category's name in the current language (the stored name when unknown). */
+export function categoryLabel(name) {
+  return hasText(`category.${name}`) ? t(`category.${name}`) : name;
+}
+
 /** Units an expense quantity can be entered in. */
 export const QUANTITY_UNITS = [
-  { value: 'kg', label: 'kg' },
-  { value: 'sack', label: 'sack' },
-  { value: 'liter', label: 'liter' },
-  { value: 'bag', label: 'bag' },
-  { value: 'hour', label: 'hour' },
+  { value: 'kg', get label() { return t('unit.kg'); } },
+  { value: 'sack', get label() { return t('unit.sack'); } },
+  { value: 'liter', get label() { return t('unit.liter'); } },
+  { value: 'bag', get label() { return t('unit.bag'); } },
+  { value: 'hour', get label() { return t('unit.hour'); } },
 ];
